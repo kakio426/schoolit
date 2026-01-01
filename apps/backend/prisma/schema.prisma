@@ -1,0 +1,35 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://schoolit_user:schoolit_password@localhost:5432/schoolit_db?schema=public"
+}
+
+enum Role {
+  SCHOOL
+  TEACHER
+  BUSINESS
+}
+
+enum Provider {
+  LOCAL
+  KAKAO
+  NAVER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String?  // Nullable for social login users
+  name      String?
+  role      Role
+  provider  Provider @default(LOCAL)
+  snsId     String?  // ID from Social Provider (e.g. Kakao ID)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, snsId]) // Ensure unique User per provider
+}
