@@ -1,0 +1,71 @@
+
+@import "tailwindcss";
+
+:root {
+  /* Premium Primary Colors - Royal Blue & Vibrant Purple */
+  --primary: #4F46E5; /* Indigo 600 */
+  --primary-hover: #4338CA; /* Indigo 700 */
+  --secondary: #8B5CF6; /* Violet 500 */
+  
+  /* Background & Surfaces */
+  --background: #F9FAFB; /* Gray 50 (Light, clean) */
+  --surface: #FFFFFF;
+  --surface-hover: #F3F4F6; /* Gray 100 */
+  
+  /* Text Colors */
+  --foreground: #111827; /* Gray 900 (Sharp black) */
+  --foreground-muted: #6B7280; /* Gray 500 */
+
+  /* Status Colors */
+  --success: #10B981;
+  --warning: #F59E0B;
+  --error: #EF4444;
+}
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-secondary: var(--secondary);
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-error: var(--error);
+  
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode - Deep & Sleek */
+    --background: #0F172A; /* Slate 900 */
+    --surface: #1E293B; /* Slate 800 */
+    --surface-hover: #334155; /* Slate 700 */
+    
+    --foreground: #F8FAFC; /* Slate 50 */
+    --foreground-muted: #94A3B8; /* Slate 400 */
+    
+    --primary: #6366F1; /* Indigo 500 (Brighter in dark) */
+    --primary-hover: #818CF8; /* Indigo 400 */
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  @apply antialiased transition-colors duration-300;
+}
+
+/* Glassmorphism Utilities */
+.glass {
+  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 shadow-lg;
+}
+
+.card-hover {
+  @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl;
+}

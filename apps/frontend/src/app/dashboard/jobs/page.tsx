@@ -1,0 +1,196 @@
+"use client";
+
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import Link from 'next/link';
+import JobSearchFilter from '@/components/jobs/JobSearchFilter';
+import RecommendedJobs from '@/components/jobs/RecommendedJobs';
+
+export default function JobsPage() {
+    const { token, user } = useAuth();
+    const [jobs, setJobs] = useState<any[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
+
+    useEffect(() => {
+        if (token && user) {
+            fetchJobs();
+        }
+    }, [token, user, searchFilters]);
+
+    const fetchJobs = async () => {
+        setIsLoading(true);
+        try {
+            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+            let url = `${API_URL}/api/jobs`; // Default for Schools
+
+            if (user?.role === 'TEACHER') {
+                const params = new URLSearchParams();
+                if (searchFilters.subject) params.append('subject', searchFilters.subject);
+                if (searchFilters.region) params.append('region', searchFilters.region);
+                if (searchFilters.keyword) params.append('keyword', searchFilters.keyword);
+                url = `${API_URL}/api/matching/jobs?${params.toString()}`;
+            }
+
+            const res = await fetch(url, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                if (user?.role === 'SCHOOL') {
+                    // Client-side filter for "My Jobs"
+                    const myJobs = data.filter((job: any) => job.schoolProfile.userId === user?.id);
+                    setJobs(myJobs);
+                } else {
+                    setJobs(data);
+                }
+            }
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const toggleStatus = async (jobId: number, currentStatus: boolean) => {
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jobs/${jobId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ active: !currentStatus }),
+            });
+            if (res.ok) {
+                fetchJobs(); // Refresh
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    const handleSearch = (filters: any) => {
+        setSearchFilters(filters);
+    };
+
+    // VIEW: School (Manage My Jobs)
+    if (user?.role === 'SCHOOL') {
+        return (
+            <DashboardLayout>
+                <div className="max-w-5xl mx-auto">
+                    <div className="flex items-center justify-between mb-8">
+                        <h1 className="text-2xl font-bold text-slate-800">📋 채용 공고 관리</h1>
+                        <Link
+                            href="/dashboard/jobs/new"
+                            className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2"
+                        >
+                            <span>➕</span> 새 공고 등록
+                        </Link>
+                    </div>
+
+                    {isLoading ? (
+                        <div className="text-center py-20">로딩 중...</div>
+                    ) : jobs.length === 0 ? (
+                        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500">
+                            <p className="text-xl mb-4">등록된 공고가 없습니다.</p>
+                            <p>새로운 선생님을 찾아보세요!</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {jobs.map((job) => (
+                                <div key={job.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                                    <div>
+                                        <div className="flex items-center gap-3">
+                                            <h3 className="text-lg font-bold text-slate-800">{job.title}</h3>
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.active ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}>
+                                                {job.active ? '모집중' : '마감됨'}
+                                            </span>
+                                        </div>
+                                        <p className="text-slate-500 mt-1 line-clamp-1">{job.description}</p>
+                                        <div className="mt-3 flex gap-2">
+                                            {job.subjects.map((sub: string) => (
+                                                <span key={sub} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-lg">{sub}</span>
+                                            ))}
+                                            {job.regions.map((reg: string) => (
+                                                <span key={reg} className="px-2 py-1 bg-orange-50 text-orange-600 text-xs rounded-lg">{reg}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button
+                                            onClick={() => toggleStatus(job.id, job.active)}
+                                            className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${job.active
+                                                ? 'border-red-200 text-red-500 hover:bg-red-50'
+                                                : 'border-green-200 text-green-500 hover:bg-green-50'
+                                                }`}
+                                        >
+                                            {job.active ? '마감하기' : '다시 열기'}
+                                        </button>
+                                        <Link
+                                            href={`/dashboard/jobs/${job.id}/applications`}
+                                            className="px-4 py-2 rounded-xl text-sm font-bold border border-blue-200 text-blue-600 hover:bg-blue-50 text-center"
+                                        >
+                                            지원자 확인
+                                        </Link>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </DashboardLayout>
+        );
+    }
+
+    // VIEW: Teacher (Search Jobs)
+    return (
+        <DashboardLayout>
+            <div className="max-w-5xl mx-auto">
+                <h1 className="text-2xl font-bold text-slate-800 mb-8">🔎 채용 공고 찾기</h1>
+
+                <RecommendedJobs />
+
+                <JobSearchFilter onSearch={handleSearch} />
+
+                {isLoading ? (
+                    <div className="text-center py-20">검색 중...</div>
+                ) : jobs.length === 0 ? (
+                    <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500">
+                        <p className="text-xl mb-4">검색 결과가 없습니다.</p>
+                        <p>다른 검색어로 찾아보세요.</p>
+                    </div>
+                ) : (
+                    <div className="space-y-4">
+                        {jobs.map((job) => (
+                            <Link href={`/dashboard/jobs/${job.id}`} key={job.id} className="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">
+                                                {job.schoolProfile?.schoolName}
+                                            </span>
+                                            <span className="text-slate-400 text-xs">•</span>
+                                            <span className="text-slate-400 text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
+                                        </div>
+                                        <h3 className="text-lg font-bold text-slate-800 mb-2">{job.title}</h3>
+                                        <div className="flex gap-2">
+                                            {job.subjects.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-lg">{s}</span>)}
+                                            {job.regions.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 text-xs rounded-lg">{r}</span>)}
+                                        </div>
+                                    </div>
+                                    <div className="text-primary font-bold text-sm">
+                                        상세보기 →
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </DashboardLayout>
+    );
+}
