@@ -28,6 +28,28 @@ async function main() {
     });
 
     console.log('✅ Master Admin created:', admin.email);
+
+    // Sample Accounts for Testing Roles
+    const roles = [
+        { email: 'school@test.com', name: '꿈나무 초등학교', role: 'SCHOOL' },
+        { email: 'teacher@test.com', name: '김코딩 강사', role: 'TEACHER' },
+        { email: 'business@test.com', name: '(주)에듀테크', role: 'BUSINESS' },
+    ];
+
+    for (const r of roles) {
+        const user = await prisma.user.upsert({
+            where: { email: r.email },
+            update: {},
+            create: {
+                email: r.email,
+                password: hashedPassword,
+                name: r.name,
+                role: r.role,
+                provider: 'LOCAL',
+            },
+        });
+        console.log(`✅ ${r.role} account created:`, user.email);
+    }
 }
 
 main()
