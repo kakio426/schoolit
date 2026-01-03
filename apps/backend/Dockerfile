@@ -49,4 +49,4 @@ EXPOSE 4000
 WORKDIR /app/apps/backend
 
 # Start the application directly
-CMD ["node", "dist/main"]
+CMD ["node", "/app/apps/backend/dist/main"]
