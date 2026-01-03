@@ -1,25 +1,28 @@
-# 1. Base Image
 FROM node:18-alpine AS builder
 
-# 2. Set Working Directory
+# Set working directory to root of the monorepo
 WORKDIR /app
 
-# 3. Copy Backend Package Files
-# We treat backend as a standalone app to avoid workspace path issues
-COPY apps/backend/package*.json ./
-# If there are local packages/libs used, they should be handled differently, 
-# but for now we assume backend is self-contained or dependencies are in npm registry.
+# Copy root package files
+COPY package*.json ./
 
-# 4. Install Dependencies
-RUN npm install
+# Copy backend package files to its specific location
+COPY apps/backend/package*.json ./apps/backend/
 
-# 5. Copy Source Code
-COPY apps/backend .
+# Install dependencies for the entire workspace (including dev dependencies for building)
+# standard npm workspaces behavior will stick modules in root node_modules or hoist them
+RUN npm ci
 
-# 6. Generate Prisma Client
+# Copy the backend source code
+COPY apps/backend ./apps/backend
+
+# Generate Prisma Client (Needs schema)
+WORKDIR /app/apps/backend
+# Ensure prisma schema exists before generating
+COPY apps/backend/prisma ./prisma
 RUN npx prisma generate
 
-# 7. Build Application
+# Build the backend application
 RUN npm run build
 
 # --- Production Stage ---
@@ -27,17 +30,23 @@ FROM node:18-alpine AS runner
 
 WORKDIR /app
 
-# 8. Set Environment
 ENV NODE_ENV production
 
-# 9. Copy necessary files from builder
+# Copy necessary artifacts from builder
+# We need root node_modules because that's where dependencies are installed in a workspace setup
 COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/prisma ./prisma
+# If backend had its own node_modules (unhoisted), copy them too (safety check, though likely empty/non-existent with npm ci)
 
-# 10. Expose Port
+# Copy built assets
+COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
+COPY --from=builder /app/apps/backend/package.json ./apps/backend/
+COPY --from=builder /app/apps/backend/prisma ./apps/backend/prisma
+
+# Expose port
 EXPOSE 4000
 
-# 11. Start Command
+# Set working directory to backend
+WORKDIR /app/apps/backend
+
+# Start the application directly
 CMD ["node", "dist/main"]
