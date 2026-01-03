@@ -1,6 +1,9 @@
 # 1. 빌드 단계 (Builder stage)
 FROM node:18-alpine AS builder
 
+# 빌드 환경에서도 Prisma 엔진 호환을 위해 설치
+RUN apk add --no-cache openssl libc6-compat
+
 WORKDIR /app
 
 # 루트와 백엔드의 패키지 파일 복사
@@ -18,6 +21,9 @@ RUN npm run build
 
 # 2. 실행 단계 (Runner stage)
 FROM node:18-alpine AS runner
+
+# Prisma와 시스템 라이브러리 호환성을 위해 설치
+RUN apk add --no-cache openssl libc6-compat
 
 WORKDIR /app
 ENV NODE_ENV production
