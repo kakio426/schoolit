@@ -1,0 +1,30 @@
+﻿node.exe : FAIL test/upload.e2e-spec.ts
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL test 
+   /upload.e2e-spec.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Certification Upload (e2e)
+    POST /api/users/certifications/upload
+      ??should return 401 if unauthorized (Test 6.1.1) 
+(10 ms)
+      횞 should return 400 for invalid file types (Test 
+6.1.2) (23 ms)
+      ??should upload a valid image file (16 ms)
+
+  ??Certification Upload (e2e) ??POST /api/users/certif
+ications/upload ??should return 400 for invalid file ty
+pes (Test 6.1.2)
+
+    read ECONNRESET
+
+
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 2 passed, 3 total
+Snapshots:   0 total
+Time:        4.219 s, estimated 6 s
+Ran all test suites matching /test\\upload.e2e-spec.ts/
+i.

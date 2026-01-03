@@ -6,8 +6,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
-import { KakaoStrategy } from './strategies/kakao.strategy';
-import { NaverStrategy } from './strategies/naver.strategy';
+// import { KakaoStrategy } from './strategies/kakao.strategy';
+// import { NaverStrategy } from './strategies/naver.strategy';
 
 @Module({
   imports: [
@@ -22,10 +22,10 @@ import { NaverStrategy } from './strategies/naver.strategy';
     AuthService,
     LocalStrategy,
     JwtStrategy,
-    // KakaoStrategy,  // 배포 시 활성화
-    // NaverStrategy,  // 배포 시 활성화
+    // KakaoStrategy,
+    // NaverStrategy,
   ],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, JwtModule],
 })
 export class AuthModule { }

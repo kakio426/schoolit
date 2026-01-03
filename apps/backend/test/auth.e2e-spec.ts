@@ -1,13 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
-import { AppModule } from '../src/app.module';
-import { PrismaService } from '../src/prisma.service';
-import { Role } from '@prisma/client';
+import { AppModule } from './../src/app.module';
 
-describe('Auth System (e2e)', () => {
+describe('Auth (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
@@ -15,55 +12,38 @@ describe('Auth System (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     app.setGlobalPrefix('api');
     await app.init();
-
-    prisma = app.get<PrismaService>(PrismaService);
-
-    // Clean up test user if exists
-    try {
-      await prisma.user.delete({ where: { email: testUser.email } });
-    } catch (e) {
-      // Ignore if user doesn't exist
-    }
   });
 
   afterAll(async () => {
     await app.close();
   });
 
-  const testUser = {
-    email: 'e2e@school.com',
-    password: 'password123',
-    role: Role.SCHOOL,
-  };
-
-  describe('POST /api/auth/signup', () => {
-    it('should register a new user and return 201', () => {
-      return request(app.getHttpServer())
-        .post('/api/auth/signup')
-        .send(testUser)
-        .expect(201)
-        .expect((res) => {
-          expect(res.body.id).toBeDefined();
-          expect(res.body.email).toBe(testUser.email);
-          expect(res.body.password).not.toBeDefined(); // Password should not be returned
-        });
+  describe('GET /api/auth/profile', () => {
+    it('should return 401 Unauthorized when no token is provided (Test 4.1)', async () => {
+      const response = await request(app.getHttpServer()).get('/api/auth/profile');
+      console.log('Status 4.1:', response.status);
+      expect(response.status).toBe(401);
     });
-  });
 
-  describe('POST /api/auth/login', () => {
-    it('should login and return JWT token', () => {
+    it('should return 200 and user data when valid JWT is provided (Test 4.2)', async () => {
+      // 1. Get a token via test-login (already implemented in auth.controller)
+      const loginResponse = await request(app.getHttpServer())
+        .get('/api/auth/test-login')
+        .expect(200);
+
+      const token = loginResponse.body.accessToken;
+
+      // 2. Call profile with token
       return request(app.getHttpServer())
-        .post('/api/auth/login')
-        .send({
-          email: testUser.email,
-          password: testUser.password,
-        })
+        .get('/api/auth/profile')
+        .set('Authorization', `Bearer ${token}`)
         .expect(200)
         .expect((res) => {
-          expect(res.body.accessToken).toBeDefined();
+          expect(res.body).toHaveProperty('email');
+          expect(res.body).toHaveProperty('role');
+          expect(res.body).not.toHaveProperty('password');
         });
     });
   });

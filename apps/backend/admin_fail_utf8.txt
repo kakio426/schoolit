@@ -1,0 +1,96 @@
+﻿node.exe : [31m[Nest] 7080  - [39m2026. 01. 02. ?ㅽ썑 3
+:43:40 [31m  ERROR[39m [38;5;3m[ExceptionsHandler] 
+[39m[31mTeacher profile not found[39m
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: ([31m[Nes 
+   t] 708... not found[39m:String) [], RemoteExcepti  
+  on
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Error: Teacher profile not found
+    at CertificationService.createCertification (C:\Use
+rs\kakio\schoolit\apps\backend\src\users\certification.
+service.ts:15:19)
+    at UserController.uploadCertification (C:\Users\kak
+io\schoolit\apps\backend\src\users\users.controller.ts:
+57:27)
+FAIL test/admin.e2e-spec.ts
+  Admin Verification (e2e)
+    PATCH /api/admin/certifications/:id/status
+      횞 should return 403 for non-admins (1 ms)
+      횞 should approve certification and verify teacher
+ (1 ms)
+
+  ??Admin Verification (e2e) ??PATCH /api/admin/certifi
+cations/:id/status ??should return 403 for non-admins
+
+    expected 201 "Created", got 500 "Internal Server Er
+ror"
+
+    [0m [90m 42 |[39m             [33m.[39m[36mse
+t[39m([32m'Authorization'[39m[33m,[39m [32m`Beare
+r ${teacherToken}`[39m)
+     [90m 43 |[39m             [33m.[39mattach([32
+m'file'[39m[33m,[39m tempFile)
+    [31m[1m>[22m[39m[90m 44 |[39m             [3
+3m.[39mexpect([35m201[39m)[33m;[39m
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 45 |[39m         certificationId [33m=[39
+m uploadRes[33m.[39mbody[33m.[39mid[33m;[39m
+     [90m 46 |[39m         unlinkSync(tempFile)[33m;
+[39m
+     [90m 47 |[39m     })[33m;[39m[0m
+
+      at Object.<anonymous> (admin.e2e-spec.ts:44:14)
+      ----
+      at Test._assertStatus (../node_modules/supertest/
+lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertes
+t/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/tes
+t.js:164:23)
+      at Server.localAssert (../node_modules/supertest/
+lib/test.js:120:14)
+
+  ??Admin Verification (e2e) ??PATCH /api/admin/certifi
+cations/:id/status ??should approve certification and v
+erify teacher
+
+    expected 201 "Created", got 500 "Internal Server Er
+ror"
+
+    [0m [90m 42 |[39m             [33m.[39m[36mse
+t[39m([32m'Authorization'[39m[33m,[39m [32m`Beare
+r ${teacherToken}`[39m)
+     [90m 43 |[39m             [33m.[39mattach([32
+m'file'[39m[33m,[39m tempFile)
+    [31m[1m>[22m[39m[90m 44 |[39m             [3
+3m.[39mexpect([35m201[39m)[33m;[39m
+     [90m    |[39m              [31m[1m^[22m[39m
+     [90m 45 |[39m         certificationId [33m=[39
+m uploadRes[33m.[39mbody[33m.[39mid[33m;[39m
+     [90m 46 |[39m         unlinkSync(tempFile)[33m;
+[39m
+     [90m 47 |[39m     })[33m;[39m[0m
+
+      at Object.<anonymous> (admin.e2e-spec.ts:44:14)
+      ----
+      at Test._assertStatus (../node_modules/supertest/
+lib/test.js:252:14)
+      at ../node_modules/supertest/lib/test.js:308:13
+      at Test._assertFunction (../node_modules/supertes
+t/lib/test.js:285:13)
+      at Test.assert (../node_modules/supertest/lib/tes
+t.js:164:23)
+      at Server.localAssert (../node_modules/supertest/
+lib/test.js:120:14)
+
+Test Suites: 1 failed, 1 total
+Tests:       2 failed, 2 total
+Snapshots:   0 total
+Time:        4.924 s, estimated 7 s
+Ran all test suites matching /test\\admin.e2e-spec.ts/i
+.

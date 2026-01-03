@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Get,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -55,7 +56,18 @@ export class AuthController {
   }
 
   @Get('test-login')
-  async testLogin() {
-    return this.authService.testLogin();
+  async testLogin(
+    @Request() req,
+    @Body() body,
+    @Query('email') email?: string,
+    @Query('role') role?: string,
+  ) {
+    return this.authService.testLogin({ email, role });
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  async getProfile(@Request() req) {
+    return req.user;
   }
 }

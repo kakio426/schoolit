@@ -1,0 +1,146 @@
+﻿node.exe : FAIL test/profile.e2e-spec.ts
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL test 
+   /profile.e2e-spec.ts:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Teacher Profile (e2e)
+    GET /api/users/profile
+      횞 should return 200 with profile data (Test 5.1.1
+) (1 ms)
+    PATCH /api/users/profile
+      횞 should update bio and subjects (Test 5.1.2)
+      횞 should NOT allow updating isVerified (Test 5.1.
+3)
+
+  ??Teacher Profile (e2e) ??GET /api/users/profile ??sh
+ould return 200 with profile data (Test 5.1.1)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.teacherProfile.deleteMany()` invoca
+tion in
+    C:\Users\kakio\schoolit\apps\backend\test\profile.e
+2e-spec.ts:29:33
+
+      26 // Cleanup: Delete profile if exists
+      27 const { PrismaClient } = require('@prisma/clie
+nt');
+      28 const prisma = new PrismaClient();
+    ??29 await prisma.teacherProfile.deleteMany(
+    Foreign key constraint violated: `Certification_tea
+cherProfileId_fkey (index)`
+
+    [0m [90m 27 |[39m     [36mconst[39m { [33mPri
+smaClient[39m } [33m=[39m require([32m'@prisma/clie
+nt'[39m)[33m;[39m
+     [90m 28 |[39m     [36mconst[39m prisma [33m=
+[39m [36mnew[39m [33mPrismaClient[39m()[33m;[39m
+    [31m[1m>[22m[39m[90m 29 |[39m     [36mawait
+[39m prisma[33m.[39mteacherProfile[33m.[39mdeleteMa
+ny({ where[33m:[39m { userId } })[33m;[39m
+     [90m    |[39m     [31m[1m^[22m[39m
+     [90m 30 |[39m     [36mawait[39m prisma[33m.[
+39m$disconnect()[33m;[39m
+     [90m 31 |[39m   })[33m;[39m
+     [90m 32 |[39m[0m
+
+      at $n.handleRequestError (../node_modules/@prisma
+/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (../node_modules/@
+prisma/client/runtime/library.js:121:6623)
+      at $n.request (../node_modules/@prisma/client/run
+time/library.js:121:6307)
+      at l (../node_modules/@prisma/client/runtime/libr
+ary.js:130:9633)
+      at Object.<anonymous> (profile.e2e-spec.ts:29:5)
+
+  ??Teacher Profile (e2e) ??PATCH /api/users/profile ??
+should update bio and subjects (Test 5.1.2)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.teacherProfile.deleteMany()` invoca
+tion in
+    C:\Users\kakio\schoolit\apps\backend\test\profile.e
+2e-spec.ts:29:33
+
+      26 // Cleanup: Delete profile if exists
+      27 const { PrismaClient } = require('@prisma/clie
+nt');
+      28 const prisma = new PrismaClient();
+    ??29 await prisma.teacherProfile.deleteMany(
+    Foreign key constraint violated: `Certification_tea
+cherProfileId_fkey (index)`
+
+    [0m [90m 27 |[39m     [36mconst[39m { [33mPri
+smaClient[39m } [33m=[39m require([32m'@prisma/clie
+nt'[39m)[33m;[39m
+     [90m 28 |[39m     [36mconst[39m prisma [33m=
+[39m [36mnew[39m [33mPrismaClient[39m()[33m;[39m
+    [31m[1m>[22m[39m[90m 29 |[39m     [36mawait
+[39m prisma[33m.[39mteacherProfile[33m.[39mdeleteMa
+ny({ where[33m:[39m { userId } })[33m;[39m
+     [90m    |[39m     [31m[1m^[22m[39m
+     [90m 30 |[39m     [36mawait[39m prisma[33m.[
+39m$disconnect()[33m;[39m
+     [90m 31 |[39m   })[33m;[39m
+     [90m 32 |[39m[0m
+
+      at $n.handleRequestError (../node_modules/@prisma
+/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (../node_modules/@
+prisma/client/runtime/library.js:121:6623)
+      at $n.request (../node_modules/@prisma/client/run
+time/library.js:121:6307)
+      at l (../node_modules/@prisma/client/runtime/libr
+ary.js:130:9633)
+      at Object.<anonymous> (profile.e2e-spec.ts:29:5)
+
+  ??Teacher Profile (e2e) ??PATCH /api/users/profile ??
+should NOT allow updating isVerified (Test 5.1.3)
+
+    PrismaClientKnownRequestError: 
+    Invalid `prisma.teacherProfile.deleteMany()` invoca
+tion in
+    C:\Users\kakio\schoolit\apps\backend\test\profile.e
+2e-spec.ts:29:33
+
+      26 // Cleanup: Delete profile if exists
+      27 const { PrismaClient } = require('@prisma/clie
+nt');
+      28 const prisma = new PrismaClient();
+    ??29 await prisma.teacherProfile.deleteMany(
+    Foreign key constraint violated: `Certification_tea
+cherProfileId_fkey (index)`
+
+    [0m [90m 27 |[39m     [36mconst[39m { [33mPri
+smaClient[39m } [33m=[39m require([32m'@prisma/clie
+nt'[39m)[33m;[39m
+     [90m 28 |[39m     [36mconst[39m prisma [33m=
+[39m [36mnew[39m [33mPrismaClient[39m()[33m;[39m
+    [31m[1m>[22m[39m[90m 29 |[39m     [36mawait
+[39m prisma[33m.[39mteacherProfile[33m.[39mdeleteMa
+ny({ where[33m:[39m { userId } })[33m;[39m
+     [90m    |[39m     [31m[1m^[22m[39m
+     [90m 30 |[39m     [36mawait[39m prisma[33m.[
+39m$disconnect()[33m;[39m
+     [90m 31 |[39m   })[33m;[39m
+     [90m 32 |[39m[0m
+
+      at $n.handleRequestError (../node_modules/@prisma
+/client/runtime/library.js:121:7315)
+      at $n.handleAndLogRequestError (../node_modules/@
+prisma/client/runtime/library.js:121:6623)
+      at $n.request (../node_modules/@prisma/client/run
+time/library.js:121:6307)
+      at l (../node_modules/@prisma/client/runtime/libr
+ary.js:130:9633)
+      at Object.<anonymous> (profile.e2e-spec.ts:29:5)
+
+Test Suites: 1 failed, 1 total
+Tests:       3 failed, 3 total
+Snapshots:   0 total
+Time:        4.489 s, estimated 8 s
+Ran all test suites matching /test\\profile.e2e-spec.ts
+/i.

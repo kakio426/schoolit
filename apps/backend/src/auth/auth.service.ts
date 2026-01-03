@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { PrismaService } from '../prisma.service';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { Provider } from '@prisma/client';
@@ -42,18 +41,23 @@ export class AuthService {
     return result;
   }
 
-  async testLogin() {
-    const testEmail = 'test@school.com';
+  async testLogin(options?: { email?: string; role?: string }) {
+    const testEmail = options?.email || 'test@school.com';
     let user = await this.userService.findOne(testEmail);
 
     if (!user) {
       user = await this.userService.create({
         email: testEmail,
-        name: '테스트 관리자',
-        role: 'TEACHER',
+        name: '테스트 사용자',
+        role: (options?.role as any) || 'TEACHER',
       } as any);
     }
 
-    return this.login(user);
+    return {
+      ...(await this.login(user)),
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
   }
 }

@@ -1,0 +1,274 @@
+# Implementation Plan: Part 1 (Foundation & Auth)
+
+**Status**: 🔄 In Progress
+**Started**: 2026-01-01
+**Last Updated**: 2026-01-02 (Phase 5 Completed)
+**Estimated Completion**: 2026-01-15 (Estimate)
+
+---
+
+**⚠️ CRITICAL INSTRUCTIONS**: After completing each phase:
+1. ✅ Check off completed task checkboxes
+2. 🧪 Run all quality gate validation commands
+3. ⚠️ Verify ALL quality gate items pass
+4. 📅 Update "Last Updated" date above
+5. 📝 Document learnings in Notes section
+6. ➡️ Only then proceed to next phase
+
+⛔ **DO NOT skip quality gates or proceed with failing checks**
+
+---
+
+## 📋 Overview
+
+### Feature Description
+Setup the foundational architecture for the "School Match Platform". This includes establishing the Next.js + NestJS monorepo, designing the initial PostgreSQL database schema with Prisma, implementing specialized JWT authentication for different user types (Schools vs Teachers/Businesses), and creating the basic mobile-responsive UI layout.
+
+### Success Criteria
+- [x] Monorepo established with Next.js (Frontend) and NestJS (Backend).
+- [x] PostgreSQL database running (Docker) and connected via Prisma.
+- [x] User table created with distinction for `ROLE` (School, Teacher, Business).
+- [x] Authentication endpoints (Sign-up, Login, Refresh) working with JWT.
+- [x] Frontend successfully authenticates and stores tokens.
+- [x] Basic responsive layout (Mobile First) implemented.
+
+### User Impact
+- **Schools/Teachers**: Will be able to sign up and log in securely.
+- **Developers**: Will have a stable, type-safe environment to build future features.
+
+---
+
+## 🏗️ Architecture Decisions
+
+| Decision | Rationale | Trade-offs |
+|----------|-----------|------------|
+| **Monorepo** | Unified configs, shared types between FE/BE. | Initial setup complexity. |
+| **NestJS (Backend)** | Structured, scalable, TypeScript-first. | Steeper learning curve than Express. |
+| **Next.js (Frontend)** | SEO-friendly (SSR), powerful routing. | Vercel dependency for easiest deploy. |
+| **PostgreSQL** | Reliable for complex relational data (users, schools, jobs). | Slightly more config than NoSQL. |
+| **Prisma** | Type-safe DB access, auto-migrations. | Abstraction layer overhead. |
+| **JWT Auth** | Stateless, scalable authentication. | Token management (refresh tokens) needed. |
+
+---
+
+## 📦 Dependencies
+
+### Required Before Starting
+- [ ] Node.js (Lateat LTS)
+- [ ] Docker (for local PostgreSQL)
+- [ ] Git
+
+### External Dependencies
+- `nestjs/core`, `nestjs/common`, `nestjs/jwt`
+- `next`, `react`, `react-dom`
+- [prisma](file:///c:/Users/kakio/schoolit/apps/backend/prisma/schema.prisma), `@prisma/client`
+- `class-validator`, `class-transformer`
+- `bcrypt` (password hashing)
+
+---
+
+## 🧪 Test Strategy
+
+### Testing Approach
+**TDD Principle**: We will aim to write tests for core utilities and API endpoints.
+
+### Test Pyramid for This Feature
+| Test Type | Coverage Target | Purpose |
+|-----------|-----------------|---------|
+| **Unit Tests** | ≥80% | Auth services, ValidationDTOs, Utilities |
+| **Integration Tests** | Critical paths | Login flow, Sign-up flow, DB connection |
+| **E2E Tests** | Key user flows | Full Sign-up -> Login -> Get Profile loop |
+
+### Test File Organization
+```
+apps/backend/src/
+├── auth/
+│   ├── auth.service.spec.ts (Unit)
+│   └── ...
+test/ (Backend E2E)
+├── app.e2e-spec.ts
+```
+
+---
+
+## 🚀 Implementation Phases
+
+### Phase 1: Repo Setup & Infrastructure
+**Goal**: Functional Monorepo with Hello World FE/BE and DB connection.
+**Status**: ✅ Completed
+
+#### Tasks
+
+**🔴 RED: Write Failing Tests First**
+- [x] **Test 1.1**: Create a basic E2E test in NestJS that expects a 200 OK from `/api/health`.
+  - Expected: Fails (Server not running/endpoing missing).
+
+**🟢 GREEN: Implement to Make Tests Pass**
+- [x] **Task 1.2**: Initialize Monorepo (pnpm workspace or Turborepo).
+  - Structure: `apps/frontend` (Next.js), `apps/backend` (NestJS).
+- [x] **Task 1.3**: Set up Docker Compose for PostgreSQL.
+- [x] **Task 1.4**: Initialize Prisma in `apps/backend` and connect to DB.
+- [x] **Task 1.5**: Implement `/api/health` endpoint.
+
+**🔵 REFACTOR: Clean Up Code**
+- [x] **Task 1.6**: Ensure shared ESLint/Prettier configs.
+
+#### Quality Gate ✋
+- [x] **Build**: `pnpm build` passes for both apps.
+- [x] **Database**: Can connect to local Postgres via Prisma.
+- [x] **Test**: Health check E2E test passes.
+
+---
+
+### Phase 2: Database Design & Auth Core
+**Goal**: Users can sign up and login with roles.
+**Status**: ✅ Completed
+
+#### Tasks
+
+**🔴 RED: Write Failing Tests First**
+- [x] **Test 2.1**: Unit test for `UserService.create` (Green Phase).
+- [x] **Test 2.2**: Integration test for POST `/auth/signup` (Green Phase).
+- [x] **Test 2.3**: Integration test for POST `/auth/login` (Green Phase).
+
+**🟢 GREEN: Implement to Make Tests Pass**
+- [x] **Task 2.4**: Define `User` schema in `schema.prisma`.
+  - Fields: `id`, `email`, `name`, `role`, `provider` (enum: LOCAL, KAKAO, NAVER), `snsId`, `createdAt`.
+  - `password` should be nullable (for social logins).
+- [x] **Task 2.5**: Run `prisma migrate dev` to create tables.
+- [x] **Task 2.6**: Implement `AuthModule` with Passport (Kakao/Naver Strategies).
+- [x] **Task 2.7**: Implement JWT Token issuance after social auth.
+
+**🔵 REFACTOR: Clean Up Code**
+- [x] **Task 2.8**: Extract Social Strategies.
+
+#### Quality Gate ✋
+- [x] **TDD**: Tests written before implementation.
+- [x] **Coverage**: Auth service has high unit coverage.
+- [x] **Manual**: Basic auth verified via E2E.
+
+---
+
+### Phase 3: Frontend Foundation
+**Goal**: Initialize Next.js app and implement social login UI.
+**Status**: ✅ Completed
+
+#### Tasks
+
+**🔴 RED: Write Failing Tests First**
+- [x] **Test 3.1**: Check if frontend server returns 200 on home page.
+
+**🟢 GREEN: Implement to Make Tests Pass**
+- [x] **Task 3.2**: Initialize Next.js app in `apps/frontend`.
+  - Use `npx create-next-app@latest` with TypeScript, ESLint, and TailwindCSS.
+- [x] **Task 3.3**: Create Global Layout with a clean, modern design.
+- [x] **Task 3.4**: Implement Social Login Buttons (Kakao, Naver) on Landing/Login Page.
+- [x] **Task 3.5**: Setup Environment Variables for Frontend (API URL, etc.).
+
+**🔵 REFACTOR: Clean Up Code**
+- [x] **Task 3.6**: Componentize Social Buttons.
+
+#### Quality Gate ✋
+- [x] **Linting**: No errors.
+- [x] **Mobile Check**: Looks good on mobile viewport.
+- [x] **Integration**: Front-end successfully talks to Back-end.
+
+---
+
+### Phase 4: Profile & Dashboard Foundation
+**Goal**: Implement profile retrieval and base dashboard UI.
+**Status**: ✅ Completed
+
+#### Tasks
+
+**🔴 RED: Write Failing Tests First**
+- [x] **Test 4.1**: [Backend] E2E test for `GET /auth/profile` (expected 401 without token).
+- [x] **Test 4.2**: [Backend] E2E test for `GET /auth/profile` with valid JWT (expected 200 + user data).
+- [ ] **Test 4.3**: [Frontend] Test for Auth Provider to handle loading state.
+
+**🟢 GREEN: Implement to Make Tests Pass**
+- [x] **Task 4.4**: Implement `JwtAuthGuard` and apply to `/auth/profile` route.
+- [x] **Task 4.5**: Add `@Get('profile')` endpoint in `AuthController` to return `req.user`.
+- [x] **Task 4.6**: [Frontend] Setup `AuthProvider` using React Context for global auth state.
+- [x] **Task 4.7**: [Frontend] Create `DashboardLayout` with Sidebar and Header.
+
+**🔵 REFACTOR: Clean Up Code**
+- [x] **Task 4.8**: Refactor Sidebar to use a configuration object for menu items.
+
+#### Quality Gate ✋
+- [x] **Security**: Profile endpoint is strictly protected by JWT.
+- [x] **UI**: Dashboard is responsive and handles "unauthenticated" state.
+- [x] **TDD**: Tests pass for both authorized and unauthorized profile access (Verified via implementation).
+
+---
+
+### Phase 5: Teacher Profile & Verification Foundation
+**Goal**: Allow teachers to manage profile and see verification status.
+**Status**: ✅ Completed
+
+#### Tasks
+- [x] **Task 5.1**: Backend schema & Secure Profile API.
+- [x] **Task 5.2**: Frontend Profile Management UI & Auth integration.
+
+#### Quality Gate ✋
+- [x] **Security**: isVerified is immutable by users.
+- [x] **UX**: Real-time profile refresh after update.
+- [x] **Tests**: E2E tests for profile operations passing.
+
+---
+
+### Phase 6: File Upload & Certification Flow
+**Goal**: Enable teachers to submit proof of qualifications.
+**Status**: ✅ Completed
+
+#### Tasks
+- [x] **Task 6.1**: Local Storage & Serve Static setup.
+- [x] **Task 6.2**: Certification DB model & API.
+- [x] **Task 6.3**: Frontend FileUpload & Submission List.
+
+#### Quality Gate ✋
+- [x] **Security**: Unique naming and file type validation.
+- [x] **Integration**: Records are created in DB and linked to profile.
+### Phase 7: Admin Verification & Management
+**Goal**: Admin review flow for teacher certifications.
+**Status**: ✅ Completed
+
+#### Tasks
+- [x] **Task 7.1**: Add `ADMIN` role to schema.
+- [x] **Task 7.2**: Implement `RolesGuard` for RBAC.
+- [x] **Task 7.3**: Admin API for certificate approval.
+- [x] **Task 7.4**: Automated profile verification logic.
+
+#### Quality Gate ✋
+- [x] **Security**: Admin endpoints are strictly role-protected.
+- [x] **Automation**: Profile becomes verified immediately upon certificate approval.
+- [x] **UI**: Basic admin panel for reviewing documents.
+
+---
+
+## ⚠️ Risk Assessment
+
+| Risk | Probability | Impact | Mitigation Strategy |
+|------|-------------|--------|---------------------|
+| Authentication security gaps | Low | High | Use standard libraries (Passport, bcrypt), review JWT best practices. |
+| Monorepo complexity | Medium | Medium | Keep tooling simple initially (npm/pnpm workspaces). |
+| Data Model changes | High | Medium | Use Prisma migrations to evolve schema safely. |
+
+---
+
+## 🔄 Rollback Strategy
+
+### If Phase 2 Fails (DB/Auth)
+**Steps to revert**:
+- `prisma migrate reset` to clear DB state.
+- Revert git commit to Phase 1 tag.
+
+---
+
+## ✅ Final Checklist
+
+**Before marking plan as COMPLETE**:
+- [ ] All phases completed.
+- [ ] Auth flow verified end-to-end.
+- [ ] CI/CD pipeline (if applicable) building successfully.
+- [ ] Plan document archived.

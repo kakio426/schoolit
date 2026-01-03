@@ -1,0 +1,94 @@
+﻿node.exe : FAIL test/search-jobs.e2e-spec.ts
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL test 
+   /search-jobs.e2e-spec.ts:String) [], RemoteExcepti  
+  on
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Search Jobs API (e2e)
+    GET /api/jobs/search
+      횞 should search jobs by subject (Test 10.1.1) (13
+ ms)
+      횞 should search jobs by region (Test 10.1.2) (2 m
+s)
+      횞 should return empty array when no match (Test 1
+0.1.3) (1 ms)
+      횞 should search with multiple filters (Test 10.1.
+4) (1 ms)
+
+  ??Search Jobs API (e2e) ??GET /api/jobs/search ??shou
+ld search jobs by subject (Test 10.1.1)
+
+    TypeError: Request path contains unescaped characte
+rs
+
+      at Test.request (../node_modules/superagent/src/n
+ode/index.js:808:22)
+      at Test.request [as end] (../node_modules/superag
+ent/src/node/index.js:986:8)
+      at Test.end (../node_modules/supertest/lib/test.j
+s:118:11)
+      at end (../node_modules/superagent/src/request-ba
+se.js:285:12)
+      at Test.Object.<anonymous>.RequestBase.then (../n
+ode_modules/superagent/src/request-base.js:267:31)
+
+  ??Search Jobs API (e2e) ??GET /api/jobs/search ??shou
+ld search jobs by region (Test 10.1.2)
+
+    TypeError: Request path contains unescaped characte
+rs
+
+      at Test.request (../node_modules/superagent/src/n
+ode/index.js:808:22)
+      at Test.request [as end] (../node_modules/superag
+ent/src/node/index.js:986:8)
+      at Test.end (../node_modules/supertest/lib/test.j
+s:118:11)
+      at end (../node_modules/superagent/src/request-ba
+se.js:285:12)
+      at Test.Object.<anonymous>.RequestBase.then (../n
+ode_modules/superagent/src/request-base.js:267:31)
+
+  ??Search Jobs API (e2e) ??GET /api/jobs/search ??shou
+ld return empty array when no match (Test 10.1.3)
+
+    TypeError: Request path contains unescaped characte
+rs
+
+      at Test.request (../node_modules/superagent/src/n
+ode/index.js:808:22)
+      at Test.request [as end] (../node_modules/superag
+ent/src/node/index.js:986:8)
+      at Test.end (../node_modules/supertest/lib/test.j
+s:118:11)
+      at end (../node_modules/superagent/src/request-ba
+se.js:285:12)
+      at Test.Object.<anonymous>.RequestBase.then (../n
+ode_modules/superagent/src/request-base.js:267:31)
+
+  ??Search Jobs API (e2e) ??GET /api/jobs/search ??shou
+ld search with multiple filters (Test 10.1.4)
+
+    TypeError: Request path contains unescaped characte
+rs
+
+      at Test.request (../node_modules/superagent/src/n
+ode/index.js:808:22)
+      at Test.request [as end] (../node_modules/superag
+ent/src/node/index.js:986:8)
+      at Test.end (../node_modules/supertest/lib/test.j
+s:118:11)
+      at end (../node_modules/superagent/src/request-ba
+se.js:285:12)
+      at Test.Object.<anonymous>.RequestBase.then (../n
+ode_modules/superagent/src/request-base.js:267:31)
+
+Test Suites: 1 failed, 1 total
+Tests:       4 failed, 4 total
+Snapshots:   0 total
+Time:        4.257 s, estimated 6 s
+Ran all test suites matching /test\\search-jobs.e2e-spe
+c.ts/i.

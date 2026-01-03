@@ -1,0 +1,48 @@
+﻿node.exe : FAIL test/application-schema.e2e-spec.ts
+위치 C:\Program Files\nodejs\npx.ps1:29 문자:3
++   & $NODE_EXE $NPX_CLI_JS $args
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (FAIL test 
+   /application-schema.e2e-spec.ts:String) [], Remote  
+  Exception
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+  Job Application Schema (e2e)
+    횞 should confirm JobApplication model exists (2 ms)
+
+  ??Job Application Schema (e2e) ??should confirm JobAp
+plication model exists
+
+    Nest could not find PrismaService element (this pro
+vider does not exist in the current context)
+
+    [0m [90m 21 |[39m
+     [90m 22 |[39m     it([32m'should confirm JobApp
+lication model exists'[39m[33m,[39m [36masync[39m 
+() [33m=>[39m {
+    [31m[1m>[22m[39m[90m 23 |[39m         [36mco
+nst[39m prisma [33m=[39m app[33m.[39m[36mget[39m
+([32m'PrismaService'[39m)[33m;[39m
+     [90m    |[39m                            [31m[
+1m^[22m[39m
+     [90m 24 |[39m         [90m// @ts-ignore[39m
+     [90m 25 |[39m         [36mif[39m (prisma[33m.
+[39mjobApplication) {
+     [90m 26 |[39m             console[33m.[39mlog(
+[32m'Model exists'[39m)[33m;[39m[0m
+
+      at InstanceLinksHost.get (../node_modules/@nestjs
+/core/injector/instance-links-host.js:15:19)
+      at Proxy.find (../node_modules/@nestjs/core/injec
+tor/abstract-instance-resolver.js:8:60)
+      at Proxy.get (../node_modules/@nestjs/core/nest-a
+pplication-context.js:70:20)
+      at Object.<anonymous> (application-schema.e2e-spe
+c.ts:23:28)
+
+Test Suites: 1 failed, 1 total
+Tests:       1 failed, 1 total
+Snapshots:   0 total
+Time:        4.151 s
+Ran all test suites matching /test\\application-schema.
+e2e-spec.ts/i.

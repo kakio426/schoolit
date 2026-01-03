@@ -4,13 +4,169 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://schoolit_user:schoolit_password@localhost:5432/schoolit_db?schema=public"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  password       String?          // Nullable for social login users
+  name           String?
+  role           Role
+  provider       Provider         @default(LOCAL)
+  snsId          String?          @map("sns_id") // ID from Social Provider (e.g. Kakao ID)
+  phone          String?          // Contact info, revealed only upon acceptance
+  
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  teacherProfile TeacherProfile?
+  schoolProfile  SchoolProfile?
+  applications   JobApplication[]
+  chatRooms      ChatRoom[]
+  messagesSent   ChatMessage[]
+  reviewsSent    Review[]       @relation("ReviewsSent")
+  reviewsReceived Review[]      @relation("ReviewsReceived")
+
+  @@unique([provider, snsId]) // Ensure unique User per provider
+  @@map("users")
+}
+
+model SchoolProfile {
+  id          Int          @id @default(autoincrement())
+  userId      Int          @unique @map("user_id")
+  user        User         @relation(fields: [userId], references: [id])
+  schoolName  String?      @map("school_name")
+  address     String?
+  website     String?
+  description String?
+  logoImage   String?      @map("logo_image")
+  jobListings JobListing[]
+  
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  
+  @@map("school_profiles")
+}
+
+enum JobStatus {
+  OPEN
+  CLOSED
+}
+
+model JobListing {
+  id              Int              @id @default(autoincrement())
+  schoolProfileId Int              @map("school_profile_id")
+  schoolProfile   SchoolProfile    @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
+  title           String
+  description     String
+  subjects        String[]
+  regions         String[]
+  active          Boolean          @default(true)
+  status          JobStatus        @default(OPEN)
+  applications    JobApplication[]
+  
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@map("job_listings")
+}
+
+enum CertStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model TeacherProfile {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @unique @map("user_id")
+  user           User            @relation(fields: [userId], references: [id])
+  bio            String?
+  profileImage   String?         @map("profile_image")
+  subjects       String[]
+  regions        String[]
+  isVerified     Boolean         @default(false) @map("is_verified")
+  certifications Certification[]
+  
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@map("teacher_profiles")
+}
+
+model Certification {
+  id               Int            @id @default(autoincrement())
+  teacherProfileId Int            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+  name             String         // Original filename or display name
+  fileUrl          String         @map("file_url")
+  status           CertStatus     @default(PENDING)
+  notes            String?        // Rejection reason, etc.
+  
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  @@map("certifications")
+}
+
+enum ApplicationStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  INTERVIEWING
+  HIRED
+  COMPLETED
+}
+
+model JobApplication {
+  id         Int               @id @default(autoincrement())
+  jobId      Int               @map("job_id")
+  jobListing JobListing        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId     Int               @map("user_id")
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status     ApplicationStatus @default(PENDING)
+  message    String?
+  isSuggestion Boolean         @default(false) @map("is_suggestion") // true if initiated by School
+  
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  @@unique([jobId, userId])
+  @@map("job_applications")
+}
+
+model ChatRoom {
+  id        Int           @id @default(autoincrement())
+  jobId     Int?          @map("job_id") // Optional: link to a specific job context
+  users     User[]        // Implicit many-to-many
+  messages  ChatMessage[]
+  
+  createdAt DateTime      @default(now()) @map("created_at")
+  
+  // Custom identifying logic might be needed, e.g. room between user A and user B
+  @@map("chat_rooms")
+}
+
+model ChatMessage {
+  id         Int      @id @default(autoincrement())
+  chatRoomId Int      @map("chat_room_id")
+  chatRoom   ChatRoom @relation(fields: [chatRoomId], references: [id], onDelete: Cascade)
+  senderId   Int      @map("sender_id")
+  sender     User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  content    String
+  read       Boolean  @default(false)
+
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("chat_messages")
 }
 
 enum Role {
   SCHOOL
   TEACHER
   BUSINESS
+  ADMIN
 }
 
 enum Provider {
@@ -19,17 +175,29 @@ enum Provider {
   NAVER
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String?  // Nullable for social login users
-  name      String?
-  role      Role
-  provider  Provider @default(LOCAL)
-  snsId     String?  // ID from Social Provider (e.g. Kakao ID)
+model Review {
+  id          Int      @id @default(autoincrement())
+  senderId    Int      @map("sender_id")
+  sender      User     @relation("ReviewsSent", fields: [senderId], references: [id])
+  receiverId  Int      @map("receiver_id")
+  receiver    User     @relation("ReviewsReceived", fields: [receiverId], references: [id])
+  jobId       Int?     @map("job_id") // Optional link to specific job context
+  rating      Int?     // 1-5, Optional (mostly for Company)
+  content     String?  // Text review
+  reMatchIntent Boolean @default(true) @map("re_match_intent") // "다시 일하고 싶어요"
   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  keywords    ReviewKeyword[] // Many-to-many via implicit table or relation
 
-  @@unique([provider, snsId]) // Ensure unique User per provider
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("reviews")
+  @@index([receiverId]) // Index for fetching profile reviews
+}
+
+model ReviewKeyword {
+  id      Int      @id @default(autoincrement())
+  keyword String   @unique // e.g. "Punctual", "Friendly"
+  reviews Review[] // Many-to-many
+
+  @@map("review_keywords")
 }
