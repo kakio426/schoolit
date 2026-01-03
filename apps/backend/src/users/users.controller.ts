@@ -1,4 +1,4 @@
-import { Controller, Get, Patch, Body, Post, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Post, Put, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Param, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CertificationService } from './certification.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -92,5 +92,14 @@ export class UserController {
   @Get('certifications')
   async getCertifications(@Request() req) {
     return this.certService.getCertifications(req.user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('role')
+  async updateRole(@Request() req, @Body('role') role: Role) {
+    if (![Role.TEACHER, Role.SCHOOL].includes(role)) {
+      throw new BadRequestException('Invalid role selection');
+    }
+    return this.userService.updateRole(req.user.userId, role);
   }
 }

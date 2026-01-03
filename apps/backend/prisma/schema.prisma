@@ -167,6 +167,7 @@ enum Role {
   TEACHER
   BUSINESS
   ADMIN
+  PENDING
 }
 
 enum Provider {

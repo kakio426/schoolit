@@ -69,24 +69,77 @@ describe('UserService', () => {
         { rating: 4, keywords: [{ keyword: 'Punctual' }, { keyword: 'Friendly' }] }
       ];
 
-      // Mock Prisma queries using findUnique to get user and include reviews
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({
         id: userId,
-        role: 'TEACHER', // Should prefer keywords
+        role: 'TEACHER',
         reviewsReceived: mockReviews,
         teacherProfile: {}
       } as any);
 
-      // We expect the service to perform aggregation in memory or simply return raw reviews for now,
-      // but the requirement says "Trust Visualization ... Top 3 keywords ... Average Rating"
-      // Let's assume we implement a method getProfileWithStats
       const result = await service.getProfileWithStats(userId);
 
       expect(result.reviewStats).toBeDefined();
-      // Since role is TEACHER, rating might be hidden or null in visualization, but backend can return it.
-      // Let's assert calculation correctness:
       expect(result.reviewStats.averageRating).toBe(4.5);
       expect(result.reviewStats.topKeywords).toContainEqual(expect.objectContaining({ keyword: 'Punctual', count: 2 }));
+    });
+  });
+
+  describe('findOrCreateSocialUser', () => {
+    it('should create a new user with PENDING role (Test 1.1)', async () => {
+      const email = 'newsocial@test.com';
+      const name = 'New User';
+      const provider = 'KAKAO' as any;
+      const snsId = '12345';
+
+      // 1. snsId로 유저가 없는 경우 (null 반환)
+      jest.spyOn(prisma.user, 'findUnique').mockResolvedValue(null);
+      // 2. create 호출 시 PENDING 역할로 생성되는지 확인
+      const createSpy = jest.spyOn(service, 'create').mockResolvedValue({
+        id: 1,
+        email,
+        name,
+        role: 'PENDING',
+        provider,
+        snsId,
+      } as any);
+
+      const result = await service.findOrCreateSocialUser(email, name, provider, snsId);
+
+      expect(result.role).toBe('PENDING');
+      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
+        role: 'PENDING',
+        provider,
+        snsId,
+      }));
+    });
+
+    it('should link to existing user if email matches but snsId is new (Test 1.2)', async () => {
+      // 이 시나리오는 UserService.findOrCreateSocialUser의 현재 로직에는 없으므로 
+      // 추가 구현이 필요함을 나타내는 RED 테스트가 될 것입니다.
+      const email = 'existing@test.com';
+      const name = 'Existing User';
+      const provider = 'NAVER' as any;
+      const snsId = '67890';
+
+      // 1. snsId로는 유저가 없음
+      jest.spyOn(prisma.user, 'findUnique')
+        .mockResolvedValueOnce(null) // findUserBySnsId
+        .mockResolvedValueOnce({ id: 2, email, role: 'TEACHER' } as any); // findOne (email)
+
+      // 3. 기존 유저에 snsId와 provider를 업데이트하는 로직이 필요함
+      const updateSpy = jest.fn().mockResolvedValue({
+        id: 2,
+        email,
+        role: 'TEACHER',
+        provider,
+        snsId
+      });
+      (prisma.user as any).update = updateSpy;
+
+      const result = await service.findOrCreateSocialUser(email, name, provider, snsId);
+
+      expect(result.id).toBe(2);
+      expect(updateSpy).toHaveBeenCalled();
     });
   });
 });

@@ -8,7 +8,9 @@ import {
   HttpStatus,
   Get,
   Query,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
@@ -38,8 +40,10 @@ export class AuthController {
 
   @Get('kakao/callback')
   @UseGuards(AuthGuard('kakao'))
-  async kakaoCallback(@Request() req) {
-    return this.authService.login(req.user);
+  async kakaoCallback(@Request() req, @Res() res: Response) {
+    const { accessToken } = await this.authService.login(req.user);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
   }
 
   // --- Naver ---
@@ -51,8 +55,10 @@ export class AuthController {
 
   @Get('naver/callback')
   @UseGuards(AuthGuard('naver'))
-  async naverCallback(@Request() req) {
-    return this.authService.login(req.user);
+  async naverCallback(@Request() req, @Res() res: Response) {
+    const { accessToken } = await this.authService.login(req.user);
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
   }
 
   @Get('test-login')

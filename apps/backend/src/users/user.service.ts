@@ -40,19 +40,34 @@ export class UserService {
   }
 
   async findOrCreateSocialUser(email: string, name: string, provider: Provider, snsId: string) {
+    // 1. snsId와 provider로 기존 유저 검색
     let user = await this.findUserBySnsId(provider, snsId);
 
-    if (!user) {
-      user = await this.create({
-        email,
-        name,
-        role: 'TEACHER', // Default role
-        provider,
-        snsId,
-      } as any);
+    if (user) {
+      return user;
     }
 
-    return user;
+    // 2. snsId로 없으면 email로 기존 유저 검색 (연동 처리)
+    user = await this.findOne(email);
+    if (user) {
+      // 기존 계정에 소셜 정보 업데이트
+      return this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          provider,
+          snsId,
+        },
+      });
+    }
+
+    // 3. 둘 다 없으면 신규 가입 (PENDING 역할 부여)
+    return this.create({
+      email,
+      name,
+      role: 'PENDING',
+      provider,
+      snsId,
+    } as any);
   }
 
   async getProfile(userId: number) {
@@ -171,5 +186,18 @@ export class UserService {
         isVeteran: totalReviews >= 10,
       }
     };
+  }
+
+  async updateRole(userId: number, role: Role) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+      }
+    });
   }
 }
