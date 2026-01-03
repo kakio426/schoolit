@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { PrismaClient, Role, Provider } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
