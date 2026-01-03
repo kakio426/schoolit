@@ -49,4 +49,5 @@ EXPOSE 4000
 WORKDIR /app/apps/backend
 
 # Start the application directly
-CMD ["node", "/app/apps/backend/dist/main"]
+# Find main.js and execute it, handling potential directory structure variations
+CMD ["sh", "-c", "node $(find dist -name main.js -print -quit)"]
