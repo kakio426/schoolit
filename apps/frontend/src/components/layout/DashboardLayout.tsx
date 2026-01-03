@@ -63,16 +63,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     return (
-        <div className="flex h-screen bg-slate-50 overflow-hidden">
+        <div className="flex h-screen bg-background overflow-hidden text-foreground">
             {/* Sidebar */}
-            <aside className="w-64 bg-white border-r border-slate-200 hidden md:flex flex-col shadow-sm">
+            <aside className="w-64 bg-surface border-r border-slate-200/50 dark:border-slate-700 hidden md:flex flex-col shadow-sm">
                 <div className="p-6">
                     <div className="flex items-center gap-2">
                         <span className="text-2xl">🎓</span>
-                        <h1 className="text-xl font-bold text-slate-800">School It</h1>
+                        <h1 className="text-xl font-bold text-foreground">School It</h1>
                     </div>
                 </div>
-                <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto">
+                <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto font-sans">
                     {navItems.map((item) => {
                         const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
                         return (
@@ -81,7 +81,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 href={item.href}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
                                     ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                    : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'
+                                    : 'text-foreground-muted hover:bg-surface-hover hover:text-foreground'
                                     }`}
                             >
                                 <span className={`text-lg transition-transform duration-200 group-hover:scale-110 ${isActive ? '' : 'grayscale opacity-70 group-hover:grayscale-0 group-hover:opacity-100'}`}>
@@ -89,7 +89,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 </span>
                                 <span className="font-medium">{item.label}</span>
                                 {item.label === '메시지' && unreadCount > 0 && (
-                                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-white">
+                                    <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-surface">
                                         {unreadCount > 99 ? '99+' : unreadCount}
                                     </span>
                                 )}
@@ -97,10 +97,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         )
                     })}
                 </nav>
-                <div className="p-4 border-t border-slate-100">
+                <div className="p-4 border-t border-slate-100/10">
                     <button
                         onClick={logout}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-colors group"
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-500 hover:bg-red-500/10 rounded-xl transition-colors group"
                     >
                         <span className="text-lg group-hover:rotate-12 transition-transform">🚪</span>
                         로그아웃
@@ -110,8 +110,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
-                <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shadow-sm">
-                    <h2 className="text-base md:text-lg font-bold text-slate-800">
+                <header className="h-16 bg-surface border-b border-slate-200/50 dark:border-slate-700 flex items-center justify-between px-4 md:px-8 sticky top-0 z-20 shadow-sm">
+                    <h2 className="text-base md:text-lg font-bold text-foreground">
                         반갑습니다, <span className="text-primary">{user.name}</span>님
                     </h2>
                     <div className="flex items-center gap-3">
@@ -120,7 +120,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </div>
                     </div>
                 </header>
-                <main className="p-4 md:p-8 max-w-[1200px]">
+                <main className="p-4 md:p-8 max-w-[1200px] w-full mx-auto">
                     {children}
                 </main>
             </div>
