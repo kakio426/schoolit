@@ -1,53 +1,40 @@
+# 1. 빌드 단계 (Builder stage)
 FROM node:18-alpine AS builder
 
-# Set working directory to root of the monorepo
 WORKDIR /app
 
-# Copy root package files
+# 루트와 백엔드의 패키지 파일 복사
 COPY package*.json ./
-
-# Copy backend package files to its specific location
 COPY apps/backend/package*.json ./apps/backend/
 
-# Install dependencies for the entire workspace (including dev dependencies for building)
-# standard npm workspaces behavior will stick modules in root node_modules or hoist them
+# 빌드에 필요한 모든 의존성 설치
 RUN npm ci
 
-# Copy the backend source code
+# 소스 복사 및 빌드
 COPY apps/backend ./apps/backend
-
-# Generate Prisma Client (Needs schema)
 WORKDIR /app/apps/backend
-# Ensure prisma schema exists before generating
-COPY apps/backend/prisma ./prisma
 RUN npx prisma generate
-
-# Build the backend application
 RUN npm run build
 
-# --- Production Stage ---
+# 2. 실행 단계 (Runner stage)
 FROM node:18-alpine AS runner
 
 WORKDIR /app
-
 ENV NODE_ENV production
 
-# Copy necessary artifacts from builder
-# We need root node_modules because that's where dependencies are installed in a workspace setup
-COPY --from=builder /app/node_modules ./node_modules
-# If backend had its own node_modules (unhoisted), copy them too (safety check, though likely empty/non-existent with npm ci)
+# 실행에 필요한 파일만 복사
+COPY --from=builder /app/apps/backend/package*.json ./
+COPY --from=builder /app/apps/backend/dist ./dist
+COPY --from=builder /app/apps/backend/prisma ./prisma
 
-# Copy built assets
-COPY --from=builder /app/apps/backend/dist ./apps/backend/dist
-COPY --from=builder /app/apps/backend/package.json ./apps/backend/
-COPY --from=builder /app/apps/backend/prisma ./apps/backend/prisma
+# 프로덕션 의존성만 깔끔하게 새로 설치 (경로 문제 해결)
+RUN npm install --omit=dev
 
-# Expose port
+# Prisma Client 생성 (설치된 node_modules에 맞춰서)
+RUN npx prisma generate
+
+# 포트 설정
 EXPOSE 4000
 
-# Set working directory to backend
-WORKDIR /app/apps/backend
-
-# Start the application directly
-# Find main.js and execute it, handling potential directory structure variations
-CMD ["sh", "-c", "node $(find dist -name main.js -print -quit)"]
+# 실행 명령어 (확인된 경로 dist/src/main.js 사용)
+CMD ["node", "dist/src/main"]
