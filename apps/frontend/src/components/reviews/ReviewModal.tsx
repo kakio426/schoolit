@@ -6,7 +6,7 @@ import React, { useState } from 'react';
 interface ReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSubmit: (data: { content: string; rating?: number; keywords: string[] }) => Promise<void>;
+    onSubmit: (data: { content: string; rating?: number; keywords: string[]; reMatchIntent: boolean }) => Promise<void>;
     receiverName: string;
     receiverRole: 'TEACHER' | 'BUSINESS' | 'SCHOOL';
 }
@@ -123,8 +123,8 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, receiverName, r
                                     type="button"
                                     onClick={() => setReMatchIntent(true)}
                                     className={`flex-1 py-3 rounded-xl font-bold transition-all border ${reMatchIntent
-                                            ? 'bg-white border-primary text-primary shadow-sm'
-                                            : 'bg-transparent border-transparent text-slate-400 opacity-50'
+                                        ? 'bg-white border-primary text-primary shadow-sm'
+                                        : 'bg-transparent border-transparent text-slate-400 opacity-50'
                                         }`}
                                 >
                                     👍 네, 적극 추천해요
@@ -133,8 +133,8 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, receiverName, r
                                     type="button"
                                     onClick={() => setReMatchIntent(false)}
                                     className={`flex-1 py-3 rounded-xl font-bold transition-all border ${!reMatchIntent
-                                            ? 'bg-white border-red-400 text-red-500 shadow-sm'
-                                            : 'bg-transparent border-transparent text-slate-400 opacity-50'
+                                        ? 'bg-white border-red-400 text-red-500 shadow-sm'
+                                        : 'bg-transparent border-transparent text-slate-400 opacity-50'
                                         }`}
                                 >
                                     🤔 잘 모르겠어요
