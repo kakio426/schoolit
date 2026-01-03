@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
 
-export default function DashboardLayout({ children }: { children: React.Node }) {
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
     const { unreadCount } = useSocket();
     const router = useRouter();
