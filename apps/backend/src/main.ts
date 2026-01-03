@@ -4,9 +4,24 @@ import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+
+  // CORS configuration
+  const corsOrigins = process.env.CORS_ORIGIN
+    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    : '*';
+
+  app.enableCors({
+    origin: corsOrigins,
+    credentials: true,
+  });
+
   app.setGlobalPrefix('api');
-  await app.listen(4000);
-  console.log('Application is running on: http://localhost:4000');
+
+  // Railway assigned PORT or fallback to 8080 (Matches your Networking setting)
+  const port = process.env.PORT || 8080;
+
+  // Must listen on 0.0.0.0 to accept external traffic in cloud environments
+  await app.listen(port, '0.0.0.0');
+  console.log(`Application is running on port: ${port}`);
 }
 bootstrap();
