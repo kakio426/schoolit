@@ -36,11 +36,11 @@ COPY --from=builder /app/apps/backend/prisma ./prisma
 # 프로덕션 의존성만 깔끔하게 새로 설치 (경로 문제 해결)
 RUN npm install --omit=dev
 
-# Prisma Client 생성 (설치된 node_modules에 맞춰서)
+# Prisma Client 및 Seed 생성
 RUN npx prisma generate
 
 # 포트 설정
-EXPOSE 4000
+EXPOSE 8080
 
-# 실행 명령어 (확인된 경로 dist/src/main.js 사용)
-CMD ["node", "dist/src/main"]
+# DB 마이그레이션과 시드 실행 후 앱 시작
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/src/main"]
