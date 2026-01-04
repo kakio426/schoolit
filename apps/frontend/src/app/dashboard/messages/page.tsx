@@ -1,23 +1,25 @@
 "use client";
+
 import React, { useEffect, useState, useRef } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
+import { api } from '@/lib/api';
+import { ChatRoom, ChatMessage, User } from '@/types';
+import { Role } from '@/lib/constants';
 
 export default function MessagesPage() {
-    const { token, user } = useAuth();
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-
-    const [rooms, setRooms] = useState<any[]>([]);
-    const [selectedRoom, setSelectedRoom] = useState<any>(null);
-    const [messages, setMessages] = useState<any[]>([]);
+    const { user } = useAuth();
+    const [rooms, setRooms] = useState<ChatRoom[]>([]);
+    const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
+    const [messages, setMessages] = useState<any[]>([]); // Messages with sender info
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { socket } = useSocket();
 
     useEffect(() => {
-        if (token) fetchRooms();
-    }, [token]);
+        fetchRooms();
+    }, []);
 
     useEffect(() => {
         if (selectedRoom) {
@@ -29,23 +31,25 @@ export default function MessagesPage() {
         if (!socket) return;
 
         const onNewMessage = (msg: any) => {
-            // Update messages if this is the active room
             if (selectedRoom && msg.chatRoomId === selectedRoom.id) {
                 setMessages((prev) => {
-                    // Avoid duplicates
                     if (prev.find(m => m.id === msg.id)) return prev;
                     return [...prev, msg];
                 });
             }
 
-            // Update rooms list last message
-            setRooms((prev) => prev.map(r =>
-                r.id === msg.chatRoomId ? { ...r, messages: [msg] } : r
-            ).sort((a, b) => {
-                if (a.id === msg.chatRoomId) return -1;
-                if (b.id === msg.chatRoomId) return 1;
-                return 0;
-            }));
+            setRooms((prev) => {
+                const updated = prev.map(r =>
+                    r.id === msg.chatRoomId ? { ...r, messages: [msg] } : r
+                );
+                // Sort by last message time if possible, or just move to top
+                const roomIndex = updated.findIndex(r => r.id === msg.chatRoomId);
+                if (roomIndex > -1) {
+                    const room = updated.splice(roomIndex, 1)[0];
+                    return [room, ...updated];
+                }
+                return updated;
+            });
         };
 
         socket.on('newMessage', onNewMessage);
@@ -60,13 +64,8 @@ export default function MessagesPage() {
 
     const fetchRooms = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/chat/rooms`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setRooms(data);
-            }
+            const data = await api.get<ChatRoom[]>('/chat/rooms');
+            setRooms(data);
         } catch (e) {
             console.error(e);
         }
@@ -74,13 +73,8 @@ export default function MessagesPage() {
 
     const fetchMessages = async (roomId: number) => {
         try {
-            const res = await fetch(`${API_URL}/api/chat/rooms/${roomId}/messages`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setMessages(data);
-            }
+            const data = await api.get<any[]>(`/chat/rooms/${roomId}/messages`);
+            setMessages(data);
         } catch (e) {
             console.error(e);
         }
@@ -89,61 +83,49 @@ export default function MessagesPage() {
     const sendMessage = async () => {
         if (!newMessage.trim() || !selectedRoom) return;
         try {
-            const res = await fetch(`${API_URL}/api/chat/rooms/${selectedRoom.id}/messages`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ content: newMessage }),
-            });
-            if (res.ok) {
-                setNewMessage('');
-                fetchMessages(selectedRoom.id);
-            }
+            await api.post(`/chat/rooms/${selectedRoom.id}/messages`, { content: newMessage });
+            setNewMessage('');
+            fetchMessages(selectedRoom.id);
         } catch (e) {
             console.error(e);
         }
     };
 
-    // Helper to get other user name
-    const getOtherUser = (room: any) => {
-        if (!room.users || room.users.length === 0) return { name: 'Unknown' };
-        // Since backend filtered out 'me', users[0] is the other person
+    const getOtherUserName = (room: ChatRoom) => {
+        if (!room.users || room.users.length === 0) return 'Unknown';
         const other = room.users[0];
-        // If School, show SchoolName?
-        if (other.role === 'SCHOOL' && other.schoolProfile) return other.schoolProfile.schoolName || other.name;
+        if (other.role === Role.SCHOOL && other.schoolProfile) return other.schoolProfile.schoolName || other.name;
         return other.name;
     };
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto h-[calc(100vh-140px)] flex flex-col md:flex-row gap-4">
+            <div className="max-w-6xl mx-auto h-[calc(100vh-140px)] flex flex-col md:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Room List */}
-                <div className="w-full md:w-1/3 bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
-                    <div className="p-4 border-b border-slate-100 bg-slate-50">
-                        <h2 className="font-bold text-slate-800">채팅 목록</h2>
+                <div className="w-full md:w-1/3 bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col shadow-sm">
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                        <h2 className="font-bold text-foreground">채팅 목록</h2>
                     </div>
                     <div className="flex-1 overflow-y-auto">
                         {rooms.length === 0 ? (
-                            <div className="p-8 text-center text-slate-400 text-sm">
+                            <div className="p-8 text-center text-foreground-muted text-sm">
                                 진행 중인 대화가 없습니다.
                             </div>
                         ) : (
                             rooms.map((room) => {
-                                const otherName = getOtherUser(room);
+                                const otherName = getOtherUserName(room);
                                 const lastMsg = room.messages?.[0]?.content || '대화를 시작하세요';
                                 const isActive = selectedRoom?.id === room.id;
                                 return (
                                     <div
                                         key={room.id}
                                         onClick={() => setSelectedRoom(room)}
-                                        className={`p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors ${isActive ? 'bg-primary/5 border-l-4 border-l-primary' : ''}`}
+                                        className={`p-6 border-b border-slate-50 dark:border-slate-800/50 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-all ${isActive ? 'bg-primary/5 dark:bg-primary/10 border-l-4 border-l-primary' : ''}`}
                                     >
-                                        <div className="font-bold text-slate-700 mb-1">{otherName}</div>
-                                        <div className="text-sm text-slate-500 line-clamp-1">{lastMsg}</div>
-                                        <div className="text-xs text-slate-300 mt-2 text-right">
-                                            {new Date(room.createdAt).toLocaleDateString()}
+                                        <div className="font-bold text-foreground mb-1">{otherName}</div>
+                                        <div className="text-sm text-foreground-muted line-clamp-1">{lastMsg}</div>
+                                        <div className="text-xs text-foreground-muted/50 mt-2 text-right">
+                                            {room.createdAt ? new Date(room.createdAt).toLocaleDateString() : '-'}
                                         </div>
                                     </div>
                                 );
@@ -153,20 +135,20 @@ export default function MessagesPage() {
                 </div>
 
                 {/* Chat Window */}
-                <div className="flex-1 bg-white rounded-2xl border border-slate-200 overflow-hidden flex flex-col">
+                <div className="flex-1 bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col shadow-sm">
                     {selectedRoom ? (
                         <>
-                            <div className="p-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-                                <h2 className="font-bold text-slate-800">{getOtherUser(selectedRoom)}</h2>
-                                <span className="text-xs text-slate-400">면접 진행 중</span>
+                            <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                                <h2 className="font-bold text-foreground text-lg">{getOtherUserName(selectedRoom)}</h2>
+                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-lg">채팅 중</span>
                             </div>
 
-                            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/20 dark:bg-slate-900/10">
                                 {messages.map((msg) => {
-                                    const isMe = msg.sender.id === user?.id;
+                                    const isMe = msg.sender?.id === user?.id;
                                     return (
                                         <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[70%] rounded-2xl px-4 py-2 text-sm ${isMe ? 'bg-primary text-white rounded-br-none' : 'bg-white border border-slate-200 text-slate-700 rounded-bl-none shadow-sm'}`}>
+                                            <div className={`max-w-[70%] rounded-2xl px-5 py-3 text-sm shadow-sm transition-all ${isMe ? 'bg-primary text-white rounded-br-none shadow-primary/20' : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground rounded-bl-none'}`}>
                                                 {msg.content}
                                             </div>
                                         </div>
@@ -175,19 +157,19 @@ export default function MessagesPage() {
                                 <div ref={messagesEndRef} />
                             </div>
 
-                            <div className="p-4 bg-white border-t border-slate-100">
-                                <div className="flex gap-2">
+                            <div className="p-6 bg-surface border-t border-slate-100 dark:border-slate-800">
+                                <div className="flex gap-3">
                                     <input
                                         type="text"
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
                                         placeholder="메시지를 입력하세요..."
-                                        className="flex-1 px-4 py-2 bg-slate-100 border-none rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20"
+                                        className="flex-1 px-5 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
                                     />
                                     <button
                                         onClick={sendMessage}
-                                        className="px-4 py-2 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-colors"
+                                        className="px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
                                     >
                                         전송
                                     </button>
@@ -195,9 +177,10 @@ export default function MessagesPage() {
                             </div>
                         </>
                     ) : (
-                        <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
-                            <span className="text-4xl mb-4">💬</span>
-                            <p>대화 상대를 선택해주세요.</p>
+                        <div className="flex-1 flex flex-col items-center justify-center text-foreground-muted">
+                            <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-4xl mb-6 shadow-inner">💬</div>
+                            <p className="font-medium">대화 상대를 선택해주세요.</p>
+                            <p className="text-sm mt-1">상담 및 면접을 위한 안전한 채팅 공간입니다.</p>
                         </div>
                     )}
                 </div>

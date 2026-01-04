@@ -4,22 +4,23 @@ import React, { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import JobSearchFilter from '@/components/jobs/JobSearchFilter';
+import { api } from '@/lib/api';
+import { TeacherProfile, JobListing } from '@/types';
 
 export default function TeacherSearchPage() {
-    const { token, user } = useAuth();
-    const [teachers, setTeachers] = useState<any[]>([]);
+    const { user } = useAuth();
+    const [teachers, setTeachers] = useState<any[]>([]); // Teacher info often comes with nested user
     const [isLoading, setIsLoading] = useState(false);
-    const [myJobs, setMyJobs] = useState<any[]>([]);
+    const [myJobs, setMyJobs] = useState<JobListing[]>([]);
     const [selectedTeacherId, setSelectedTeacherId] = useState<number | null>(null);
     const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
-    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
     // Initial load
     useEffect(() => {
-        if (token && user?.role === 'SCHOOL') {
+        if (user?.role === 'SCHOOL') {
             fetchTeachers({});
         }
-    }, [token, user]);
+    }, [user]);
 
     const fetchTeachers = async (filters: any) => {
         setIsLoading(true);
@@ -29,13 +30,8 @@ export default function TeacherSearchPage() {
             if (filters.region) params.append('region', filters.region);
             if (filters.keyword) params.append('keyword', filters.keyword);
 
-            const res = await fetch(`${API_URL}/api/matching/teachers?${params}`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setTeachers(data);
-            }
+            const data = await api.get<any[]>(`/matching/teachers?${params}`);
+            setTeachers(data);
         } catch (e) {
             console.error(e);
         } finally {
@@ -45,14 +41,9 @@ export default function TeacherSearchPage() {
 
     const fetchMyJobs = async () => {
         try {
-            const res = await fetch(`${API_URL}/api/jobs`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const allJobs = await res.json();
-                const mine = allJobs.filter((j: any) => j.schoolProfile?.userId === user?.id && j.active);
-                setMyJobs(mine);
-            }
+            const allJobs = await api.get<JobListing[]>(`/jobs`);
+            const mine = allJobs.filter((j) => j.schoolProfile?.userId === user?.id && j.active);
+            setMyJobs(mine);
         } catch (e) {
             console.error(e);
         }
@@ -67,24 +58,11 @@ export default function TeacherSearchPage() {
     const sendSuggestion = async (jobId: number) => {
         if (!selectedTeacherId) return;
         try {
-            const res = await fetch(`${API_URL}/api/applications/${jobId}/suggest`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ teacherUserId: selectedTeacherId })
-            });
-
-            if (res.ok) {
-                alert('제안을 보냈습니다!');
-                setIsSuggestModalOpen(false);
-            } else {
-                const err = await res.json();
-                alert(err.message);
-            }
-        } catch (e) {
-            alert('오류가 발생했습니다.');
+            await api.post(`/applications/${jobId}/suggest`, { teacherUserId: selectedTeacherId });
+            alert('제안을 보냈습니다!');
+            setIsSuggestModalOpen(false);
+        } catch (e: any) {
+            alert(e.message || '오류가 발생했습니다.');
         }
     };
 
@@ -117,7 +95,7 @@ export default function TeacherSearchPage() {
                                     <div>
                                         <h3 className="font-bold text-lg text-foreground">{t.user?.name} 선생님</h3>
                                         <div className="flex gap-1 mt-1">
-                                            {t.subjects.slice(0, 2).map((s: string) => <span key={s} className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-md">{s}</span>)}
+                                            {t.subjects?.slice(0, 2).map((s: string) => <span key={s} className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-md">{s}</span>)}
                                         </div>
                                     </div>
                                 </div>
@@ -154,7 +132,7 @@ export default function TeacherSearchPage() {
                                         className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary hover:bg-primary/5 transition-all group bg-surface hover:shadow-sm"
                                     >
                                         <div className="font-bold text-foreground group-hover:text-primary transition-colors">{job.title}</div>
-                                        <div className="text-xs text-foreground-muted mt-1">{new Date(job.createdAt).toLocaleDateString()}</div>
+                                        <div className="text-xs text-foreground-muted mt-1">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</div>
                                     </button>
                                 ))
                             )}

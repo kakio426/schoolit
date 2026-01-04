@@ -19,6 +19,18 @@ export interface BusinessPortfolio {
     images: string[];
 }
 
+export interface SchoolProfile {
+    id: number;
+    userId: number;
+    schoolName?: string;
+    address?: string;
+    website?: string;
+    description?: string;
+    isVerified: boolean;
+    createdAt: string;
+    updatedAt: string;
+}
+
 export interface BusinessProfile {
     id: number;
     userId: number;
@@ -45,10 +57,31 @@ export interface User {
     reviewStats?: {
         totalReviews: number;
         averageRating: number;
-        topKeywords: Array<{ keyword: string; count: number }>;
         reMatchRate: number;
         isVeteran: boolean;
+        topKeywords: { keyword: string; count: number }[];
     };
+    schoolProfile?: SchoolProfile;
+    createdAt?: string;
+    updatedAt?: string;
+}
+
+export interface ChatRoom {
+    id: number;
+    jobId: number;
+    users: User[];
+    messages: ChatMessage[];
+    jobListing?: JobListing;
+    createdAt: string;
+}
+
+export interface ChatMessage {
+    id: number;
+    chatRoomId: number;
+    senderId: number;
+    content: string;
+    read: boolean;
+    createdAt: string;
 }
 
 export interface JobListing {
@@ -58,7 +91,9 @@ export interface JobListing {
     subjects: string[];
     regions: string[];
     status: 'OPEN' | 'CLOSED';
+    active: boolean;
     createdAt: string;
+    schoolProfile?: SchoolProfile;
 }
 
 export interface JobApplication {

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from 'react';
+import { api } from '@/lib/api';
 
 interface FileUploadProps {
     onUploadSuccess: (data: any) => void;
@@ -16,7 +17,6 @@ export default function FileUpload({ onUploadSuccess, token }: FileUploadProps) 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const selectedFile = e.target.files[0];
-            // Basic client-side validation
             if (selectedFile.size > 5 * 1024 * 1024) {
                 setError('파일 크기는 5MB 이하여야 합니다.');
                 return;
@@ -27,7 +27,7 @@ export default function FileUpload({ onUploadSuccess, token }: FileUploadProps) 
     };
 
     const handleUpload = async () => {
-        if (!file || !token) return;
+        if (!file) return;
 
         setIsUploading(true);
         setError(null);
@@ -36,25 +36,12 @@ export default function FileUpload({ onUploadSuccess, token }: FileUploadProps) 
         formData.append('file', file);
 
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/certifications/upload`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-                body: formData,
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                onUploadSuccess(data);
-                setFile(null);
-                if (fileInputRef.current) fileInputRef.current.value = '';
-            } else {
-                const errorData = await response.json();
-                setError(errorData.message || '업로드에 실패했습니다.');
-            }
-        } catch (err) {
-            setError('네트워크 오류가 발생했습니다.');
+            const data = await api.upload('/users/certifications/upload', formData);
+            onUploadSuccess(data);
+            setFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        } catch (err: any) {
+            setError(err.message || '업로드에 실패했습니다.');
         } finally {
             setIsUploading(false);
         }

@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useState } from 'react';
+import { Role } from '@/lib/constants';
 
 interface ReviewModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (data: { content: string; rating?: number; keywords: string[]; reMatchIntent: boolean }) => Promise<void>;
     receiverName: string;
-    receiverRole: 'TEACHER' | 'BUSINESS' | 'SCHOOL';
+    receiverRole: Role;
 }
 
 const TEACHER_KEYWORDS = [
@@ -38,7 +39,7 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, receiverName, r
         try {
             await onSubmit({
                 content,
-                rating: receiverRole === 'TEACHER' ? undefined : rating,
+                rating: receiverRole === Role.TEACHER ? undefined : rating,
                 keywords: selectedKeywords,
                 reMatchIntent
             });
@@ -68,7 +69,7 @@ export default function ReviewModal({ isOpen, onClose, onSubmit, receiverName, r
                     </p>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        {receiverRole === 'TEACHER' ? (
+                        {receiverRole === Role.TEACHER ? (
                             <div>
                                 <label className="block text-sm font-semibold text-slate-700 mb-3">칭찬 키워드 (선택)</label>
                                 <div className="flex flex-wrap gap-2">

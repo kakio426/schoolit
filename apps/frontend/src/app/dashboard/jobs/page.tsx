@@ -6,47 +6,41 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import Link from 'next/link';
 import JobSearchFilter from '@/components/jobs/JobSearchFilter';
 import RecommendedJobs from '@/components/jobs/RecommendedJobs';
+import { api } from '@/lib/api';
+import { JobListing } from '@/types';
 
 export default function JobsPage() {
-    const { token, user } = useAuth();
-    const [jobs, setJobs] = useState<any[]>([]);
+    const { user } = useAuth();
+    const [jobs, setJobs] = useState<JobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
 
     useEffect(() => {
-        if (token && user) {
+        if (user) {
             fetchJobs();
         }
-    }, [token, user, searchFilters]);
+    }, [user, searchFilters]);
 
     const fetchJobs = async () => {
         setIsLoading(true);
         try {
-            const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-            let url = `${API_URL}/api/jobs`; // Default for Schools
+            let endpoint = '/jobs'; // Default for Schools
 
             if (user?.role === 'TEACHER') {
                 const params = new URLSearchParams();
                 if (searchFilters.subject) params.append('subject', searchFilters.subject);
                 if (searchFilters.region) params.append('region', searchFilters.region);
                 if (searchFilters.keyword) params.append('keyword', searchFilters.keyword);
-                url = `${API_URL}/api/matching/jobs?${params.toString()}`;
+                endpoint = `/matching/jobs?${params.toString()}`;
             }
 
-            const res = await fetch(url, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
+            const data = await api.get<JobListing[]>(endpoint);
 
-            if (res.ok) {
-                const data = await res.json();
-
-                if (user?.role === 'SCHOOL') {
-                    // Client-side filter for "My Jobs"
-                    const myJobs = data.filter((job: any) => job.schoolProfile.userId === user?.id);
-                    setJobs(myJobs);
-                } else {
-                    setJobs(data);
-                }
+            if (user?.role === 'SCHOOL') {
+                const myJobs = data.filter((job) => job.schoolProfile?.userId === user?.id);
+                setJobs(myJobs);
+            } else {
+                setJobs(data);
             }
         } catch (err) {
             console.error(err);
@@ -57,17 +51,8 @@ export default function JobsPage() {
 
     const toggleStatus = async (jobId: number, currentStatus: boolean) => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/jobs/${jobId}`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({ active: !currentStatus }),
-            });
-            if (res.ok) {
-                fetchJobs(); // Refresh
-            }
+            await api.patch(`/jobs/${jobId}`, { active: !currentStatus });
+            fetchJobs();
         } catch (e) {
             console.error(e);
         }
@@ -77,7 +62,6 @@ export default function JobsPage() {
         setSearchFilters(filters);
     };
 
-    // VIEW: School (Manage My Jobs)
     if (user?.role === 'SCHOOL') {
         return (
             <DashboardLayout>
@@ -115,10 +99,10 @@ export default function JobsPage() {
                                         </div>
                                         <p className="text-foreground-muted mt-1 line-clamp-1">{job.description}</p>
                                         <div className="mt-3 flex gap-2">
-                                            {job.subjects.map((sub: string) => (
+                                            {job.subjects?.map((sub: string) => (
                                                 <span key={sub} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{sub}</span>
                                             ))}
-                                            {job.regions.map((reg: string) => (
+                                            {job.regions?.map((reg: string) => (
                                                 <span key={reg} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{reg}</span>
                                             ))}
                                         </div>
@@ -149,7 +133,6 @@ export default function JobsPage() {
         );
     }
 
-    // VIEW: Teacher (Search Jobs)
     return (
         <DashboardLayout>
             <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -180,12 +163,12 @@ export default function JobsPage() {
                                                 {job.schoolProfile?.schoolName}
                                             </span>
                                             <span className="text-foreground-muted text-xs">•</span>
-                                            <span className="text-foreground-muted text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-foreground-muted text-xs">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</span>
                                         </div>
                                         <h3 className="text-lg font-bold text-foreground mb-2">{job.title}</h3>
                                         <div className="flex gap-2">
-                                            {job.subjects.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{s}</span>)}
-                                            {job.regions.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{r}</span>)}
+                                            {job.subjects?.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{s}</span>)}
+                                            {job.regions?.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{r}</span>)}
                                         </div>
                                     </div>
                                     <div className="text-primary font-bold text-sm">

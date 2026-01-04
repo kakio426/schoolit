@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
+import { User } from '@/types';
+import { Role } from '@/lib/constants';
 
-interface UserTableProps {
-}
-
-export const UserTable: React.FC<UserTableProps> = () => {
+export const UserTable: React.FC = () => {
     const { token } = useAuth();
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     const fetchUsers = async () => {
-        if (!token) return;
         setIsLoading(true);
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/admin/users?page=${page}&limit=10&search=${search}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
-            const data = await res.json();
+            const data = await api.get<{ data: User[], total: number }>(`/admin/users?page=${page}&limit=10&search=${search}`);
             setUsers(data.data);
             setTotalPages(Math.ceil(data.total / 10));
         } catch (e) {
@@ -32,7 +28,7 @@ export const UserTable: React.FC<UserTableProps> = () => {
     useEffect(() => {
         const timeout = setTimeout(fetchUsers, 300);
         return () => clearTimeout(timeout);
-    }, [page, search, token]);
+    }, [page, search]);
 
     return (
         <div className="space-y-4">
@@ -67,15 +63,15 @@ export const UserTable: React.FC<UserTableProps> = () => {
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${user.role === 'TEACHER' ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
-                                                user.role === 'SCHOOL' ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' :
-                                                    'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
+                                        <span className={`px-2.5 py-1 rounded-lg text-xs font-bold ${user.role === Role.TEACHER ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' :
+                                            user.role === Role.SCHOOL ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400' :
+                                                'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                                             }`}>
                                             {user.role}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 text-foreground-muted">
-                                        {new Date(user.createdAt).toLocaleDateString()}
+                                        {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                                     </td>
                                     <td className="px-6 py-4 text-right">
                                         <button className="text-foreground-muted hover:text-primary font-medium transition-colors">

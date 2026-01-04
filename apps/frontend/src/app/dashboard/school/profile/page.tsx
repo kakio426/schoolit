@@ -3,9 +3,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import { api } from '@/lib/api';
+import { SchoolProfile } from '@/types';
 
 export default function SchoolProfilePage() {
-    const { token, user } = useAuth();
+    const { user, refreshProfile } = useAuth();
     const [profile, setProfile] = useState({
         schoolName: '',
         address: '',
@@ -17,27 +19,21 @@ export default function SchoolProfilePage() {
     const [message, setMessage] = useState('');
 
     useEffect(() => {
-        if (token && user?.role === 'SCHOOL') {
+        if (user?.role === 'SCHOOL') {
             fetchProfile();
         }
-    }, [token, user]);
+    }, [user]);
 
     const fetchProfile = async () => {
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/school/profile`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (res.ok) {
-                const data = await res.json();
-                // If profile exists, merge. If empty object (new), defaults used.
-                if (data.userId) {
-                    setProfile({
-                        schoolName: data.schoolName || '',
-                        address: data.address || '',
-                        website: data.website || '',
-                        description: data.description || '',
-                    });
-                }
+            const data = await api.get<SchoolProfile>(`/users/school/profile`);
+            if (data && data.userId) {
+                setProfile({
+                    schoolName: data.schoolName || '',
+                    address: data.address || '',
+                    website: data.website || '',
+                    description: data.description || '',
+                });
             }
         } catch (err) {
             console.error(err);
@@ -57,23 +53,12 @@ export default function SchoolProfilePage() {
         setMessage('');
 
         try {
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/school/profile`, {
-                method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify(profile),
-            });
-
-            if (res.ok) {
-                setMessage('프로필이 저장되었습니다. ✅');
-            } else {
-                setMessage('저장에 실패했습니다. ❌');
-            }
-        } catch (err) {
+            await api.patch('/users/school/profile', profile);
+            setMessage('프로필이 저장되었습니다. ✅');
+            refreshProfile();
+        } catch (err: any) {
             console.error(err);
-            setMessage('오류가 발생했습니다.');
+            setMessage(err.message || '저장에 실패했습니다. ❌');
         } finally {
             setIsSaving(false);
         }
@@ -93,62 +78,62 @@ export default function SchoolProfilePage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-2xl mx-auto">
-                <h1 className="text-2xl font-bold text-slate-800 mb-6">🏫 학교 프로필 관리</h1>
+            <div className="max-w-2xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <h1 className="text-2xl font-bold text-foreground mb-6">🏫 학교 프로필 관리</h1>
 
-                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
+                <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">학교/기관명</label>
+                            <label className="block text-sm font-semibold text-foreground mb-2">학교/기관명</label>
                             <input
                                 type="text"
                                 name="schoolName"
                                 value={profile.schoolName}
                                 onChange={handleChange}
                                 placeholder="예: 서울고등학교"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-foreground"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">주소</label>
+                            <label className="block text-sm font-semibold text-foreground mb-2">주소</label>
                             <input
                                 type="text"
                                 name="address"
                                 value={profile.address}
                                 onChange={handleChange}
                                 placeholder="전체 주소를 입력해주세요"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-foreground"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">웹사이트</label>
+                            <label className="block text-sm font-semibold text-foreground mb-2">웹사이트</label>
                             <input
                                 type="url"
                                 name="website"
                                 value={profile.website}
                                 onChange={handleChange}
                                 placeholder="https://school.example.com"
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none"
+                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-foreground"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">소개글</label>
+                            <label className="block text-sm font-semibold text-foreground mb-2">소개글</label>
                             <textarea
                                 name="description"
                                 value={profile.description}
                                 onChange={handleChange}
                                 placeholder="학교의 비전이나 소개를 간단히 입력해주세요."
                                 rows={4}
-                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none"
+                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none resize-none text-foreground"
                             />
                         </div>
 
                         {message && (
-                            <div className={`p-4 rounded-xl text-center font-bold ${message.includes('✅') ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-500'}`}>
+                            <div className={`p-4 rounded-xl text-center font-bold ${message.includes('✅') ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400' : 'bg-red-50 text-red-500 dark:bg-red-900/20 dark:text-red-400'}`}>
                                 {message}
                             </div>
                         )}

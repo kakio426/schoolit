@@ -5,6 +5,8 @@ import { useState } from "react";
 import { SocialButton } from "@/components/ui/SocialButton";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRouter } from "next/navigation";
+import { api } from "@/lib/api";
+import { API_BASE_URL } from "@/lib/constants";
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -16,8 +18,7 @@ export default function LoginPage() {
     const [error, setError] = useState("");
 
     const handleSocialLogin = (provider: 'kakao' | 'naver') => {
-        const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-        window.location.href = `${backendUrl}/api/auth/${provider}`;
+        window.location.href = `${API_BASE_URL}/api/auth/${provider}`;
     };
 
     const handleEmailLogin = async (e: React.FormEvent) => {
@@ -26,23 +27,11 @@ export default function LoginPage() {
         setError("");
 
         try {
-            const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
-            const response = await fetch(`${backendUrl}/api/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password }),
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                await login(data.accessToken);
-                router.push("/dashboard");
-            } else {
-                const errData = await response.json();
-                setError(errData.message || "로그인 정보를 확인해주세요.");
-            }
-        } catch (err) {
-            setError("서버와 통신 중 오류가 발생했습니다.");
+            const data = await api.post<{ accessToken: string }>('/auth/login', { email, password });
+            await login(data.accessToken);
+            router.push("/dashboard");
+        } catch (err: any) {
+            setError(err.message || "로그인 정보를 확인해주세요.");
         } finally {
             setIsEmailLoading(false);
         }
