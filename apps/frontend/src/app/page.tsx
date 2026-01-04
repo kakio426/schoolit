@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Search, School, UserCheck, ShieldCheck } from "lucide-react";
+import TutorialSection from "@/components/landing/TutorialSection";
 
 export default function LandingPage() {
   return (
@@ -57,7 +58,7 @@ export default function LandingPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
             <Link
-              href="/browse"
+              href="/dashboard/teachers"
               className="group w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
             >
               <Search className="w-5 h-5" />
@@ -73,6 +74,8 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      <TutorialSection />
 
       {/* Feature Grid */}
       <section className="py-24 px-6 bg-slate-800/30">
