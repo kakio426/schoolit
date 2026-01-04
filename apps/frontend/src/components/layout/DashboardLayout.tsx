@@ -214,6 +214,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                                 ))
                                             )}
                                         </div>
+
+                                        <div className="p-3 bg-surface border-t border-slate-100 dark:border-slate-700 text-center">
+                                            <button
+                                                onClick={() => {
+                                                    router.push('/dashboard/notifications');
+                                                    setShowNotifications(false);
+                                                }}
+                                                className="text-sm font-bold text-primary hover:underline"
+                                            >
+                                                모든 알림 보기 →
+                                            </button>
+                                        </div>
                                     </div>
                                 </>
                             )}
@@ -229,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </main>
                 <FooterDisclaimer />
                 <FeedbackButton />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }
