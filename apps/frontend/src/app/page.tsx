@@ -57,21 +57,18 @@ export default function LandingPage() {
             복잡한 채용과 매칭 프로세스를 School It에서 간편하게 해결하세요.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <Link
-              href="/dashboard/teachers"
-              className="group w-full sm:w-auto px-8 py-4 bg-primary text-white font-bold rounded-2xl hover:bg-primary/90 transition-all shadow-lg shadow-primary/25 flex items-center justify-center gap-2"
-            >
-              <Search className="w-5 h-5" />
-              선생님 둘러보기
-            </Link>
+          <div className="flex flex-col items-center justify-center gap-4 pt-8">
             <Link
               href="/auth/login"
-              className="group w-full sm:w-auto px-8 py-4 bg-slate-800 text-white font-bold rounded-2xl border border-white/10 hover:bg-slate-700 transition-all flex items-center justify-center gap-2"
+              className="group relative px-12 py-5 bg-primary text-white font-bold rounded-full overflow-hidden hover:scale-105 transition-all shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center gap-3 text-lg"
             >
-              학교 등록하기
+              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+              무료로 시작하기
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
+            <p className="text-slate-500 text-xs font-medium tracking-wide">
+              * 3초 만에 완료되는 간편 가입
+            </p>
           </div>
         </div>
       </section>

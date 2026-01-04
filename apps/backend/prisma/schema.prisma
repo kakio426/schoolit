@@ -32,6 +32,7 @@ model User {
   businessProfile BusinessProfile?
 
   notifications Notification[]
+  feedbacks     Feedback[]
   notificationSettings Json?  @map("notification_settings") // { newMatch: boolean, messages: boolean, marketing: boolean }
 
   @@unique([provider, snsId])
@@ -243,6 +244,22 @@ model BusinessProfile {
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("business_profiles")
+}
+
+model Feedback {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id") // Nullable for anonymous or future extensions
+  user      User?    @relation(fields: [userId], references: [id])
+  
+  category  String   // 'PROPOSAL', 'BUG', 'PRAISE', 'INQUIRY'
+  content   String
+  reply     String?  // Admin's reply
+  status    String   @default("PENDING") // 'PENDING', 'ANSWERED'
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("feedbacks")
 }
 
 model BusinessPortfolio {

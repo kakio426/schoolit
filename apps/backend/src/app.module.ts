@@ -16,6 +16,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 
 import { BusinessProfileModule } from './business-profile/business-profile.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { FeedbackModule } from './feedback/feedback.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     ChatModule,
     ReviewsModule,
     NotificationsModule,
+    FeedbackModule,
   ],
   controllers: [],
   providers: [],

@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
+import FeedbackButton from '../ui/FeedbackButton';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
@@ -209,6 +210,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     {children}
                 </main>
                 <FooterDisclaimer />
+                <FeedbackButton />
             </div>
         </div>
     );
