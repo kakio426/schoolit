@@ -8,7 +8,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   async createJob(userId: number, data: CreateJobDto) {
     const schoolProfile = await this.userService.getSchoolProfile(userId);
@@ -25,11 +25,25 @@ export class JobsService {
     });
   }
 
-  async findAll() {
+  async findAll(filters?: { jobType?: string; subjects?: string[]; regions?: string[] }) {
+    const where: any = { active: true };
+
+    if (filters?.jobType) {
+      where.jobType = filters.jobType;
+    }
+
+    if (filters?.subjects && filters.subjects.length > 0) {
+      where.subjects = { hasSome: filters.subjects };
+    }
+
+    if (filters?.regions && filters.regions.length > 0) {
+      where.regions = { hasSome: filters.regions };
+    }
+
     return this.prisma.jobListing.findMany({
-      where: { active: true },
+      where,
       include: {
-        schoolProfile: true, // Include school info
+        schoolProfile: true,
       },
       orderBy: { createdAt: 'desc' },
     });

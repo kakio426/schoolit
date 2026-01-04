@@ -6,17 +6,29 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import WarningModal from '@/components/ui/WarningModal';
+import { JobTypeSelector, JobType } from '@/components/jobs/JobTypeSelector';
 
 export default function NewJobPage() {
     const { user } = useAuth();
     const router = useRouter();
 
+    const [jobType, setJobType] = useState<JobType>(JobType.TEACHER_HIRING);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         subjects: '',
         regions: '',
-        budget: '', // Added budget field
+        budget: '',
+        // Teacher-specific
+        contractPeriod: '',
+        gradeLevel: [] as string[],
+        teachingHours: '',
+        // Event-specific
+        eventType: '',
+        eventDuration: '',
+        participantCount: '',
+        equipmentProvided: false,
+        certifications: [] as string[],
     });
     const [isSaving, setIsSaving] = useState(false);
     const [showBudgetWarning, setShowBudgetWarning] = useState(false);
@@ -38,13 +50,30 @@ export default function NewJobPage() {
         setIsSaving(true);
 
         try {
-            const payload = {
+            const payload: any = {
+                jobType,
                 title: formData.title,
                 description: formData.description,
                 subjects: formData.subjects.split(',').map(s => s.trim()).filter(Boolean),
                 regions: formData.regions.split(',').map(s => s.trim()).filter(Boolean),
                 budget: parseInt(formData.budget.replace(/,/g, ''), 10) || 0,
             };
+
+            // Add teacher-specific fields
+            if (jobType === JobType.TEACHER_HIRING) {
+                payload.contractPeriod = formData.contractPeriod;
+                payload.gradeLevel = formData.gradeLevel;
+                payload.teachingHours = parseInt(formData.teachingHours, 10) || undefined;
+            }
+
+            // Add event-specific fields
+            if (jobType === JobType.EVENT_VENDOR) {
+                payload.eventType = formData.eventType;
+                payload.eventDuration = formData.eventDuration;
+                payload.participantCount = formData.participantCount;
+                payload.equipmentProvided = formData.equipmentProvided;
+                payload.certifications = formData.certifications;
+            }
 
             await api.post('/jobs', payload);
             alert('공고가 등록되었습니다!');
@@ -77,6 +106,9 @@ export default function NewJobPage() {
 
                 <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-8">
                     <form onSubmit={handleSubmit} className="space-y-6">
+                        {/* Job Type Selector */}
+                        <JobTypeSelector value={jobType} onChange={setJobType} />
+
                         <div>
                             <label className="block text-sm font-semibold text-foreground mb-2">공고 제목</label>
                             <input
@@ -84,7 +116,7 @@ export default function NewJobPage() {
                                 value={formData.title}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
-                                placeholder="예: 2024년 1학기 수학 기간제 교사 모집"
+                                placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제 교사 모집" : "예: 2024 진로체험의 날 행사 업체 모집"}
                                 required
                             />
                         </div>
@@ -141,6 +173,144 @@ export default function NewJobPage() {
                                 />
                             </div>
                         </div>
+
+                        {/* Teacher-specific fields */}
+                        {jobType === JobType.TEACHER_HIRING && (
+                            <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <h3 className="font-bold text-foreground">기간제 교사 상세 정보</h3>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">계약 기간</label>
+                                    <input
+                                        name="contractPeriod"
+                                        value={formData.contractPeriod}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        placeholder="예: 2024.03.01 ~ 2024.08.31"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">학년 (복수 선택 가능)</label>
+                                    <div className="flex gap-2">
+                                        {['초등', '중등', '고등'].map(level => (
+                                            <button
+                                                key={level}
+                                                type="button"
+                                                onClick={() => {
+                                                    const newLevels = formData.gradeLevel.includes(level)
+                                                        ? formData.gradeLevel.filter(l => l !== level)
+                                                        : [...formData.gradeLevel, level];
+                                                    setFormData({ ...formData, gradeLevel: newLevels });
+                                                }}
+                                                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${formData.gradeLevel.includes(level)
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                    }`}
+                                            >
+                                                {level}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">주당 수업 시수</label>
+                                    <input
+                                        type="number"
+                                        name="teachingHours"
+                                        value={formData.teachingHours}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        placeholder="예: 20"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Event-specific fields */}
+                        {jobType === JobType.EVENT_VENDOR && (
+                            <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-200 dark:border-purple-800">
+                                <h3 className="font-bold text-foreground">행사 상세 정보</h3>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">행사 종류</label>
+                                    <select
+                                        name="eventType"
+                                        value={formData.eventType}
+                                        onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                    >
+                                        <option value="">선택하세요</option>
+                                        <option value="진로체험">진로체험</option>
+                                        <option value="스포츠데이">스포츠데이</option>
+                                        <option value="찾아오는 체험학습">찾아오는 체험학습</option>
+                                        <option value="문화예술 공연">문화예술 공연</option>
+                                        <option value="과학 체험">과학 체험</option>
+                                        <option value="기타">기타</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">행사 기간</label>
+                                    <input
+                                        name="eventDuration"
+                                        value={formData.eventDuration}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        placeholder="예: 4교시, 1일, 2일"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">참가 인원</label>
+                                    <input
+                                        name="participantCount"
+                                        value={formData.participantCount}
+                                        onChange={handleChange}
+                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        placeholder="예: 30-50명, 100명 이상"
+                                    />
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        id="equipmentProvided"
+                                        checked={formData.equipmentProvided}
+                                        onChange={(e) => setFormData({ ...formData, equipmentProvided: e.target.checked })}
+                                        className="w-5 h-5 rounded border-slate-300"
+                                    />
+                                    <label htmlFor="equipmentProvided" className="text-sm font-semibold text-foreground">
+                                        장비/교구 제공 가능
+                                    </label>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-foreground mb-2">보유 인증 (선택)</label>
+                                    <div className="flex flex-wrap gap-2">
+                                        {['교육부 인증', '청소년수련활동 인증'].map(cert => (
+                                            <button
+                                                key={cert}
+                                                type="button"
+                                                onClick={() => {
+                                                    const newCerts = formData.certifications.includes(cert)
+                                                        ? formData.certifications.filter(c => c !== cert)
+                                                        : [...formData.certifications, cert];
+                                                    setFormData({ ...formData, certifications: newCerts });
+                                                }}
+                                                className={`px-3 py-2 rounded-lg font-bold text-xs transition-all ${formData.certifications.includes(cert)
+                                                        ? 'bg-primary text-white'
+                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                    }`}
+                                            >
+                                                {cert}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         <div className="pt-4">
                             <button

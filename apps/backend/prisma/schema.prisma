@@ -71,6 +71,11 @@ model SchoolProfile {
   @@map("school_profiles")
 }
 
+enum JobType {
+  TEACHER_HIRING
+  EVENT_VENDOR
+}
+
 enum JobStatus {
   OPEN
   CLOSED
@@ -80,6 +85,8 @@ model JobListing {
   id              Int              @id @default(autoincrement())
   schoolProfileId Int              @map("school_profile_id")
   schoolProfile   SchoolProfile    @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
+  
+  jobType         JobType          @default(TEACHER_HIRING) @map("job_type")
   title           String
   description     String
   subjects        String[]
@@ -87,6 +94,19 @@ model JobListing {
   budget          Int?             @default(0)
   active          Boolean          @default(true)
   status          JobStatus        @default(OPEN)
+  
+  // Teacher-specific fields
+  contractPeriod  String?          @map("contract_period")  // "2024.03.01 ~ 2024.08.31"
+  gradeLevel      String[]         @default([]) @map("grade_level")      // ["초등", "중등", "고등"]
+  teachingHours   Int?             @map("teaching_hours")   // 주당 수업 시수
+  
+  // Event-specific fields
+  eventType       String?          @map("event_type")        // "진로체험", "스포츠데이", "찾아오는 체험학습"
+  eventDuration   String?          @map("event_duration")    // "4교시", "1일", "2일"
+  participantCount String?         @map("participant_count") // "30-50명", "100명 이상"
+  equipmentProvided Boolean?       @default(false) @map("equipment_provided")
+  certifications  String[]         @default([])              // ["교육부 인증", "청소년수련활동 인증"]
+  
   applications    JobApplication[]
   
   createdAt       DateTime         @default(now()) @map("created_at")
