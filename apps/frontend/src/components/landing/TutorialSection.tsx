@@ -64,8 +64,8 @@ export default function TutorialSection() {
                                 key={role.id}
                                 onClick={() => handleRoleChange(role)}
                                 className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap relative ${activeRole.id === role.id
-                                        ? 'text-white'
-                                        : 'text-slate-400 hover:text-white'
+                                    ? 'text-white'
+                                    : 'text-slate-400 hover:text-white'
                                     }`}
                             >
                                 {activeRole.id === role.id && (
@@ -91,15 +91,15 @@ export default function TutorialSection() {
                             <div
                                 key={step.id}
                                 className={`relative p-6 rounded-3xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
-                                        ? 'bg-slate-800 border-primary/50 shadow-xl shadow-primary/5 scale-100'
-                                        : 'bg-transparent border-transparent hover:bg-slate-800/30 scale-95 opacity-60'
+                                    ? 'bg-slate-800 border-primary/50 shadow-xl shadow-primary/5 scale-100'
+                                    : 'bg-transparent border-transparent hover:bg-slate-800/30 scale-95 opacity-60'
                                     }`}
                                 onClick={() => setActiveStepIndex(index)}
                             >
                                 <div className="flex items-start gap-4">
                                     <div className={`p-3 rounded-2xl ${index === activeStepIndex
-                                            ? 'bg-primary text-white'
-                                            : 'bg-slate-700 text-slate-400'
+                                        ? 'bg-primary text-white'
+                                        : 'bg-slate-700 text-slate-400'
                                         }`}>
                                         <step.icon size={24} />
                                     </div>
@@ -200,8 +200,8 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                             </div>
                             <div className="w-px bg-slate-100 dark:bg-slate-800"></div>
                             <div className="text-center">
-                                <div className="text-xs text-slate-400">평점</div>
-                                <div className="font-bold text-amber-500">4.9</div>
+                                <div className="text-xs text-slate-400">지역</div>
+                                <div className="font-bold text-slate-800 dark:text-white">서울</div>
                             </div>
                         </div>
                         <div className="w-full py-2.5 border border-primary text-primary rounded-xl font-bold text-sm">프로필 보기</div>
