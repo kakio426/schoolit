@@ -97,6 +97,9 @@ export default function AdminPage() {
                         <AdminStatsCard title="활성 공고" value={stats?.totalJobs || 0} icon="📢" description="실시간 채용 중" />
                         <AdminStatsCard title="등록된 학교" value={stats?.totalSchools || 0} icon="🏫" description="활동 중인 기관" />
                         <AdminStatsCard title="선생님 풀" value={stats?.totalTeachers || 0} icon="🎓" description="검색 가능한 인재" />
+                        <a href="/dashboard/admin/feedback" className="block transform transition-transform hover:scale-105 active:scale-95">
+                            <AdminStatsCard title="피드백 센터" value="GO" icon="📢" description="접수된 의견 확인하기" />
+                        </a>
                     </div>
                 )}
 

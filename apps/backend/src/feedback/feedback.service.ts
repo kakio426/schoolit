@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { DiscordService } from './discord.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 @Injectable()
 export class FeedbackService {
     constructor(
         private prisma: PrismaService,
-        private discord: DiscordService
+        private discord: DiscordService,
+        private notifications: NotificationsService
     ) { }
 
     async create(data: { userId?: number; category: string; content: string }) {
@@ -45,7 +47,16 @@ export class FeedbackService {
             }
         });
 
-        // TODO: Send Notification to User (Phase 4)
+        // Send Notification to User if userId exists
+        if (feedback.userId) {
+            await this.notifications.createNotification(
+                feedback.userId,
+                'SYSTEM', // Or 'FEEDBACK_REPLY' if enum supports it, but SYSTEM is safe
+                '관리자 답변 등록',
+                `보내주신 의견(${feedback.category})에 대한 답변이 등록되었습니다.`,
+                '/dashboard/profile' // Link to where they can see it? Or maybe just alert logic. For now profile.
+            );
+        }
 
         return feedback;
     }

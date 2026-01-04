@@ -67,7 +67,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     navItems.push({ label: '설정', href: '/dashboard/settings', icon: '⚙️' });
 
     if (user?.role === 'ADMIN') {
-        navItems.push({ label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' });
+        navItems.push(
+            { label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' },
+            { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' }
+        );
     }
 
     const SidebarContent = () => (
