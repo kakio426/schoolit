@@ -49,13 +49,13 @@ export class FeedbackService {
 
         // Send Notification to User if userId exists
         if (feedback.userId) {
-            await this.notifications.createNotification(
-                feedback.userId,
-                'SYSTEM', // Or 'FEEDBACK_REPLY' if enum supports it, but SYSTEM is safe
-                '관리자 답변 등록',
-                `보내주신 의견(${feedback.category})에 대한 답변이 등록되었습니다.`,
-                '/dashboard/profile' // Link to where they can see it? Or maybe just alert logic. For now profile.
-            );
+            await this.notifications.create({
+                userId: feedback.userId,
+                type: 'SYSTEM',
+                title: '관리자 답변 등록',
+                content: `보내주신 의견(${feedback.category})에 대한 답변이 등록되었습니다.`,
+                link: '/dashboard/profile'
+            });
         }
 
         return feedback;
