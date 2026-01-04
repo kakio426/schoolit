@@ -1,3 +1,5 @@
+import { LEGAL_TEXT } from '@/lib/constants';
+
 export default function PrivacyPage() {
     return (
         <div className="min-h-screen bg-white py-16 px-6 md:px-12 lg:px-24 text-slate-900">
@@ -65,7 +67,7 @@ export default function PrivacyPage() {
                         <div className="bg-slate-50 p-4 rounded-lg">
                             <p>성명: 유병주</p>
                             <p>직책: 대표 (CPO)</p>
-                            <p>연락처: kakio@naver.com</p>
+                            <p>연락처: {LEGAL_TEXT.REPRESENTATIVE_EMAIL}</p>
                         </div>
                     </section>
 

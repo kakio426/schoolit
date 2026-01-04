@@ -7,6 +7,6 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [PrismaModule, UsersModule],
   controllers: [MatchingController],
-  providers: [MatchingService]
+  providers: [MatchingService],
 })
-export class MatchingModule { }
+export class MatchingModule {}

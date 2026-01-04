@@ -18,14 +18,8 @@ import { NaverStrategy } from './strategies/naver.strategy';
       signOptions: { expiresIn: '60m' },
     }),
   ],
-  providers: [
-    AuthService,
-    LocalStrategy,
-    JwtStrategy,
-    KakaoStrategy,
-    NaverStrategy,
-  ],
+  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy],
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
 })
-export class AuthModule { }
+export class AuthModule {}

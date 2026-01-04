@@ -1,4 +1,13 @@
-import { Controller, Patch, Param, Body, UseGuards, Get, ParseIntPipe, Query } from '@nestjs/common';
+import {
+  Controller,
+  Patch,
+  Param,
+  Body,
+  UseGuards,
+  Get,
+  ParseIntPipe,
+  Query,
+} from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
@@ -9,31 +18,28 @@ import { Role, CertStatus } from '@prisma/client';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-    constructor(private adminService: AdminService) { }
+  constructor(private adminService: AdminService) {}
 
-    @Get('certifications/pending')
-    async getPendingCertifications() {
-        return this.adminService.getPendingCertifications();
-    }
+  @Get('certifications/pending')
+  async getPendingCertifications() {
+    return this.adminService.getPendingCertifications();
+  }
 
-    @Patch('certifications/:id/status')
-    async updateStatus(
-        @Param('id', ParseIntPipe) id: number,
-        @Body('status') status: CertStatus,
-    ) {
-        return this.adminService.updateCertificationStatus(id, status);
-    }
-    @Get('stats')
-    async getStats() {
-        return this.adminService.getSystemStats();
-    }
+  @Patch('certifications/:id/status')
+  async updateStatus(@Param('id', ParseIntPipe) id: number, @Body('status') status: CertStatus) {
+    return this.adminService.updateCertificationStatus(id, status);
+  }
+  @Get('stats')
+  async getStats() {
+    return this.adminService.getSystemStats();
+  }
 
-    @Get('users')
-    async getUsers(
-        @Query('page') page: string = '1',
-        @Query('limit') limit: string = '10',
-        @Query('search') search: string = ''
-    ) {
-        return this.adminService.getUsers(+page, +limit, search);
-    }
+  @Get('users')
+  async getUsers(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+    @Query('search') search: string = '',
+  ) {
+    return this.adminService.getUsers(+page, +limit, search);
+  }
 }

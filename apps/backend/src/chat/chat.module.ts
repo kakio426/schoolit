@@ -6,9 +6,9 @@ import { ChatGateway } from './chat.gateway';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
-    imports: [PrismaModule, AuthModule],
-    controllers: [ChatController],
-    providers: [ChatService, ChatGateway],
-    exports: [ChatService, ChatGateway],
+  imports: [PrismaModule, AuthModule],
+  controllers: [ChatController],
+  providers: [ChatService, ChatGateway],
+  exports: [ChatService, ChatGateway],
 })
-export class ChatModule { }
+export class ChatModule {}

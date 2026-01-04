@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { api } from '@/lib/api';
-import { Feedback } from '@/types'; // Need to define this or extend
+// Feedback import removed as it was not used and not exported from @/types
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, MessageSquare, Reply, CheckCircle2, AlertCircle } from 'lucide-react';
 
@@ -36,8 +36,8 @@ export default function AdminFeedbackPage() {
 
     const fetchFeedbacks = async () => {
         try {
-            const res = await api.get('/feedback');
-            setFeedbacks(res.data);
+            const res = await api.get<FeedbackItem[]>('/feedback');
+            setFeedbacks(res);
         } catch (error) {
             console.error('Failed to fetch feedbacks', error);
         } finally {

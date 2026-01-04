@@ -60,27 +60,28 @@ describe('UserService', () => {
     });
   });
 
-
   describe('getProfileWithStats', () => {
     it('should return profile with aggregated review stats (Test 14.3.1)', async () => {
       const userId = 10;
       const mockReviews = [
         { rating: 5, keywords: [{ keyword: 'Punctual' }] },
-        { rating: 4, keywords: [{ keyword: 'Punctual' }, { keyword: 'Friendly' }] }
+        { rating: 4, keywords: [{ keyword: 'Punctual' }, { keyword: 'Friendly' }] },
       ];
 
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({
         id: userId,
         role: 'TEACHER',
         reviewsReceived: mockReviews,
-        teacherProfile: {}
+        teacherProfile: {},
       } as any);
 
       const result = await service.getProfileWithStats(userId);
 
       expect(result.reviewStats).toBeDefined();
       expect(result.reviewStats.averageRating).toBe(4.5);
-      expect(result.reviewStats.topKeywords).toContainEqual(expect.objectContaining({ keyword: 'Punctual', count: 2 }));
+      expect(result.reviewStats.topKeywords).toContainEqual(
+        expect.objectContaining({ keyword: 'Punctual', count: 2 }),
+      );
     });
   });
 
@@ -106,15 +107,17 @@ describe('UserService', () => {
       const result = await service.findOrCreateSocialUser(email, name, provider, snsId);
 
       expect(result.role).toBe('PENDING');
-      expect(createSpy).toHaveBeenCalledWith(expect.objectContaining({
-        role: 'PENDING',
-        provider,
-        snsId,
-      }));
+      expect(createSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          role: 'PENDING',
+          provider,
+          snsId,
+        }),
+      );
     });
 
     it('should link to existing user if email matches but snsId is new (Test 1.2)', async () => {
-      // 이 시나리오는 UserService.findOrCreateSocialUser의 현재 로직에는 없으므로 
+      // 이 시나리오는 UserService.findOrCreateSocialUser의 현재 로직에는 없으므로
       // 추가 구현이 필요함을 나타내는 RED 테스트가 될 것입니다.
       const email = 'existing@test.com';
       const name = 'Existing User';
@@ -122,7 +125,8 @@ describe('UserService', () => {
       const snsId = '67890';
 
       // 1. snsId로는 유저가 없음
-      jest.spyOn(prisma.user, 'findUnique')
+      jest
+        .spyOn(prisma.user, 'findUnique')
         .mockResolvedValueOnce(null) // findUserBySnsId
         .mockResolvedValueOnce({ id: 2, email, role: 'TEACHER' } as any); // findOne (email)
 
@@ -132,7 +136,7 @@ describe('UserService', () => {
         email,
         role: 'TEACHER',
         provider,
-        snsId
+        snsId,
       });
       (prisma.user as any).update = updateSpy;
 

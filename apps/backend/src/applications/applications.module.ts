@@ -6,9 +6,9 @@ import { ChatModule } from '../chat/chat.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
-    imports: [PrismaModule, ChatModule, NotificationsModule],
-    providers: [ApplicationsService],
-    controllers: [ApplicationsController],
-    exports: [ApplicationsService],
+  imports: [PrismaModule, ChatModule, NotificationsModule],
+  providers: [ApplicationsService],
+  controllers: [ApplicationsController],
+  exports: [ApplicationsService],
 })
-export class ApplicationsModule { }
+export class ApplicationsModule {}

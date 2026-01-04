@@ -1,4 +1,18 @@
-import { Controller, Get, Patch, Body, Post, Put, UseGuards, Request, UseInterceptors, UploadedFile, BadRequestException, Param, ParseIntPipe } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Patch,
+  Body,
+  Post,
+  Put,
+  UseGuards,
+  Request,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+  Param,
+  ParseIntPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import { CertificationService } from './certification.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -16,7 +30,7 @@ export class UserController {
   constructor(
     private userService: UserService,
     private certService: CertificationService,
-  ) { }
+  ) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')

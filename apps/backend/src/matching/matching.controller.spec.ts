@@ -15,7 +15,7 @@ describe('MatchingController', () => {
       providers: [
         { provide: MatchingService, useValue: mockMatchingService },
         { provide: UserService, useValue: mockUserService },
-      ]
+      ],
     }).compile();
 
     controller = module.get<MatchingController>(MatchingController);

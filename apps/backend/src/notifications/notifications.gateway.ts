@@ -3,6 +3,6 @@ import { Server } from 'socket.io';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NotificationsGateway {
-    @WebSocketServer()
-    server: Server;
+  @WebSocketServer()
+  server: Server;
 }

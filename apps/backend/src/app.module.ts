@@ -42,4 +42,4 @@ import { FeedbackModule } from './feedback/feedback.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

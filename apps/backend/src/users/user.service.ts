@@ -6,7 +6,7 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -106,7 +106,7 @@ export class UserService {
         isVerified: true,
         createdAt: true,
         updatedAt: true,
-      }
+      },
     });
   }
 
@@ -142,14 +142,14 @@ export class UserService {
         schoolProfile: true,
         businessProfile: {
           include: {
-            portfolios: true
-          }
+            portfolios: true,
+          },
         },
         reviewsReceived: {
           include: {
-            keywords: true
-          }
-        }
+            keywords: true,
+          },
+        },
       },
     });
 
@@ -159,15 +159,16 @@ export class UserService {
     const totalReviews = reviews.length;
 
     // Calculate Average Rating (excluding null ratings)
-    const validRatings = reviews.filter(r => r.rating !== null).map(r => r.rating as number);
-    const averageRating = validRatings.length > 0
-      ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
-      : 0;
+    const validRatings = reviews.filter((r) => r.rating !== null).map((r) => r.rating as number);
+    const averageRating =
+      validRatings.length > 0
+        ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
+        : 0;
 
     // Aggregate Keywords
     const keywordCounts: Record<string, number> = {};
-    reviews.forEach(review => {
-      review.keywords.forEach(kw => {
+    reviews.forEach((review) => {
+      review.keywords.forEach((kw) => {
         keywordCounts[kw.keyword] = (keywordCounts[kw.keyword] || 0) + 1;
       });
     });
@@ -178,7 +179,7 @@ export class UserService {
       .slice(0, 5); // Take top 5
 
     // Calculate Re-match Rate
-    const reMatchCount = reviews.filter(r => r.reMatchIntent === true).length;
+    const reMatchCount = reviews.filter((r) => r.reMatchIntent === true).length;
     const reMatchRate = totalReviews > 0 ? (reMatchCount / totalReviews) * 100 : 100;
 
     return {
@@ -189,7 +190,7 @@ export class UserService {
         topKeywords,
         reMatchRate,
         isVeteran: totalReviews >= 10,
-      }
+      },
     };
   }
 
@@ -202,7 +203,7 @@ export class UserService {
         email: true,
         name: true,
         role: true,
-      }
+      },
     });
   }
 
@@ -210,7 +211,7 @@ export class UserService {
     return this.prisma.user.update({
       where: { id: userId },
       data: { notificationSettings: settings },
-      select: { notificationSettings: true }
+      select: { notificationSettings: true },
     });
   }
 }

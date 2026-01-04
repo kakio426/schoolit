@@ -1,41 +1,41 @@
 import { IsString, IsArray, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateJobDto {
-    @IsString()
-    title: string;
+  @IsString()
+  title: string;
 
-    @IsString()
-    description: string;
+  @IsString()
+  description: string;
 
-    @IsArray()
-    @IsString({ each: true })
-    subjects: string[];
+  @IsArray()
+  @IsString({ each: true })
+  subjects: string[];
 
-    @IsArray()
-    @IsString({ each: true })
-    regions: string[];
+  @IsArray()
+  @IsString({ each: true })
+  regions: string[];
 }
 
 export class UpdateJobDto {
-    @IsString()
-    @IsOptional()
-    title?: string;
+  @IsString()
+  @IsOptional()
+  title?: string;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 
-    @IsArray()
-    @IsOptional()
-    @IsString({ each: true })
-    subjects?: string[];
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  subjects?: string[];
 
-    @IsArray()
-    @IsOptional()
-    @IsString({ each: true })
-    regions?: string[];
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  regions?: string[];
 
-    @IsBoolean()
-    @IsOptional()
-    active?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  active?: boolean;
 }
