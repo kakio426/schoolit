@@ -47,32 +47,36 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     const navItems = [
         { label: '대시보드', href: '/dashboard', icon: '🏠' },
-        { label: '메시지', href: '/dashboard/messages', icon: '💬' },
     ];
 
-    if (user?.role === 'SCHOOL') {
-        navItems.push(
-            { label: '학교 프로필', href: '/dashboard/school/profile', icon: '🏫' },
-            { label: '채용 공고 관리', href: '/dashboard/jobs', icon: '📋' },
-            { label: '인재 찾기', href: '/dashboard/teachers', icon: '🔎' },
-        );
-    } else {
-        navItems.push(
-            { label: '채용 공고 찾기', href: '/dashboard/jobs', icon: '📋' },
-            { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
-            { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
-        );
-    }
-
-    navItems.push({ label: '설정', href: '/dashboard/settings', icon: '⚙️' });
-
     if (user?.role === 'ADMIN') {
+        // Admin-specific menu
         navItems.push(
             { label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' },
             { label: '리뷰 관리', href: '/dashboard/admin/reviews', icon: '⭐' },
             { label: '공지 발송', href: '/dashboard/admin/notifications', icon: '📣' },
-            { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' }
+            { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' },
+            { label: '설정', href: '/dashboard/settings', icon: '⚙️' }
         );
+    } else {
+        // Regular user menu
+        navItems.push({ label: '메시지', href: '/dashboard/messages', icon: '💬' });
+
+        if (user?.role === 'SCHOOL') {
+            navItems.push(
+                { label: '학교 프로필', href: '/dashboard/school/profile', icon: '🏫' },
+                { label: '채용 공고 관리', href: '/dashboard/jobs', icon: '📋' },
+                { label: '인재 찾기', href: '/dashboard/teachers', icon: '🔎' },
+            );
+        } else {
+            navItems.push(
+                { label: '채용 공고 찾기', href: '/dashboard/jobs', icon: '📋' },
+                { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
+                { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
+            );
+        }
+
+        navItems.push({ label: '설정', href: '/dashboard/settings', icon: '⚙️' });
     }
 
     const SidebarContent = () => (
