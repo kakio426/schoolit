@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Search, School, UserCheck, ShieldCheck } from "lucide-react";
 import TutorialSection from "@/components/landing/TutorialSection";
+import FooterDisclaimer from "@/components/layout/FooterDisclaimer";
 
 export default function LandingPage() {
   return (
@@ -101,18 +102,8 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5 bg-slate-900">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center text-slate-500 text-sm">
-          <div className="mb-4 md:mb-0">
-            &copy; 2026 School It. All rights reserved.
-          </div>
-          <div className="flex gap-6">
-            <Link href="/terms" className="hover:text-white transition-colors">이용약관</Link>
-            <Link href="/privacy" className="hover:text-white transition-colors">개인정보처리방침</Link>
-            <a href="#" className="hover:text-white transition-colors">고객센터</a>
-          </div>
-        </div>
-      </footer>
+      {/* Footer */}
+      <FooterDisclaimer />
     </div>
   );
 }

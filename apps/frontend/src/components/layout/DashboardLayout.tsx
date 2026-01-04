@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
+import FooterDisclaimer from './FooterDisclaimer';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
@@ -207,6 +208,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <main className="p-4 md:p-8 max-w-[1200px] w-full mx-auto">
                     {children}
                 </main>
+                <FooterDisclaimer />
             </div>
         </div>
     );

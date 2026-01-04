@@ -5,6 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import WarningModal from '@/components/ui/WarningModal';
 
 export default function NewJobPage() {
     const { user } = useAuth();
@@ -15,8 +16,22 @@ export default function NewJobPage() {
         description: '',
         subjects: '',
         regions: '',
+        budget: '', // Added budget field
     });
     const [isSaving, setIsSaving] = useState(false);
+    const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+
+    // Compliance Limit: 20 Million KRW
+    const [lastWarningValue, setLastWarningValue] = useState(0);
+
+    const checkBudgetLimit = (value: string) => {
+        const numValue = parseInt(value.replace(/,/g, ''), 10) || 0;
+        if (numValue > 20000000) {
+            // Only warn if we haven't warned for this "crossing" yet (simple debounce logic or just show it)
+            // Implementation: Show simple warning modal
+            setShowBudgetWarning(true);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,7 +57,12 @@ export default function NewJobPage() {
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        setFormData({ ...formData, [name]: value });
+
+        if (name === 'budget') {
+            checkBudgetLimit(value);
+        }
     }
 
     if (user?.role !== 'SCHOOL') {
@@ -66,6 +86,21 @@ export default function NewJobPage() {
                                 placeholder="예: 2024년 1학기 수학 기간제 교사 모집"
                                 required
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-semibold text-foreground mb-2">예상 예산 (원)</label>
+                            <input
+                                name="budget"
+                                type="number"
+                                value={formData.budget}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                placeholder="숫자만 입력 (예: 15000000)"
+                            />
+                            <p className="text-xs text-foreground-muted mt-1">
+                                * 2,000만 원 초과 시 수의계약 대상에서 제외될 수 있습니다.
+                            </p>
                         </div>
 
                         <div>
@@ -125,6 +160,18 @@ export default function NewJobPage() {
                     </form>
                 </div>
             </div>
+
+            <WarningModal
+                isOpen={showBudgetWarning}
+                onClose={() => setShowBudgetWarning(false)}
+                type="danger"
+                title="[주의] 수의계약 한도 초과 안내"
+                description={`선생님! 입력하신 금액은 「지방계약법」에 따라 1인 견적 수의계약이 불가능할 수 있습니다.\n\n2,000만 원 초과 시 반드시 지정정보처리장치(S2B)를 통해 공고 또는 입찰 절차를 진행해야 합니다.`}
+                primaryAction={{
+                    label: 'S2B 바로가기',
+                    onClick: () => window.open('https://www.s2b.kr', '_blank')
+                }}
+            />
         </DashboardLayout>
     );
 }

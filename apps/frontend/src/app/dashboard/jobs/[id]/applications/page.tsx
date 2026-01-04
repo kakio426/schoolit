@@ -6,28 +6,41 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ReviewModal from '@/components/reviews/ReviewModal';
+import WarningModal from '@/components/ui/WarningModal';
+import ComplianceCheck from '@/components/ui/ComplianceCheck';
 import { api } from '@/lib/api';
-import { JobApplication } from '@/types';
+import { JobApplication, JobListing } from '@/types';
 import { ApplicationStatus, Role } from '@/lib/constants';
 
 export default function JobApplicantsPage() {
     const { id } = useParams(); // jobId
     const { user } = useAuth();
     const [applicants, setApplicants] = useState<JobApplication[]>([]);
+    const [job, setJob] = useState<JobListing | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<JobApplication | null>(null);
 
+    // Compliance States
+    const [showTimerWarning, setShowTimerWarning] = useState(false);
+    const [showComplianceCheck, setShowComplianceCheck] = useState(false);
+    const [pendingApplicantId, setPendingApplicantId] = useState<number | null>(null);
+
     useEffect(() => {
         if (id) {
-            fetchApplicants();
+            fetchData();
         }
     }, [id]);
 
-    const fetchApplicants = async () => {
+    const fetchData = async () => {
+        setIsLoading(true);
         try {
-            const data = await api.get<JobApplication[]>(`/applications/jobs/${id}`);
-            setApplicants(data);
+            const [appsData, jobData] = await Promise.all([
+                api.get<JobApplication[]>(`/applications/jobs/${id}`),
+                api.get<JobListing>(`/jobs/${id}`)
+            ]);
+            setApplicants(appsData);
+            setJob(jobData);
         } catch (err) {
             console.error(err);
         } finally {
@@ -35,16 +48,49 @@ export default function JobApplicantsPage() {
         }
     };
 
+    const handleStatusClick = (appId: number, status: ApplicationStatus) => {
+        if (status === ApplicationStatus.HIRED) {
+            setPendingApplicantId(appId);
+
+            // Phase 2: Fair Hiring Timer Check (3 days)
+            if (job?.createdAt) {
+                const postedDate = new Date(job.createdAt);
+                const now = new Date();
+                const diffTime = Math.abs(now.getTime() - postedDate.getTime());
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays < 3) {
+                    setShowTimerWarning(true);
+                    return;
+                }
+            }
+
+            // If timer ok, go to compliance check
+            setShowComplianceCheck(true);
+        } else {
+            updateStatus(appId, status);
+        }
+    };
+
     const updateStatus = async (appId: number, newStatus: ApplicationStatus) => {
         try {
             const updated = await api.patch<JobApplication>(`/applications/${appId}/status`, { status: newStatus });
             setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: updated.status, user: updated.user } : a));
-            alert(`상태가 변경되었습니다.`);
+            // alert(`상태가 변경되었습니다.`); // Removing alert to reduce friction after modals
         } catch (e: any) {
             console.error(e);
             alert(e.message || '오류 발생');
         }
     }
+
+    const handleComplianceConfirmed = () => {
+        if (pendingApplicantId) {
+            updateStatus(pendingApplicantId, ApplicationStatus.HIRED);
+            setShowComplianceCheck(false);
+            setPendingApplicantId(null);
+            alert('채용이 확정되었습니다! 🎉');
+        }
+    };
 
     const getStatusText = (status: ApplicationStatus) => {
         switch (status) {
@@ -131,19 +177,19 @@ export default function JobApplicantsPage() {
                                     {app.status === ApplicationStatus.PENDING && (
                                         <>
                                             <button
-                                                onClick={() => updateStatus(app.id, ApplicationStatus.ACCEPTED)}
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.ACCEPTED)}
                                                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 text-sm active:scale-95"
                                             >
                                                 합격 처리
                                             </button>
                                             <button
-                                                onClick={() => updateStatus(app.id, ApplicationStatus.INTERVIEWING)}
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
                                                 className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20 text-sm active:scale-95"
                                             >
                                                 면접 제안 (채팅)
                                             </button>
                                             <button
-                                                onClick={() => updateStatus(app.id, ApplicationStatus.REJECTED)}
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.REJECTED)}
                                                 className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-all text-sm active:scale-95"
                                             >
                                                 거절
@@ -153,7 +199,7 @@ export default function JobApplicantsPage() {
 
                                     {(app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.INTERVIEWING) && (
                                         <button
-                                            onClick={() => updateStatus(app.id, ApplicationStatus.HIRED)}
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.HIRED)}
                                             className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
                                         >
                                             🎉 채용 확정
@@ -161,21 +207,40 @@ export default function JobApplicantsPage() {
                                     )}
 
                                     {app.status === ApplicationStatus.HIRED && (
-                                        <button
-                                            onClick={() => {
-                                                setSelectedApplicant(app);
-                                                setIsReviewModalOpen(true);
-                                            }}
-                                            className="w-full py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 text-sm active:scale-95 flex items-center justify-center gap-2"
-                                        >
-                                            ⭐ 활동 평가 작성
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('🔒 [보안 안내] 본 계약서는 참고용 초안입니다.\n실제 계약은 학교 내부 결재를 통해 진행하세요.\n\n다운로드 하시겠습니까?')) {
+                                                        alert('계약서 초안(PDF)이 다운로드되었습니다. (Reference Only)');
+                                                    }
+                                                }}
+                                                className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                📄 계약서 초안 (PDF)
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setSelectedApplicant(app);
+                                                    setIsReviewModalOpen(true);
+                                                }}
+                                                className="w-full py-3 bg-amber-500 text-white rounded-xl font-bold hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20 text-sm active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                ⭐ 활동 평가 작성
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         ))}
                     </div>
                 )}
+
+                <div className="mt-12 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-center">
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                        🔒 <b>개인정보보호 및 채용절차 안내</b>: 「개인정보 보호법」에 따라 지원자의 개인정보는 채용 종료일로부터 <b>90일 후 자동으로 파기(익명화)</b>됩니다.<br />
+                        학교 관리자께서는 별도로 이력서를 다운로드하여 보관하실 경우, 이에 대한 보안 책임은 학교 측에 있음을 유의해 주세요.
+                    </p>
+                </div>
             </div>
 
             {selectedApplicant && (
@@ -192,7 +257,7 @@ export default function JobApplicantsPage() {
                                 ...data
                             });
                             alert('후기 및 평가가 성공적으로 전달되었습니다! ✨');
-                            fetchApplicants();
+                            fetchData();
                         } catch (e: any) {
                             console.error(e);
                             alert(e.message || '저장에 실패했습니다.');
@@ -200,6 +265,28 @@ export default function JobApplicantsPage() {
                     }}
                 />
             )}
+
+            <WarningModal
+                isOpen={showTimerWarning}
+                onClose={() => setShowTimerWarning(false)}
+                type="warning"
+                title="[권고] 공정 채용 기간 안내"
+                description={`선생님, 공고 등록 후 3일이 지나지 않았습니다.\n\n교육청에서는 공정한 채용 기회 부여를 위해 충분한 공고 게시 기간(통상 3일 이상)을 준수할 것을 권장하고 있습니다.`}
+                primaryAction={{
+                    label: '이해했습니다 (계속 진행)',
+                    onClick: () => {
+                        setShowTimerWarning(false);
+                        setShowComplianceCheck(true);
+                    }
+                }}
+            />
+
+            <ComplianceCheck
+                isOpen={showComplianceCheck}
+                onClose={() => setShowComplianceCheck(false)}
+                onConfirm={handleComplianceConfirmed}
+                candidateName={applicants.find(a => a.id === pendingApplicantId)?.user?.name || '지원자'}
+            />
         </DashboardLayout>
     );
 }
