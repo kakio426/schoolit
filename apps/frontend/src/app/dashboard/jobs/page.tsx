@@ -14,12 +14,13 @@ export default function JobsPage() {
     const [jobs, setJobs] = useState<JobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
+    const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
 
     useEffect(() => {
         if (user) {
             fetchJobs();
         }
-    }, [user, searchFilters]);
+    }, [user, searchFilters, jobTypeFilter]);
 
     const fetchJobs = async () => {
         setIsLoading(true);
@@ -31,7 +32,10 @@ export default function JobsPage() {
                 if (searchFilters.subject) params.append('subject', searchFilters.subject);
                 if (searchFilters.region) params.append('region', searchFilters.region);
                 if (searchFilters.keyword) params.append('keyword', searchFilters.keyword);
+                if (jobTypeFilter) params.append('jobType', jobTypeFilter);
                 endpoint = `/matching/jobs?${params.toString()}`;
+            } else if (jobTypeFilter) {
+                endpoint = `/jobs?jobType=${jobTypeFilter}`;
             }
 
             const data = await api.get<JobListing[]>(endpoint);
@@ -141,6 +145,37 @@ export default function JobsPage() {
                     <p className="text-foreground-muted text-sm">전국의 학교 채용 공고를 검색해보세요.</p>
                 </div>
 
+                {/* Job Type Filter Tabs */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                    <button
+                        onClick={() => setJobTypeFilter(null)}
+                        className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${!jobTypeFilter
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            }`}
+                    >
+                        전체
+                    </button>
+                    <button
+                        onClick={() => setJobTypeFilter('TEACHER_HIRING')}
+                        className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'TEACHER_HIRING'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            }`}
+                    >
+                        <span>👨‍🏫</span> 기간제 교사
+                    </button>
+                    <button
+                        onClick={() => setJobTypeFilter('EVENT_VENDOR')}
+                        className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'EVENT_VENDOR'
+                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            }`}
+                    >
+                        <span>🎪</span> 행사 업체
+                    </button>
+                </div>
+
                 <RecommendedJobs />
 
                 <JobSearchFilter onSearch={handleSearch} />
@@ -159,6 +194,13 @@ export default function JobsPage() {
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
+                                            {/* Job Type Badge */}
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-lg ${(job as any).jobType === 'EVENT_VENDOR'
+                                                    ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+                                                    : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                }`}>
+                                                {(job as any).jobType === 'EVENT_VENDOR' ? '🎪 행사 업체' : '👨‍🏫 기간제 교사'}
+                                            </span>
                                             <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700">
                                                 {job.schoolProfile?.schoolName}
                                             </span>
@@ -166,6 +208,25 @@ export default function JobsPage() {
                                             <span className="text-foreground-muted text-xs">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</span>
                                         </div>
                                         <h3 className="text-lg font-bold text-foreground mb-2">{job.title}</h3>
+
+                                        {/* Type-specific info */}
+                                        {(job as any).jobType === 'TEACHER_HIRING' && (
+                                            <div className="text-sm text-foreground-muted mb-2">
+                                                {(job as any).contractPeriod && <span>📅 {(job as any).contractPeriod}</span>}
+                                                {(job as any).gradeLevel?.length > 0 && <span className="ml-3">🎓 {(job as any).gradeLevel.join(', ')}</span>}
+                                                {(job as any).teachingHours && <span className="ml-3">⏰ 주 {(job as any).teachingHours}시간</span>}
+                                            </div>
+                                        )}
+
+                                        {(job as any).jobType === 'EVENT_VENDOR' && (
+                                            <div className="text-sm text-foreground-muted mb-2">
+                                                {(job as any).eventType && <span>🎯 {(job as any).eventType}</span>}
+                                                {(job as any).eventDuration && <span className="ml-3">⏱️ {(job as any).eventDuration}</span>}
+                                                {(job as any).participantCount && <span className="ml-3">👥 {(job as any).participantCount}</span>}
+                                                {(job as any).equipmentProvided && <span className="ml-3">🎒 장비 제공</span>}
+                                            </div>
+                                        )}
+
                                         <div className="flex gap-2">
                                             {job.subjects?.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{s}</span>)}
                                             {job.regions?.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{r}</span>)}
