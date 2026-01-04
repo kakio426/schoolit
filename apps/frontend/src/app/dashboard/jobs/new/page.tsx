@@ -43,6 +43,7 @@ export default function NewJobPage() {
                 description: formData.description,
                 subjects: formData.subjects.split(',').map(s => s.trim()).filter(Boolean),
                 regions: formData.regions.split(',').map(s => s.trim()).filter(Boolean),
+                budget: parseInt(formData.budget.replace(/,/g, ''), 10) || 0,
             };
 
             await api.post('/jobs', payload);

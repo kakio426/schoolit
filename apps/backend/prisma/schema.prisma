@@ -83,6 +83,7 @@ model JobListing {
   description     String
   subjects        String[]
   regions         String[]
+  budget          Int?             @default(0)
   active          Boolean          @default(true)
   status          JobStatus        @default(OPEN)
   applications    JobApplication[]

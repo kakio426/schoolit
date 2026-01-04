@@ -8,6 +8,7 @@ import {
   UseGuards,
   Request,
   ParseIntPipe,
+  Res,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { ApplyJobDto } from './dtos/apply-job.dto';
@@ -19,7 +20,7 @@ import { Role } from '@prisma/client';
 
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private applicationsService: ApplicationsService) {}
+  constructor(private applicationsService: ApplicationsService) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.TEACHER)
@@ -60,5 +61,22 @@ export class ApplicationsController {
     @Body() dto: UpdateApplicationStatusDto,
   ) {
     return this.applicationsService.updateStatus(req.user.userId, appId, dto.status);
+  }
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id/contract')
+  async downloadContract(
+    @Request() req,
+    @Param('id', ParseIntPipe) appId: number,
+    @Res() res,
+  ) {
+    const buffer = await this.applicationsService.generateContract(req.user.userId, appId);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="contract_${appId}.pdf"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
   }
 }

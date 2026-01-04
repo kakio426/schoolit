@@ -1,4 +1,4 @@
-import { IsString, IsArray, IsOptional, IsBoolean } from 'class-validator';
+import { IsString, IsArray, IsOptional, IsBoolean, IsNumber } from 'class-validator';
 
 export class CreateJobDto {
   @IsString()
@@ -6,6 +6,10 @@ export class CreateJobDto {
 
   @IsString()
   description: string;
+
+  @IsNumber()
+  @IsOptional()
+  budget?: number; // Optional on input, defaulted in DB
 
   @IsArray()
   @IsString({ each: true })

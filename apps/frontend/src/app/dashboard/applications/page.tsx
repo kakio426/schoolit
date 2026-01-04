@@ -124,12 +124,22 @@ export default function MyApplicationsPage() {
                                 <div className="flex flex-col items-end gap-3 min-w-[120px]">
                                     {getStatusBadge(app)}
                                     {(app.status === ApplicationStatus.INTERVIEWING || app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.HIRED) && (
-                                        <Link
-                                            href="/dashboard/messages"
-                                            className="px-4 py-2 bg-surface dark:bg-slate-800 text-primary dark:text-primary/90 text-xs font-bold rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm shadow-primary/10 active:scale-95"
-                                        >
-                                            채팅창 바로가기 →
-                                        </Link>
+                                        <div className="flex flex-col gap-2 items-end">
+                                            <Link
+                                                href="/dashboard/messages"
+                                                className="px-4 py-2 bg-surface dark:bg-slate-800 text-primary dark:text-primary/90 text-xs font-bold rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm shadow-primary/10 active:scale-95"
+                                            >
+                                                채팅창 바로가기 →
+                                            </Link>
+                                            {app.status === ApplicationStatus.HIRED && (
+                                                <button
+                                                    onClick={() => api.downloadFile(`/applications/${app.id}/contract`, `contract_${app.id}.pdf`)}
+                                                    className="px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-xl hover:bg-emerald-600 transition-all shadow-sm active:scale-95 flex items-center gap-1"
+                                                >
+                                                    <span>📜</span> 계약서 다운로드
+                                                </button>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                             </div>

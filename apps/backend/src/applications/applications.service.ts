@@ -9,6 +9,10 @@ import { ApplyJobDto } from './dtos/apply-job.dto';
 import { ChatService } from '../chat/chat.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ApplicationStatus } from '@prisma/client';
+import { PdfService } from '../common/pdf/pdf.service';
+import * as handlebars from 'handlebars'; // Optional: Use generic template replacement if not installed
+// We will use simple string replacement for now to avoid dep hell, or check if handlebars is needed.
+// Actually, `npm install handlebars` might be good. But for now let's use replace.
 
 @Injectable()
 export class ApplicationsService {
@@ -16,6 +20,7 @@ export class ApplicationsService {
     private prisma: PrismaService,
     private chatService: ChatService,
     private notificationsService: NotificationsService,
+    private pdfService: PdfService,
   ) { }
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
@@ -110,7 +115,6 @@ export class ApplicationsService {
       if (app.status !== 'ACCEPTED') {
         app.user.phone = null; // Hide phone
       }
-      // @ts-expect-error password is removed from user object
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...safeUser } = app.user;
       return { ...app, user: safeUser };
@@ -242,7 +246,6 @@ export class ApplicationsService {
       }
     }
 
-    // @ts-expect-error password is removed from user object
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = updated.user;
 
@@ -252,5 +255,71 @@ export class ApplicationsService {
     }
 
     return { ...updated, user: safeUser };
+  }
+
+  async generateContract(userId: number, applicationId: number): Promise<Buffer> {
+    const app = await this.prisma.jobApplication.findUnique({
+      where: { id: applicationId },
+      include: {
+        user: { include: { teacherProfile: true } },
+        jobListing: { include: { schoolProfile: true } },
+      },
+    });
+
+    if (!app) throw new NotFoundException('Application not found');
+
+    // Authorization: only involved parties
+    if (app.userId !== userId && app.jobListing.schoolProfile.userId !== userId) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    if (app.status !== 'HIRED') {
+      throw new BadRequestException('Contract is only available for HIRED applications');
+    }
+
+    // Template Data
+    const schoolName = app.jobListing.schoolProfile.schoolName || '___________';
+    const teacherName = app.user.name || '___________';
+    const jobTitle = app.jobListing.title;
+    const date = new Date().toLocaleDateString('ko-KR');
+
+    // Simple HTML Template
+    const html = `
+      <html>
+        <head>
+          <style>
+            body { font-family: 'Noto Sans KR', sans-serif; padding: 40px; }
+            h1 { text-align: center; }
+            .content { margin-top: 50px; line-height: 1.6; }
+            .signature { margin-top: 100px; display: flex; justify-content: space-between; }
+          </style>
+        </head>
+        <body>
+          <h1>표준 근로 계약서 (채용 확정)</h1>
+          <div class="content">
+            <p><strong>사용자(갑):</strong> ${schoolName}</p>
+            <p><strong>근로자(을):</strong> ${teacherName}</p>
+            <p>
+              "${schoolName}"와(과) "${teacherName}"은(는) 상호 신뢰를 바탕으로 
+              <strong>${jobTitle}</strong> 업무에 대하여 다음과 같이 근로 계약을 체결합니다.
+            </p>
+            <p>
+              1. 근로 개시일: ${date} <br>
+              2. 근무 장소: ${app.jobListing.regions.join(', ')} <br>
+              3. 담당 업무: ${app.jobListing.subjects.join(', ')} 수업 및 관련 지도
+            </p>
+            <p>
+              * 본 문서는 플랫폼에서 자동 생성된 초안이며, 법적 효력을 갖기 위해서는 양측의 실제 서명 날인이 필요합니다.
+            </p>
+          </div>
+          <div class="signature">
+            <div>(갑) 서명: ________________ (인)</div>
+            <div>(을) 서명: ________________ (인)</div>
+          </div>
+        </body>
+      </html>
+    `;
+
+    return this.pdfService.generatePdf(html);
   }
 }
