@@ -91,33 +91,36 @@ export default function MyApplicationsPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto">
-                <h1 className="text-2xl font-bold text-slate-800 mb-8">📨 나의 지원 현황</h1>
+            <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-foreground">📨 나의 지원 현황</h1>
+                    <p className="text-foreground-muted text-sm mt-1">지원한 공고와 받은 제안을 확인하세요.</p>
+                </div>
 
                 {isLoading ? (
-                    <div className="text-center py-20">로딩 중...</div>
+                    <div className="text-center py-20 text-foreground-muted">로딩 중...</div>
                 ) : applications.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-slate-200">
-                        <p className="text-slate-500 mb-2">아직 지원한 내역이 없습니다.</p>
-                        <p className="text-sm text-slate-400">마음에 드는 공고를 찾아보세요!</p>
+                    <div className="text-center py-20 bg-surface rounded-3xl border border-slate-200 dark:border-slate-700">
+                        <p className="text-foreground-muted mb-2">아직 지원한 내역이 없습니다.</p>
+                        <p className="text-sm text-foreground-muted">마음에 드는 공고를 찾아보세요!</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {applications.map((app) => (
-                            <div key={app.id} className={`p-6 rounded-2xl border transition-all flex items-start justify-between ${app.isSuggestion && app.status === 'PENDING' ? 'bg-indigo-50/30 border-indigo-100 shadow-indigo-100/20 shadow-lg' : 'bg-white border-slate-200 shadow-sm'}`}>
+                            <div key={app.id} className={`p-6 rounded-2xl border transition-all flex items-start justify-between ${app.isSuggestion && app.status === 'PENDING' ? 'bg-indigo-50/50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-900/30' : 'bg-surface border-slate-200 dark:border-slate-700 shadow-sm'}`}>
                                 <div>
-                                    <h3 className="text-lg font-bold text-slate-800">{app.jobListing.title}</h3>
-                                    <p className="text-slate-500 text-sm mt-1 mb-3">
+                                    <h3 className="text-lg font-bold text-foreground">{app.jobListing.title}</h3>
+                                    <p className="text-foreground-muted text-sm mt-1 mb-3">
                                         {app.jobListing.schoolProfile?.schoolName || '학교 정보 없음'}
                                     </p>
-                                    <div className="text-sm text-slate-500 bg-white/50 backdrop-blur-sm p-3 rounded-xl border border-slate-100">
+                                    <div className="text-sm text-foreground-muted bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-100 dark:border-slate-700/50">
                                         {app.isSuggestion ? (
                                             <>📩 학교에서 선생님의 프로필을 보고 제안을 보냈습니다.</>
                                         ) : (
                                             <>📝 보낸 메시지: "{app.message || '없음'}"</>
                                         )}
                                     </div>
-                                    <div className="mt-2 text-xs text-slate-400">
+                                    <div className="mt-2 text-xs text-foreground-muted">
                                         {app.isSuggestion ? '제안일' : '지원일'}: {new Date(app.createdAt).toLocaleDateString()}
                                     </div>
                                 </div>
@@ -126,7 +129,7 @@ export default function MyApplicationsPage() {
                                     {(app.status === 'INTERVIEWING' || app.status === 'ACCEPTED' || app.status === 'HIRED') && (
                                         <Link
                                             href="/dashboard/messages"
-                                            className="mt-2 px-4 py-2 bg-white text-primary text-xs font-bold rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm shadow-primary/10"
+                                            className="mt-2 px-4 py-2 bg-surface text-primary text-xs font-bold rounded-xl border border-primary/20 hover:bg-primary hover:text-white transition-all shadow-sm shadow-primary/10"
                                         >
                                             채팅창 바로가기
                                         </Link>

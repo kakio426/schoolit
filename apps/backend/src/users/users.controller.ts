@@ -102,4 +102,9 @@ export class UserController {
     }
     return this.userService.updateRole(req.user.userId, role);
   }
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('settings')
+  async updateSettings(@Request() req, @Body() settings: any) {
+    return this.userService.updateSettings(req.user.userId, settings);
+  }
 }

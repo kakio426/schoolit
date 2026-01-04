@@ -1,4 +1,4 @@
-import { Controller, Patch, Param, Body, UseGuards, Get, ParseIntPipe } from '@nestjs/common';
+import { Controller, Patch, Param, Body, UseGuards, Get, ParseIntPipe, Query } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
@@ -22,5 +22,18 @@ export class AdminController {
         @Body('status') status: CertStatus,
     ) {
         return this.adminService.updateCertificationStatus(id, status);
+    }
+    @Get('stats')
+    async getStats() {
+        return this.adminService.getSystemStats();
+    }
+
+    @Get('users')
+    async getUsers(
+        @Query('page') page: string = '1',
+        @Query('limit') limit: string = '10',
+        @Query('search') search: string = ''
+    ) {
+        return this.adminService.getUsers(+page, +limit, search);
     }
 }

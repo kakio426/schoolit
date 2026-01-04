@@ -1,28 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-
-interface TeacherProfile {
-    bio?: string;
-    subjects?: string[];
-    regions?: string[];
-    isVerified: boolean;
-}
-
-interface User {
-    id: string;
-    email: string;
-    name: string;
-    role: 'SCHOOL' | 'TEACHER' | 'BUSINESS' | 'ADMIN' | 'PENDING';
-    teacherProfile?: TeacherProfile;
-    reviewStats?: {
-        totalReviews: number;
-        averageRating: number;
-        topKeywords: Array<{ keyword: string; count: number }>;
-        reMatchRate: number;
-        isVeteran: boolean;
-    };
-}
+import { api } from '@/lib/api';
+import { User } from '@/types';
 
 interface AuthContextType {
     user: User | null;
@@ -44,27 +24,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const savedToken = localStorage.getItem('accessToken');
         if (savedToken) {
             setToken(savedToken);
-            fetchProfile(savedToken);
+            fetchProfile();
         } else {
             setIsLoading(false);
         }
     }, []);
 
-    const fetchProfile = async (authToken: string) => {
+    const fetchProfile = async () => {
         try {
-            // Updated to /api/users/profile to get full data
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}/api/users/profile`, {
-                headers: {
-                    Authorization: `Bearer ${authToken}`,
-                },
-            });
-
-            if (response.ok) {
-                const userData = await response.json();
-                setUser(userData);
-            } else {
-                logout();
-            }
+            const userData = await api.get<User>('/users/profile');
+            setUser(userData);
         } catch (error) {
             console.error('Failed to fetch profile:', error);
             logout();
@@ -74,15 +43,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     const refreshProfile = async () => {
-        if (token) {
-            await fetchProfile(token);
+        if (localStorage.getItem('accessToken')) {
+            await fetchProfile();
         }
     };
 
     const login = async (newToken: string) => {
         localStorage.setItem('accessToken', newToken);
         setToken(newToken);
-        await fetchProfile(newToken);
+        await fetchProfile();
     };
 
     const logout = () => {

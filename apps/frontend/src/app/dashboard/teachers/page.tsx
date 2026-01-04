@@ -94,31 +94,34 @@ export default function TeacherSearchPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto">
-                <h1 className="text-2xl font-bold text-slate-800 mb-8">🔎 인재 찾기</h1>
+            <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-foreground">🔎 인재 찾기</h1>
+                    <p className="text-foreground-muted text-sm">우리 학교에 딱 맞는 선생님을 찾아보세요.</p>
+                </div>
 
                 <JobSearchFilter onSearch={fetchTeachers} />
 
                 {isLoading ? (
-                    <div className="text-center py-20">검색 중...</div>
+                    <div className="text-center py-20 text-foreground-muted">검색 중...</div>
                 ) : teachers.length === 0 ? (
-                    <div className="text-center py-20 text-slate-500">조건에 맞는 선생님이 없습니다.</div>
+                    <div className="text-center py-20 text-foreground-muted">조건에 맞는 선생님이 없습니다.</div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {teachers.map((t) => (
-                            <div key={t.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex flex-col">
+                            <div key={t.id} className="bg-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col hover:bg-surface-hover">
                                 <div className="flex items-center gap-4 mb-4">
-                                    <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center text-2xl overflow-hidden">
+                                    <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl overflow-hidden ring-2 ring-slate-100 dark:ring-slate-700">
                                         {t.profileImage ? <img src={t.profileImage} className="w-full h-full object-cover" /> : '👤'}
                                     </div>
                                     <div>
-                                        <h3 className="font-bold text-lg text-slate-800">{t.user?.name} 선생님</h3>
+                                        <h3 className="font-bold text-lg text-foreground">{t.user?.name} 선생님</h3>
                                         <div className="flex gap-1 mt-1">
-                                            {t.subjects.slice(0, 2).map((s: string) => <span key={s} className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs rounded-md">{s}</span>)}
+                                            {t.subjects.slice(0, 2).map((s: string) => <span key={s} className="px-2 py-0.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-md">{s}</span>)}
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-slate-600 text-sm mb-4 line-clamp-3 flex-1">{t.bio || '자기소개가 없습니다.'}</p>
+                                <p className="text-foreground-muted text-sm mb-4 line-clamp-3 flex-1">{t.bio || '자기소개가 없습니다.'}</p>
                                 <div className="mt-auto">
                                     <button
                                         onClick={() => openSuggestModal(t.user.id)}
@@ -135,23 +138,23 @@ export default function TeacherSearchPage() {
 
             {/* Suggestion Modal */}
             {isSuggestModalOpen && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
-                        <h3 className="text-xl font-bold mb-4">제안할 공고 선택</h3>
-                        <p className="text-slate-500 mb-6 text-sm">선생님에게 제안을 보낼 채용 공고를 선택해주세요.</p>
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200" onClick={() => setIsSuggestModalOpen(false)}>
+                    <div className="bg-surface w-full max-w-md rounded-3xl p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-200 border border-slate-200 dark:border-slate-700" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold mb-2 text-foreground">제안할 공고 선택</h3>
+                        <p className="text-foreground-muted mb-6 text-sm">선생님에게 제안을 보낼 채용 공고를 선택해주세요.</p>
 
-                        <div className="space-y-3 max-h-[300px] overflow-y-auto mb-6">
+                        <div className="space-y-3 max-h-[300px] overflow-y-auto mb-6 pr-2">
                             {myJobs.length === 0 ? (
-                                <div className="text-center text-red-500 py-4">모집 중인 공고가 없습니다.</div>
+                                <div className="text-center text-red-500 py-8 bg-red-50 dark:bg-red-900/20 rounded-2xl">모집 중인 공고가 없습니다.</div>
                             ) : (
                                 myJobs.map(job => (
                                     <button
                                         key={job.id}
                                         onClick={() => sendSuggestion(job.id)}
-                                        className="w-full text-left p-4 rounded-xl border border-slate-200 hover:border-primary hover:bg-primary/5 transition-all group"
+                                        className="w-full text-left p-4 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary hover:bg-primary/5 transition-all group bg-surface hover:shadow-sm"
                                     >
-                                        <div className="font-bold text-slate-800 group-hover:text-primary">{job.title}</div>
-                                        <div className="text-xs text-slate-400 mt-1">{new Date(job.createdAt).toLocaleDateString()}</div>
+                                        <div className="font-bold text-foreground group-hover:text-primary transition-colors">{job.title}</div>
+                                        <div className="text-xs text-foreground-muted mt-1">{new Date(job.createdAt).toLocaleDateString()}</div>
                                     </button>
                                 ))
                             )}
@@ -159,7 +162,7 @@ export default function TeacherSearchPage() {
 
                         <button
                             onClick={() => setIsSuggestModalOpen(false)}
-                            className="w-full py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
+                            className="w-full py-3 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 font-bold rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                         >
                             취소
                         </button>

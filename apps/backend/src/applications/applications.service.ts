@@ -2,19 +2,22 @@ import { Injectable, BadRequestException, NotFoundException, ForbiddenException 
 import { PrismaService } from '../prisma.service';
 import { ApplyJobDto } from './dtos/apply-job.dto';
 import { ChatService } from '../chat/chat.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { ApplicationStatus } from '@prisma/client';
 
 @Injectable()
 export class ApplicationsService {
     constructor(
         private prisma: PrismaService,
-        private chatService: ChatService
+        private chatService: ChatService,
+        private notificationsService: NotificationsService
     ) { }
 
     async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
         // Check if job exists and is OPEN
         const job = await this.prisma.jobListing.findUnique({
             where: { id: jobId },
+            include: { schoolProfile: true }
         });
 
         if (!job) {
@@ -40,7 +43,7 @@ export class ApplicationsService {
         }
 
         // Create application
-        return this.prisma.jobApplication.create({
+        const app = await this.prisma.jobApplication.create({
             data: {
                 jobId,
                 userId,
@@ -48,6 +51,17 @@ export class ApplicationsService {
                 status: 'PENDING',
             },
         });
+
+        // Notify School
+        await this.notificationsService.create({
+            userId: job.schoolProfile.userId,
+            type: 'APPLICATION',
+            title: '새로운 지원서 도착',
+            content: `'${job.title}' 공고에 새로운 지원자가 있습니다.`,
+            link: `/dashboard/jobs/${job.id}`
+        });
+
+        return app;
     }
 
     async getMyApplications(userId: number) {
@@ -116,7 +130,7 @@ export class ApplicationsService {
         });
         if (existing) throw new BadRequestException('Application/Suggestion already exists');
 
-        return this.prisma.jobApplication.create({
+        const suggestion = await this.prisma.jobApplication.create({
             data: {
                 jobId,
                 userId: teacherUserId,
@@ -125,6 +139,17 @@ export class ApplicationsService {
                 message: 'School sent a suggestion',
             }
         });
+
+        // Notify Teacher
+        await this.notificationsService.create({
+            userId: teacherUserId,
+            type: 'SUGGESTION',
+            title: '학교로부터 제안 도착 🎁',
+            content: `${job.schoolProfile.schoolName || '학교'}에서 면접 제안을 보냈습니다.`,
+            link: `/dashboard/applications`
+        });
+
+        return suggestion;
     }
 
     async updateStatus(userId: number, applicationId: number, status: ApplicationStatus) {
@@ -161,10 +186,52 @@ export class ApplicationsService {
             }
         });
 
+
+
         if (status === 'INTERVIEWING') {
             const schoolUserId = updated.jobListing.schoolProfile.userId;
             const teacherUserId = updated.userId;
             await this.chatService.createRoom(schoolUserId, teacherUserId, updated.jobId);
+        }
+
+        // Notify Status Change
+        if (['INTERVIEWING', 'REJECTED', 'ACCEPTED', 'HIRED'].includes(status)) {
+            try {
+                const isSchoolOwner = updated.jobListing.schoolProfile.userId === userId;
+                // If School updated, notify Teacher. If Teacher updated, notify School.
+                const recipientId = isSchoolOwner ? updated.userId : updated.jobListing.schoolProfile.userId;
+
+                let title = '';
+                let content = '';
+
+                if (isSchoolOwner) {
+                    if (status === 'INTERVIEWING') {
+                        title = '서류 합격 / 면접 제안';
+                        content = `'${updated.jobListing.title}' 공고의 서류 전형에 합격하셨습니다. 채팅을 확인해주세요.`;
+                    } else if (status === 'REJECTED') {
+                        title = '지원 결과 안내';
+                        content = `'${updated.jobListing.title}' 공고 전형 결과 불합격하셨습니다.`;
+                    } else if (status === 'HIRED') {
+                        title = '최종 합격 축하드립니다! 🎉';
+                        content = `'${updated.jobListing.title}' 공고에 최종 합격하셨습니다.`;
+                    }
+                } else {
+                    title = `제안에 대한 응답 도착`;
+                    content = `선생님이 제안을 ${status === 'INTERVIEWING' ? '수락' : '거절'}했습니다.`;
+                }
+
+                if (title) {
+                    await this.notificationsService.create({
+                        userId: recipientId,
+                        type: 'STATUS_UPDATE',
+                        title,
+                        content,
+                        link: isSchoolOwner ? `/dashboard/jobs/${updated.jobListing.id}` : `/dashboard/applications`
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to send notification', e);
+            }
         }
 
         // @ts-ignore

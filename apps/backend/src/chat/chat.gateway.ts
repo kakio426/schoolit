@@ -50,7 +50,8 @@ export class ChatGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
             rooms.forEach(room => {
                 client.join(`room_${room.id}`);
             });
-            this.logger.log(`Client ${client.id} (User ${userId}) joined ${rooms.length} rooms`);
+            client.join(`user_${userId}`);
+            this.logger.log(`Client ${client.id} (User ${userId}) joined ${rooms.length} rooms and user_${userId}`);
         } else {
             this.logger.log(`Client connected: ${client.id}`);
         }

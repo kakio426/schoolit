@@ -44,4 +44,56 @@ export class AdminService {
             },
         });
     }
+
+    async getSystemStats() {
+        const [totalUsers, totalJobs, totalSchools, totalTeachers] = await Promise.all([
+            this.prisma.user.count(),
+            this.prisma.jobListing.count(),
+            this.prisma.schoolProfile.count(),
+            this.prisma.teacherProfile.count(),
+        ]);
+
+        return {
+            totalUsers,
+            totalJobs,
+            totalSchools,
+            totalTeachers,
+        };
+    }
+
+    async getUsers(page: number, limit: number, search?: string) {
+        const skip = (page - 1) * limit;
+        const where: any = {};
+
+        if (search) {
+            where.OR = [
+                { name: { contains: search, mode: 'insensitive' } },
+                { email: { contains: search, mode: 'insensitive' } },
+            ];
+        }
+
+        const [users, total] = await Promise.all([
+            this.prisma.user.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                select: {
+                    id: true,
+                    email: true,
+                    name: true,
+                    role: true,
+                    createdAt: true,
+                }
+            }),
+            this.prisma.user.count({ where })
+        ]);
+
+        return {
+            data: users,
+            total,
+            page,
+            limit
+        };
+    }
 }

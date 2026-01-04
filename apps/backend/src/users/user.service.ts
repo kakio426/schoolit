@@ -140,6 +140,11 @@ export class UserService {
       include: {
         teacherProfile: true,
         schoolProfile: true,
+        businessProfile: {
+          include: {
+            portfolios: true
+          }
+        },
         reviewsReceived: {
           include: {
             keywords: true
@@ -198,6 +203,14 @@ export class UserService {
         name: true,
         role: true,
       }
+    });
+  }
+
+  async updateSettings(userId: number, settings: any) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { notificationSettings: settings },
+      select: { notificationSettings: true }
     });
   }
 }

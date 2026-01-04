@@ -7,15 +7,19 @@ import { useRouter, usePathname } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
-    const { unreadCount } = useSocket();
+    const { unreadCount, unreadNotificationCount, notifications, markNotificationAsRead } = useSocket();
     const router = useRouter();
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showNotifications, setShowNotifications] = useState(false);
 
     // Close mobile menu when route changes
     useEffect(() => {
         setIsMobileMenuOpen(false);
+        setShowNotifications(false);
     }, [pathname]);
+
+    // ... (keep existing render logic) ... 
 
     if (isLoading) {
         return (
@@ -67,9 +71,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const SidebarContent = () => (
         <>
             <div className="p-6">
-                <div className="flex items-center gap-2">
-                    <span className="text-2xl">🎓</span>
-                    <h1 className="text-xl font-bold text-foreground">School It</h1>
+                <div className="flex items-center justify-center">
+                    <img src="/logo.png" alt="School It" className="h-12 w-auto object-contain" />
                 </div>
             </div>
             <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto font-sans">
@@ -142,6 +145,60 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </h2>
                     </div>
                     <div className="flex items-center gap-3">
+                        <div className="relative">
+                            <button
+                                onClick={() => setShowNotifications(!showNotifications)}
+                                className="p-2 rounded-full hover:bg-surface-hover transition-colors relative"
+                            >
+                                <span className="text-xl">🔔</span>
+                                {unreadNotificationCount > 0 && (
+                                    <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white dark:border-slate-800 flex items-center justify-center text-[8px] font-bold text-white">
+                                        {unreadNotificationCount > 9 ? '9+' : unreadNotificationCount}
+                                    </span>
+                                )}
+                            </button>
+
+                            {/* Notification Dropdown */}
+                            {showNotifications && (
+                                <>
+                                    <div className="fixed inset-0 z-40" onClick={() => setShowNotifications(false)}></div>
+                                    <div className="absolute right-0 top-full mt-2 w-80 bg-surface rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                                        <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-surface">
+                                            <h3 className="font-bold text-foreground">알림</h3>
+                                        </div>
+                                        <div className="max-h-[400px] overflow-y-auto bg-surface">
+                                            {notifications.length === 0 ? (
+                                                <div className="p-8 text-center text-foreground-muted text-sm">알림이 없습니다.</div>
+                                            ) : (
+                                                notifications.map((n: any) => (
+                                                    <div
+                                                        key={n.id}
+                                                        className={`p-4 border-b border-slate-50 dark:border-slate-700/50 hover:bg-surface-hover transition-colors cursor-pointer ${!n.isRead ? 'bg-primary/5' : ''}`}
+                                                        onClick={() => {
+                                                            if (!n.isRead) markNotificationAsRead(n.id);
+                                                            if (n.link) router.push(n.link);
+                                                            setShowNotifications(false);
+                                                        }}
+                                                    >
+                                                        <div className="flex gap-3">
+                                                            <div className="text-xl pt-1">
+                                                                {n.type === 'APPLICATION' ? '📨' : n.type === 'SUGGESTION' ? '🎁' : n.type === 'STATUS_UPDATE' ? '📢' : '🔔'}
+                                                            </div>
+                                                            <div>
+                                                                <div className="font-bold text-sm mb-0.5 text-foreground">{n.title}</div>
+                                                                <div className="text-xs text-foreground-muted line-clamp-2">{n.content}</div>
+                                                                <div className="text-[10px] text-slate-400 mt-1">{new Date(n.createdAt).toLocaleDateString()}</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
                         <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary ring-2 ring-primary/20 shrink-0">
                             {user.name.charAt(0)}
                         </div>

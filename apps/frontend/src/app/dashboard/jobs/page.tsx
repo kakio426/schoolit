@@ -81,9 +81,12 @@ export default function JobsPage() {
     if (user?.role === 'SCHOOL') {
         return (
             <DashboardLayout>
-                <div className="max-w-5xl mx-auto">
+                <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="flex items-center justify-between mb-8">
-                        <h1 className="text-2xl font-bold text-slate-800">📋 채용 공고 관리</h1>
+                        <div>
+                            <h1 className="text-2xl font-bold text-foreground">📋 채용 공고 관리</h1>
+                            <p className="text-foreground-muted text-sm">등록한 공고를 관리하고 지원자를 확인하세요.</p>
+                        </div>
                         <Link
                             href="/dashboard/jobs/new"
                             className="px-6 py-3 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-2"
@@ -93,46 +96,46 @@ export default function JobsPage() {
                     </div>
 
                     {isLoading ? (
-                        <div className="text-center py-20">로딩 중...</div>
+                        <div className="text-center py-20 text-foreground-muted">로딩 중...</div>
                     ) : jobs.length === 0 ? (
-                        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500">
-                            <p className="text-xl mb-4">등록된 공고가 없습니다.</p>
+                        <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 p-12 text-center text-foreground-muted">
+                            <p className="text-xl mb-4 font-bold">등록된 공고가 없습니다.</p>
                             <p>새로운 선생님을 찾아보세요!</p>
                         </div>
                     ) : (
                         <div className="space-y-4">
                             {jobs.map((job) => (
-                                <div key={job.id} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex items-center justify-between">
+                                <div key={job.id} className="bg-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row md:items-center justify-between gap-4">
                                     <div>
                                         <div className="flex items-center gap-3">
-                                            <h3 className="text-lg font-bold text-slate-800">{job.title}</h3>
-                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.active ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-500'}`}>
+                                            <h3 className="text-lg font-bold text-foreground">{job.title}</h3>
+                                            <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${job.active ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>
                                                 {job.active ? '모집중' : '마감됨'}
                                             </span>
                                         </div>
-                                        <p className="text-slate-500 mt-1 line-clamp-1">{job.description}</p>
+                                        <p className="text-foreground-muted mt-1 line-clamp-1">{job.description}</p>
                                         <div className="mt-3 flex gap-2">
                                             {job.subjects.map((sub: string) => (
-                                                <span key={sub} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-lg">{sub}</span>
+                                                <span key={sub} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{sub}</span>
                                             ))}
                                             {job.regions.map((reg: string) => (
-                                                <span key={reg} className="px-2 py-1 bg-orange-50 text-orange-600 text-xs rounded-lg">{reg}</span>
+                                                <span key={reg} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{reg}</span>
                                             ))}
                                         </div>
                                     </div>
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex gap-2">
                                         <button
                                             onClick={() => toggleStatus(job.id, job.active)}
                                             className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${job.active
-                                                ? 'border-red-200 text-red-500 hover:bg-red-50'
-                                                : 'border-green-200 text-green-500 hover:bg-green-50'
+                                                ? 'border-red-200 text-red-500 hover:bg-red-50 dark:border-red-900/50 dark:hover:bg-red-900/20'
+                                                : 'border-green-200 text-green-500 hover:bg-green-50 dark:border-green-900/50 dark:hover:bg-green-900/20'
                                                 }`}
                                         >
                                             {job.active ? '마감하기' : '다시 열기'}
                                         </button>
                                         <Link
                                             href={`/dashboard/jobs/${job.id}/applications`}
-                                            className="px-4 py-2 rounded-xl text-sm font-bold border border-blue-200 text-blue-600 hover:bg-blue-50 text-center"
+                                            className="px-4 py-2 rounded-xl text-sm font-bold border border-blue-200 text-blue-600 hover:bg-blue-50 dark:border-blue-900/50 dark:text-blue-400 dark:hover:bg-blue-900/20 text-center"
                                         >
                                             지원자 확인
                                         </Link>
@@ -149,37 +152,40 @@ export default function JobsPage() {
     // VIEW: Teacher (Search Jobs)
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto">
-                <h1 className="text-2xl font-bold text-slate-800 mb-8">🔎 채용 공고 찾기</h1>
+            <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="mb-8">
+                    <h1 className="text-2xl font-bold text-foreground">🔎 채용 공고 찾기</h1>
+                    <p className="text-foreground-muted text-sm">전국의 학교 채용 공고를 검색해보세요.</p>
+                </div>
 
                 <RecommendedJobs />
 
                 <JobSearchFilter onSearch={handleSearch} />
 
                 {isLoading ? (
-                    <div className="text-center py-20">검색 중...</div>
+                    <div className="text-center py-20 text-foreground-muted">검색 중...</div>
                 ) : jobs.length === 0 ? (
-                    <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center text-slate-500">
-                        <p className="text-xl mb-4">검색 결과가 없습니다.</p>
+                    <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 p-12 text-center text-foreground-muted">
+                        <p className="text-xl mb-4 font-bold">검색 결과가 없습니다.</p>
                         <p>다른 검색어로 찾아보세요.</p>
                     </div>
                 ) : (
                     <div className="space-y-4">
                         {jobs.map((job) => (
-                            <Link href={`/dashboard/jobs/${job.id}`} key={job.id} className="block bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                            <Link href={`/dashboard/jobs/${job.id}`} key={job.id} className="block bg-surface p-6 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all hover:bg-surface-hover">
                                 <div className="flex justify-between items-start">
                                     <div>
                                         <div className="flex items-center gap-2 mb-2">
-                                            <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg border border-slate-200">
+                                            <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700">
                                                 {job.schoolProfile?.schoolName}
                                             </span>
-                                            <span className="text-slate-400 text-xs">•</span>
-                                            <span className="text-slate-400 text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
+                                            <span className="text-foreground-muted text-xs">•</span>
+                                            <span className="text-foreground-muted text-xs">{new Date(job.createdAt).toLocaleDateString()}</span>
                                         </div>
-                                        <h3 className="text-lg font-bold text-slate-800 mb-2">{job.title}</h3>
+                                        <h3 className="text-lg font-bold text-foreground mb-2">{job.title}</h3>
                                         <div className="flex gap-2">
-                                            {job.subjects.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 text-xs rounded-lg">{s}</span>)}
-                                            {job.regions.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 text-xs rounded-lg">{r}</span>)}
+                                            {job.subjects.map((s: string) => <span key={s} className="px-2 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs rounded-lg">{s}</span>)}
+                                            {job.regions.map((r: string) => <span key={r} className="px-2 py-1 bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 text-xs rounded-lg">{r}</span>)}
                                         </div>
                                     </div>
                                     <div className="text-primary font-bold text-sm">

@@ -12,6 +12,10 @@ import { join } from 'path';
 import { MatchingModule } from './matching/matching.module';
 import { ChatModule } from './chat/chat.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { NotificationsModule } from './notifications/notifications.module';
+
+import { BusinessProfileModule } from './business-profile/business-profile.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -22,6 +26,8 @@ import { ReviewsModule } from './reviews/reviews.module';
     AdminModule,
     JobsModule,
     ApplicationsModule,
+    BusinessProfileModule,
+    DashboardModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads',
@@ -29,6 +35,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     MatchingModule,
     ChatModule,
     ReviewsModule,
+    NotificationsModule,
   ],
   controllers: [],
   providers: [],

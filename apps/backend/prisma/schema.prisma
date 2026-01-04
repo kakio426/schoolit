@@ -29,8 +29,27 @@ model User {
   reviewsSent    Review[]       @relation("ReviewsSent")
   reviewsReceived Review[]      @relation("ReviewsReceived")
 
-  @@unique([provider, snsId]) // Ensure unique User per provider
+  businessProfile BusinessProfile?
+
+  notifications Notification[]
+  notificationSettings Json?  @map("notification_settings") // { newMatch: boolean, messages: boolean, marketing: boolean }
+
+  @@unique([provider, snsId])
   @@map("users")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // MATCH, APPLICATION, MESSAGE, SYSTEM
+  title     String
+  content   String
+  isRead    Boolean  @default(false) @map("is_read")
+  link      String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("notifications")
 }
 
 model SchoolProfile {
@@ -202,4 +221,40 @@ model ReviewKeyword {
   reviews Review[] // Many-to-many
 
   @@map("review_keywords")
+}
+
+model BusinessProfile {
+  id               Int      @id @default(autoincrement())
+  userId           Int      @unique @map("user_id")
+  user             User     @relation(fields: [userId], references: [id])
+  companyName      String   @map("company_name")
+  registrationNum  String?  @map("registration_num")
+  registrationFile String?  @map("registration_file")
+  description      String?
+  website          String?
+  address          String?
+  canIssueTaxInvoice Boolean @default(false) @map("can_issue_tax_invoice")
+  categories       String[]
+  portfolios       BusinessPortfolio[]
+  
+  isVerified       Boolean  @default(false) @map("is_verified")
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("business_profiles")
+}
+
+model BusinessPortfolio {
+  id                Int             @id @default(autoincrement())
+  businessProfileId Int             @map("business_profile_id")
+  businessProfile   BusinessProfile @relation(fields: [businessProfileId], references: [id], onDelete: Cascade)
+  title             String
+  description       String?
+  images            String[]
+  
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@map("business_portfolios")
 }

@@ -1,19 +1,39 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
 
+import { api } from '@/lib/api';
+
 export default function SettingsPage() {
-    const { user } = useAuth();
+    const { user, refreshProfile } = useAuth();
     const [notifications, setNotifications] = useState({
         newMatch: true,
         messages: true,
         marketing: false
     });
 
-    const toggleNotification = (key: keyof typeof notifications) => {
-        setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
+    // Load initial settings
+    useEffect(() => {
+        if (user && user.notificationSettings) {
+            setNotifications(prev => ({
+                ...prev,
+                ...(user.notificationSettings as any)
+            }));
+        }
+    }, [user]);
+
+    const toggleNotification = async (key: keyof typeof notifications) => {
+        const newState = { ...notifications, [key]: !notifications[key] };
+        setNotifications(newState);
+
+        try {
+            await api.patch('/users/settings', newState);
+            await refreshProfile();
+        } catch (e) {
+            console.error('Failed to save settings', e);
+        }
     };
 
     return (
