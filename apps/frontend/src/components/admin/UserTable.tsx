@@ -3,6 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
 import { User } from '@/types';
 import { Role } from '@/lib/constants';
+import { UserActionModal } from './UserActionModal';
 
 export const UserTable: React.FC = () => {
     const { token } = useAuth();
@@ -11,6 +12,7 @@ export const UserTable: React.FC = () => {
     const [totalPages, setTotalPages] = useState(1);
     const [search, setSearch] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -49,6 +51,7 @@ export const UserTable: React.FC = () => {
                             <tr>
                                 <th className="px-6 py-4">사용자</th>
                                 <th className="px-6 py-4">역할</th>
+                                <th className="px-6 py-4">상태</th>
                                 <th className="px-6 py-4">가입일</th>
                                 <th className="px-6 py-4 text-right">관리</th>
                             </tr>
@@ -70,11 +73,25 @@ export const UserTable: React.FC = () => {
                                             {user.role}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-4">
+                                        {user.isBanned ? (
+                                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400">
+                                                정지됨
+                                            </span>
+                                        ) : (
+                                            <span className="px-2.5 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                                활성
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4 text-foreground-muted">
                                         {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : '-'}
                                     </td>
                                     <td className="px-6 py-4 text-right">
-                                        <button className="text-foreground-muted hover:text-primary font-medium transition-colors">
+                                        <button
+                                            onClick={() => setSelectedUser(user)}
+                                            className="text-foreground-muted hover:text-primary font-medium transition-colors"
+                                        >
                                             수정
                                         </button>
                                     </td>
@@ -105,6 +122,17 @@ export const UserTable: React.FC = () => {
                     다음
                 </button>
             </div>
+
+            {selectedUser && (
+                <UserActionModal
+                    user={selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                    onUpdate={() => {
+                        fetchUsers();
+                        setSelectedUser(null);
+                    }}
+                />
+            )}
         </div>
     );
 }

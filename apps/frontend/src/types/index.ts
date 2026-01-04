@@ -51,6 +51,7 @@ export interface User {
     email: string;
     name: string;
     role: Role;
+    isBanned?: boolean;
     teacherProfile?: TeacherProfile;
     businessProfile?: BusinessProfile;
     notificationSettings?: any;

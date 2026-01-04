@@ -17,6 +17,7 @@ model User {
   provider       Provider         @default(LOCAL)
   snsId          String?          @map("sns_id") // ID from Social Provider (e.g. Kakao ID)
   phone          String?          // Contact info, revealed only upon acceptance
+  isBanned       Boolean          @default(false) @map("is_banned")
   
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")

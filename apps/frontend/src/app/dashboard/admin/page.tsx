@@ -11,13 +11,15 @@ import { CertStatus, API_BASE_URL } from '@/lib/constants';
 export default function AdminPage() {
     const { user, isLoading: authLoading } = useAuth();
     const [stats, setStats] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CERTS'>('OVERVIEW');
+    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CERTS' | 'BUSINESS'>('OVERVIEW');
     const [pendingCerts, setPendingCerts] = useState<any[]>([]);
+    const [pendingBusiness, setPendingBusiness] = useState<any[]>([]);
 
     useEffect(() => {
         if (user?.role === 'ADMIN') {
             fetchStats();
             fetchPending();
+            fetchPendingBusiness();
         }
     }, [user]);
 
@@ -48,6 +50,24 @@ export default function AdminPage() {
         }
     };
 
+    const fetchPendingBusiness = async () => {
+        try {
+            const data = await api.get<any[]>('/admin/business/pending');
+            setPendingBusiness(data);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const handleBusinessVerify = async (id: number, isVerified: boolean) => {
+        try {
+            await api.patch(`/admin/business/${id}/verify`, { isVerified });
+            fetchPendingBusiness();
+        } catch (err) {
+            console.error('Failed to verify business');
+        }
+    };
+
     if (authLoading) return <div className="p-10 text-center text-foreground">로딩 중...</div>;
 
     if (user?.role !== 'ADMIN') {
@@ -71,7 +91,7 @@ export default function AdminPage() {
                 {/* Tabs */}
                 <div className="border-b border-slate-200 dark:border-slate-700">
                     <nav className="-mb-px flex gap-6" aria-label="Tabs">
-                        {['OVERVIEW', 'USERS', 'CERTS'].map((tab) => (
+                        {['OVERVIEW', 'USERS', 'CERTS', 'BUSINESS'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab as any)}
@@ -85,6 +105,7 @@ export default function AdminPage() {
                                 {tab === 'OVERVIEW' && '종합 개요'}
                                 {tab === 'USERS' && '사용자 관리'}
                                 {tab === 'CERTS' && '인증 승인'}
+                                {tab === 'BUSINESS' && '기업 인증'}
                             </button>
                         ))}
                     </nav>
@@ -156,6 +177,71 @@ export default function AdminPage() {
                                             </button>
                                             <button
                                                 onClick={() => handleStatusUpdate(cert.id, 'REJECTED')}
+                                                className="px-6 py-3 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl text-sm font-bold hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all active:scale-95"
+                                            >
+                                                반려
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {activeTab === 'BUSINESS' && (
+                    <div className="bg-surface rounded-3xl border border-slate-200/50 dark:border-slate-700 shadow-sm overflow-hidden">
+                        <div className="p-8 border-b border-slate-200/50 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
+                            <h2 className="text-xl font-bold text-foreground">기업 인증 대기 목록</h2>
+                            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">{pendingBusiness.length}건</span>
+                        </div>
+
+                        {pendingBusiness.length === 0 ? (
+                            <div className="p-20 text-center text-foreground-muted bg-surface">
+                                <div className="text-5xl mb-6">✨</div>
+                                <p className="text-lg font-medium">대기 중인 기업 인증 요청이 없습니다.</p>
+                                <p className="text-sm mt-1">모든 검토가 완료되었습니다.</p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-100 dark:divide-slate-800">
+                                {pendingBusiness.map((business) => (
+                                    <div key={business.id} className="p-6 md:p-8 flex items-center justify-between hover:bg-surface-hover transition-all bg-surface">
+                                        <div className="flex items-center gap-6">
+                                            <div className="w-14 h-14 rounded-2xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center text-3xl shadow-inner">
+                                                🏢
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-foreground text-lg mb-0.5">{business.companyName || 'Unknown'}</div>
+                                                <div className="text-sm text-foreground-muted mb-3">{business.user?.email || '-'}</div>
+                                                <div className="flex items-center gap-3">
+                                                    {business.registrationNum && (
+                                                        <span className="bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-xl text-xs font-bold text-foreground-muted border border-slate-200 dark:border-slate-700">
+                                                            사업자번호: {business.registrationNum}
+                                                        </span>
+                                                    )}
+                                                    {business.registrationFile && (
+                                                        <a
+                                                            href={business.registrationFile.startsWith('http') ? business.registrationFile : `${API_BASE_URL}${business.registrationFile}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-primary text-xs font-bold hover:underline flex items-center gap-1 bg-primary/5 px-3 py-1.5 rounded-xl"
+                                                        >
+                                                            사업자등록증 보기 ↗
+                                                        </a>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="flex gap-3">
+                                            <button
+                                                onClick={() => handleBusinessVerify(business.id, true)}
+                                                className="px-6 py-3 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95"
+                                            >
+                                                승인하기
+                                            </button>
+                                            <button
+                                                onClick={() => handleBusinessVerify(business.id, false)}
                                                 className="px-6 py-3 bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400 rounded-xl text-sm font-bold hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 dark:hover:text-red-400 transition-all active:scale-95"
                                             >
                                                 반려

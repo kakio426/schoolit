@@ -7,6 +7,8 @@ import {
   Get,
   ParseIntPipe,
   Query,
+  Delete,
+  Post,
 } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -18,7 +20,7 @@ import { Role, CertStatus } from '@prisma/client';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService) { }
 
   @Get('certifications/pending')
   async getPendingCertifications() {
@@ -41,5 +43,59 @@ export class AdminController {
     @Query('search') search: string = '',
   ) {
     return this.adminService.getUsers(+page, +limit, search);
+  }
+
+  @Get('business/pending')
+  async getPendingBusinessProfiles() {
+    return this.adminService.getPendingBusinessProfiles();
+  }
+
+  @Patch('business/:id/verify')
+  async updateBusinessProfileStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('isVerified') isVerified: boolean,
+  ) {
+    return this.adminService.updateBusinessProfileStatus(id, isVerified);
+  }
+
+  @Patch('users/:id/ban')
+  async toggleBanUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('isBanned') isBanned: boolean,
+  ) {
+    return isBanned
+      ? this.adminService.banUser(id)
+      : this.adminService.unbanUser(id);
+  }
+
+  @Patch('users/:id/role')
+  async changeUserRole(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('role') role: string,
+  ) {
+    return this.adminService.changeUserRole(id, role);
+  }
+
+  @Get('reviews')
+  async getReviews(
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '20',
+    @Query('search') search: string = '',
+  ) {
+    return this.adminService.getReviews(+page, +limit, search);
+  }
+
+  @Delete('reviews/:id')
+  async deleteReview(@Param('id', ParseIntPipe) id: number) {
+    return this.adminService.deleteReview(id);
+  }
+
+  @Post('notifications/broadcast')
+  async broadcastNotification(
+    @Body('title') title: string,
+    @Body('content') content: string,
+    @Body('targetRoles') targetRoles?: string[],
+  ) {
+    return this.adminService.broadcastNotification(title, content, targetRoles);
   }
 }

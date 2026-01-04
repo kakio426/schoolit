@@ -69,16 +69,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (user?.role === 'ADMIN') {
         navItems.push(
             { label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' },
+            { label: '리뷰 관리', href: '/dashboard/admin/reviews', icon: '⭐' },
+            { label: '공지 발송', href: '/dashboard/admin/notifications', icon: '📣' },
             { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' }
         );
     }
 
     const SidebarContent = () => (
         <>
-            <div className="p-6">
-                <div className="flex items-center justify-center">
-                    <img src="/logo.png" alt="School It" className="h-12 w-auto object-contain" />
-                </div>
+            <div className="p-8">
+                <a
+                    href="/dashboard"
+                    className="flex items-center justify-center transition-transform hover:scale-105 active:scale-95 group"
+                >
+                    <div className="relative h-16 w-full flex items-center justify-center bg-white rounded-2xl p-2 shadow-sm border border-slate-100 group-hover:border-primary/20 transition-colors">
+                        <img
+                            src="/logo.png"
+                            alt="School It"
+                            className="h-full w-auto object-contain"
+                        />
+                    </div>
+                </a>
             </div>
             <nav className="flex-1 px-4 space-y-1.5 overflow-y-auto font-sans">
                 {navItems.map((item) => {
