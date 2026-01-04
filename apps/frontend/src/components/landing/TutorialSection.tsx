@@ -163,21 +163,20 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                     <div className="flex gap-3 mb-4">
                         <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-2xl">🏫</div>
                         <div>
-                            <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
-                            <div className="h-3 w-20 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                            <div className="text-sm font-bold text-slate-800 dark:text-white">에듀핀 중학교</div>
+                            <div className="text-[10px] text-slate-500">서울 강남구 | 2026.01.04</div>
                         </div>
                     </div>
-                    <div className="space-y-3 mb-6">
-                        <div className="h-8 w-3/4 bg-slate-800 dark:bg-slate-200 rounded-lg"></div>
-                        <div className="h-4 w-full bg-slate-100 dark:bg-slate-800 rounded"></div>
-                        <div className="h-4 w-5/6 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                    <div className="space-y-2 mb-6">
+                        <div className="text-lg font-bold text-slate-800 dark:text-white leading-tight">2026학년도 방과후<br />수학 교사 채용 공고</div>
+                        <div className="text-xs text-slate-500 line-clamp-2">주 2회 기초 수학 지도 및 교재 활용 수업 진행 (경력자 우대)</div>
                     </div>
                     <div className="flex gap-2">
-                        <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-500 text-xs font-bold">#방과후</div>
-                        <div className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold">#서울</div>
+                        <div className="px-3 py-1 rounded-full bg-blue-50 text-blue-500 text-[10px] font-bold">#방과후</div>
+                        <div className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">#수학</div>
                     </div>
                     <div className="mt-6">
-                        <div className="w-full py-3 bg-primary rounded-xl"></div>
+                        <div className="w-full py-2.5 bg-primary rounded-xl text-center text-white text-xs font-bold shadow-lg shadow-primary/20">공고 상세보기</div>
                     </div>
                 </div>
             );
@@ -189,8 +188,8 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                         <div className="w-20 h-20 mx-auto rounded-full bg-slate-200 border-4 border-white dark:border-slate-900 shadow-lg mb-4 flex items-center justify-center text-3xl">
                             👩‍🏫
                         </div>
-                        <div className="h-6 w-32 mx-auto bg-slate-800 dark:bg-slate-200 rounded mb-2"></div>
-                        <div className="h-4 w-48 mx-auto bg-slate-100 dark:bg-slate-800 rounded mb-6"></div>
+                        <div className="text-lg font-bold text-slate-800 dark:text-white mb-1">홍길동 선생님</div>
+                        <div className="text-xs text-slate-500 mb-6">수학 교육 전공 | 중등 정교사 2급</div>
 
                         <div className="flex justify-center gap-4 mb-6">
                             <div className="text-center">
@@ -218,12 +217,18 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                         홍길동 선생님과<br />매칭이 완료되었습니다.
                     </p>
                     <div className="flex -space-x-3 mb-6">
-                        <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white dark:border-slate-900"></div>
-                        <div className="w-10 h-10 rounded-full bg-slate-300 border-2 border-white dark:border-slate-900"></div>
+                        <div className="w-10 h-10 rounded-full bg-slate-200 border-2 border-white dark:border-slate-900 flex items-center justify-center text-sm">🏫</div>
+                        <div className="w-10 h-10 rounded-full bg-slate-300 border-2 border-white dark:border-slate-900 flex items-center justify-center text-sm">👩‍🏫</div>
                     </div>
-                    <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                        <div className="h-full w-full bg-green-500"></div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: 1, delay: 0.5 }}
+                            className="h-full bg-green-500"
+                        />
                     </div>
+                    <div className="mt-4 text-[10px] text-slate-400 font-mono">2026.01.04 SUCCESS</div>
                 </div>
             );
         case 'CERTIFICATION':
@@ -233,12 +238,12 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                         <BadgeCheck size={24} />
                     </div>
                     <div className="flex items-center gap-4 mb-6">
-                        <div className="p-3 bg-slate-100 rounded-xl">
+                        <div className="p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
                             <FileText size={24} className="text-slate-500" />
                         </div>
                         <div>
-                            <div className="h-4 w-24 bg-slate-800 dark:bg-slate-200 rounded mb-1"></div>
-                            <div className="h-3 w-16 bg-slate-100 dark:bg-slate-800 rounded"></div>
+                            <div className="text-sm font-bold text-slate-800 dark:text-white">교원 자격증 (수학)</div>
+                            <div className="text-[10px] text-slate-500">제 2026-123456호</div>
                         </div>
                     </div>
                     <div className="space-y-2">
@@ -252,8 +257,8 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                         </div>
                     </div>
                     <div className="mt-6 flex gap-2">
-                        <div className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
-                        <div className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg"></div>
+                        <div className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] text-center text-slate-500">상세 정보</div>
+                        <div className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] text-center text-slate-500">사본 다운로드</div>
                     </div>
                 </div>
             );
@@ -262,16 +267,12 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                 <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-2xl border border-slate-200 dark:border-slate-700">
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-3">
-                            <div className="aspect-square bg-slate-100 rounded-2xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-slate-200 animate-pulse"></div>
-                            </div>
-                            <div className="h-3 w-full bg-slate-100 rounded"></div>
+                            <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-2xl">📸</div>
+                            <div className="text-[10px] font-bold text-slate-600 dark:text-slate-400">2026 코딩 캠프</div>
                         </div>
                         <div className="space-y-3 mt-8">
-                            <div className="aspect-square bg-slate-100 rounded-2xl relative overflow-hidden">
-                                <div className="absolute inset-0 bg-slate-200 animate-pulse"></div>
-                            </div>
-                            <div className="h-3 w-3/4 bg-slate-100 rounded"></div>
+                            <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-2xl">🎥</div>
+                            <div className="text-[10px] font-bold text-slate-600 dark:text-slate-400">방과후 학교 홍보</div>
                         </div>
                     </div>
                     <div className="mt-4 p-3 bg-slate-50 rounded-xl flex items-center gap-3">
