@@ -144,35 +144,71 @@ export default function MessagesPage() {
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/20 dark:bg-slate-900/10">
-                                {messages.map((msg) => {
+                                {messages.map((msg, index) => {
                                     const isMe = msg.sender?.id === user?.id;
+                                    const isSystem = !msg.sender; // System messages have no sender
+
+                                    // Date Separator Logic
+                                    const showDateSeparator = index === 0 ||
+                                        new Date(messages[index - 1].createdAt).toDateString() !== new Date(msg.createdAt || Date.now()).toDateString();
+
                                     return (
-                                        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-[70%] rounded-2xl px-5 py-3 text-sm shadow-sm transition-all ${isMe ? 'bg-primary text-white rounded-br-none shadow-primary/20' : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground rounded-bl-none'}`}>
-                                                {msg.content}
-                                            </div>
-                                        </div>
-                                    )
+                                        <React.Fragment key={msg.id || index}>
+                                            {showDateSeparator && (
+                                                <div className="flex justify-center my-6">
+                                                    <span className="bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-xs px-3 py-1 rounded-full border border-slate-200 dark:border-slate-700">
+                                                        {new Date(msg.createdAt || Date.now()).toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}
+                                                    </span>
+                                                </div>
+                                            )}
+
+                                            {isSystem ? (
+                                                <div className="flex justify-center my-2">
+                                                    <span className="text-sm text-foreground-muted bg-slate-100/50 dark:bg-slate-800/30 px-3 py-1 rounded-lg">
+                                                        📢 {msg.content}
+                                                    </span>
+                                                </div>
+                                            ) : (
+                                                <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                                    <div className={`max-w-[70%] rounded-2xl px-5 py-3 text-sm shadow-sm transition-all ${isMe ? 'bg-primary text-white rounded-br-none shadow-primary/20' : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground rounded-bl-none'}`}>
+                                                        {msg.content}
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-400 self-end ml-1 mb-1">
+                                                        {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </React.Fragment>
+                                    );
                                 })}
                                 <div ref={messagesEndRef} />
                             </div>
 
                             <div className="p-6 bg-surface border-t border-slate-100 dark:border-slate-800">
-                                <div className="flex gap-3">
-                                    <input
-                                        type="text"
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-                                        placeholder="메시지를 입력하세요..."
-                                        className="flex-1 px-5 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
-                                    />
+                                <div className="flex gap-3 items-end">
                                     <button
-                                        onClick={sendMessage}
-                                        className="px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95"
+                                        onClick={() => alert('파일 전송 기능은 준비 중입니다. 견적서는 이메일로 발송해 주세요.')}
+                                        className="p-3 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-colors shrink-0"
+                                        title="파일 첨부"
                                     >
-                                        전송
+                                        <span className="text-xl">📎</span>
                                     </button>
+                                    <div className="flex-1 flex gap-3">
+                                        <input
+                                            type="text"
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+                                            placeholder="견적 및 일정 조율을 위한 메시지를 입력하세요..."
+                                            className="flex-1 px-5 py-3 bg-slate-50 dark:bg-slate-800 border-none rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/20 text-foreground"
+                                        />
+                                        <button
+                                            onClick={sendMessage}
+                                            className="px-6 py-3 bg-primary text-white rounded-2xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 active:scale-95 shrink-0"
+                                        >
+                                            전송
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </>

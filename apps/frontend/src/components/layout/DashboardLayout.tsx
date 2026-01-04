@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import UnauthorizedView from '../auth/UnauthorizedView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
@@ -32,17 +33,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     if (!user) {
-        return (
-            <div className="flex flex-col items-center justify-center min-h-screen text-center space-y-4">
-                <h2 className="text-xl font-bold italic text-foreground-muted">Unauthorized</h2>
-                <button
-                    onClick={() => router.push('/')}
-                    className="text-primary underline"
-                >
-                    Back to Login
-                </button>
-            </div>
-        );
+        return <UnauthorizedView />;
     }
 
     const navItems = [
