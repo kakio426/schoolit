@@ -117,7 +117,6 @@ export default function TutorialSection() {
                                 {/* Progress Bar for Active Step */}
                                 {index === activeStepIndex && (
                                     <motion.div
-                                        layoutId="stepProgress"
                                         className="absolute bottom-0 left-0 h-1 bg-primary rounded-b-3xl"
                                         initial={{ width: "0%" }}
                                         animate={{ width: "100%" }}
