@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
+import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto } from './dtos/teacher-details.dto';
 import * as bcrypt from 'bcrypt';
 import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -138,7 +139,13 @@ export class UserService {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
-        teacherProfile: true,
+        teacherProfile: {
+          include: {
+            experiences: true,
+            educations: true,
+            links: true,
+          },
+        },
         schoolProfile: true,
         businessProfile: {
           include: {
@@ -213,5 +220,59 @@ export class UserService {
       data: { notificationSettings: settings },
       select: { notificationSettings: true },
     });
+  }
+
+  async addExperience(userId: number, dto: CreateTeacherExperienceDto) {
+    const profile = await this.prisma.teacherProfile.upsert({
+      where: { userId },
+      create: { userId, isVerified: false },
+      update: {},
+    });
+    return this.prisma.teacherExperience.create({
+      data: { teacherProfileId: profile.id, ...dto },
+    });
+  }
+
+  async removeExperience(userId: number, id: number) {
+    const item = await this.prisma.teacherExperience.findUnique({ where: { id }, include: { teacherProfile: true } });
+    if (!item) throw new NotFoundException('Experience not found');
+    if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
+    return this.prisma.teacherExperience.delete({ where: { id } });
+  }
+
+  async addEducation(userId: number, dto: CreateTeacherEducationDto) {
+    const profile = await this.prisma.teacherProfile.upsert({
+      where: { userId },
+      create: { userId, isVerified: false },
+      update: {},
+    });
+    return this.prisma.teacherEducation.create({
+      data: { teacherProfileId: profile.id, ...dto },
+    });
+  }
+
+  async removeEducation(userId: number, id: number) {
+    const item = await this.prisma.teacherEducation.findUnique({ where: { id }, include: { teacherProfile: true } });
+    if (!item) throw new NotFoundException('Education not found');
+    if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
+    return this.prisma.teacherEducation.delete({ where: { id } });
+  }
+
+  async addLink(userId: number, dto: CreateTeacherLinkDto) {
+    const profile = await this.prisma.teacherProfile.upsert({
+      where: { userId },
+      create: { userId, isVerified: false },
+      update: {},
+    });
+    return this.prisma.teacherLink.create({
+      data: { teacherProfileId: profile.id, ...dto },
+    });
+  }
+
+  async removeLink(userId: number, id: number) {
+    const item = await this.prisma.teacherLink.findUnique({ where: { id }, include: { teacherProfile: true } });
+    if (!item) throw new NotFoundException('Link not found');
+    if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
+    return this.prisma.teacherLink.delete({ where: { id } });
   }
 }

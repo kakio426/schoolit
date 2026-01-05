@@ -18,4 +18,9 @@ export class UpdateProfileDto {
   @IsArray()
   @IsString({ each: true })
   regions?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  targetGrades?: string[];
 }

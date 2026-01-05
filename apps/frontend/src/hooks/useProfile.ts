@@ -53,9 +53,84 @@ export function useProfile() {
         }
     };
 
+    const addTeacherExperience = async (data: any) => {
+        setIsSaving(true);
+        try {
+            await api.post('/users/teacher/experience', data);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const removeTeacherExperience = async (id: number) => {
+        try {
+            await api.delete(`/users/teacher/experience/${id}`);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const addTeacherEducation = async (data: any) => {
+        setIsSaving(true);
+        try {
+            await api.post('/users/teacher/education', data);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const removeTeacherEducation = async (id: number) => {
+        try {
+            await api.delete(`/users/teacher/education/${id}`);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
+    const addTeacherLink = async (data: any) => {
+        setIsSaving(true);
+        try {
+            await api.post('/users/teacher/link', data);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
+    const removeTeacherLink = async (id: number) => {
+        try {
+            await api.delete(`/users/teacher/link/${id}`);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        }
+    };
+
     return {
         updateTeacherProfile,
         updateSchoolProfile,
+        addTeacherExperience,
+        removeTeacherExperience,
+        addTeacherEducation,
+        removeTeacherEducation,
+        addTeacherLink,
+        removeTeacherLink,
         certifications,
         fetchCertifications,
         isSaving,

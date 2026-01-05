@@ -141,12 +141,70 @@ model TeacherProfile {
   subjects       String[]
   regions        String[]
   isVerified     Boolean         @default(false) @map("is_verified")
+  
+  // New Fields
+  targetGrades   String[]        @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
+  
+  // Relations
+  experiences    TeacherExperience[]
+  educations     TeacherEducation[]
+  links          TeacherLink[]
   certifications Certification[]
   
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
 
   @@map("teacher_profiles")
+}
+
+model TeacherExperience {
+  id              Int            @id @default(autoincrement())
+  teacherProfileId Int           @map("teacher_profile_id")
+  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+  
+  title           String
+  organization    String
+  startDate       DateTime       @map("start_date")
+  endDate         DateTime?      @map("end_date")
+  isCurrent       Boolean        @default(false) @map("is_current")
+  description     String?
+  
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  @@map("teacher_experiences")
+}
+
+model TeacherEducation {
+  id              Int            @id @default(autoincrement())
+  teacherProfileId Int           @map("teacher_profile_id")
+  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+  
+  schoolName      String         @map("school_name")
+  degree          String         // Bachelor, Master, Doctor, HighSchool
+  major           String?
+  graduationStatus String        @default("GRADUATED") @map("graduation_status") // GRADUATED, ATTENDING, LEAVE
+  startDate       DateTime       @map("start_date")
+  endDate         DateTime?      @map("end_date")
+  
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  @@map("teacher_educations")
+}
+
+model TeacherLink {
+  id              Int            @id @default(autoincrement())
+  teacherProfileId Int           @map("teacher_profile_id")
+  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+  
+  title           String         // Youtube, Blog, Portfolio
+  url             String
+  
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  @@map("teacher_links")
 }
 
 model Certification {

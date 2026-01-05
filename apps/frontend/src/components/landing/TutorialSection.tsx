@@ -25,7 +25,7 @@ export default function TutorialSection() {
     };
 
     return (
-        <section className="pt-12 pb-24 px-6 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
+        <section className="pt-0 pb-24 px-6 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-16 space-y-4">
                     <motion.div

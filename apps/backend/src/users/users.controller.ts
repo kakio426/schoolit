@@ -12,12 +12,14 @@ import {
   BadRequestException,
   Param,
   ParseIntPipe,
+  Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CertificationService } from './certification.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateSchoolProfileDto } from './dtos/update-school-profile.dto';
+import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto } from './dtos/teacher-details.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -64,6 +66,42 @@ export class UserController {
   async updateSchoolProfile(@Request() req, @Body() dto: UpdateSchoolProfileDto) {
     const profile = await this.userService.updateSchoolProfile(req.user.userId, dto);
     return { schoolProfile: profile }; // Return wrapped to match test expectation
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('teacher/experience')
+  async addExperience(@Request() req, @Body() dto: CreateTeacherExperienceDto) {
+    return this.userService.addExperience(req.user.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('teacher/experience/:id')
+  async removeExperience(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.removeExperience(req.user.userId, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('teacher/education')
+  async addEducation(@Request() req, @Body() dto: CreateTeacherEducationDto) {
+    return this.userService.addEducation(req.user.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('teacher/education/:id')
+  async removeEducation(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.removeEducation(req.user.userId, id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('teacher/link')
+  async addLink(@Request() req, @Body() dto: CreateTeacherLinkDto) {
+    return this.userService.addLink(req.user.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('teacher/link/:id')
+  async removeLink(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.removeLink(req.user.userId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -118,6 +156,25 @@ export class UserController {
     }),
   )
   async uploadSchoolLogo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('File is required');
+    return { fileUrl: `/uploads/${file.filename}` };
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('teacher/image/upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `teacher-img-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async uploadTeacherImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
     return { fileUrl: `/uploads/${file.filename}` };
   }
