@@ -338,6 +338,8 @@ model BusinessProfile {
   
   isVerified       Boolean  @default(false) @map("is_verified")
   
+  checklist        Json?    // Added checklist field
+
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

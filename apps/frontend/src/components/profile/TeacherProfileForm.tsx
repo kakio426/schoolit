@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { useProfile } from '@/hooks/useProfile';
-import SmartChecklist from './SmartChecklist';
+import AdminManager from './AdminManager';
 // SecureUploader removed - using text-only approach
 import {
     User, MapPin, BookOpen, GraduationCap, Briefcase, Link as LinkIcon,
@@ -24,9 +24,13 @@ const TARGET_GRADES = [
 ];
 
 const INITIAL_CHECKLIST = [
-    { id: 'criminalRecord', label: '성범죄 경력 조회', description: '학교 행정실에서 조회를 요청합니다.', checked: false },
-    { id: 'drugTest', label: '마약/향정신성검사', description: '보건소 등에서 발급받은 원본을 제출해야 합니다.', checked: false },
-    { id: 'physicalExam', label: '채용신체검사', description: '채용 건강검진 결과서를 준비해주세요.', checked: false },
+    { id: 'bankAccount', label: '통장 사본 (본인 명의)', description: '급여 지급을 검토하기 위해 확인합니다.', checked: false },
+    { id: 'degree', label: '최종 학력 증명서', description: '강사 자격 요건 확인용.', checked: false },
+    { id: 'license', label: '교원/강사 자격증', description: '원본 대조가 필요합니다.', checked: false },
+    { id: 'criminalRecord', label: '성범죄 경력 조회 동의서', description: '아동/청소년 보호법에 의거 필수.', checked: false },
+    { id: 'physicalExam', label: '채용 신체검사서', description: '최근 1년 이내 발급분.', checked: false },
+    { id: 'drugTest', label: '마약/향정신성 약물 검사결과', description: '검사 결과 통보서 지참.', checked: false },
+    { id: 'tbCheck', label: '잠복결핵 검진 확인서', description: '학교/유치원 근무 시 필수.', checked: false },
 ];
 
 // INITIAL_SECURE_FILES removed - no file upload
@@ -268,6 +272,18 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             rows={3}
                             className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
                             placeholder="선생님의 강점과 교육 철학을 짧게 소개해주세요."
+                        />
+                    </div>
+                    {/* Administrative Documents Section (AdminManager) */}
+                    <div className="space-y-4">
+                        <AdminManager
+                            type="TEACHER"
+                            items={checklist}
+                            onCheck={handleChecklistChange}
+                            quickData={[
+                                { label: '지원자 성명', value: user?.name || '' },
+                                { label: '연락처', value: user?.phone || '(비공개)' },
+                            ]}
                         />
                     </div>
 
