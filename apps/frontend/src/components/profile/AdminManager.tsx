@@ -140,7 +140,7 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
             });
 
             const pdfBytes = await pdfDoc.save();
-            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const blob = new Blob([pdfBytes as any], { type: 'application/pdf' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = `edupin_admin_list_${new Date().toISOString().split('T')[0]}.pdf`;

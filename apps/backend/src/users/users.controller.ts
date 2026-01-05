@@ -19,7 +19,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateSchoolProfileDto } from './dtos/update-school-profile.dto';
 
-import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto, CreateTeacherLicenseDto } from './dtos/teacher-details.dto';
+import {
+  CreateTeacherExperienceDto,
+  CreateTeacherEducationDto,
+  CreateTeacherLinkDto,
+  CreateTeacherLicenseDto,
+} from './dtos/teacher-details.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -29,9 +34,7 @@ import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
-  constructor(
-    private userService: UserService,
-  ) { }
+  constructor(private userService: UserService) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
@@ -102,8 +105,6 @@ export class UserController {
   async removeLink(@Request() req, @Param('id', ParseIntPipe) id: number) {
     return this.userService.removeLink(req.user.userId, id);
   }
-
-
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL)

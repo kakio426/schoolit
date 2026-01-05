@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) { }
+  ) {}
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     // Check if job exists and is OPEN
@@ -106,7 +106,9 @@ export class ApplicationsService {
       });
 
       return applications.map((app) => {
-        const isRevealed = ['ACCEPTED', 'INTERVIEWING', 'HIRED', 'COMPLETED'].includes(app.status);
+        const isRevealed = ['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(
+          app.status,
+        );
         if (!isRevealed) {
           app.user.phone = null;
         }
@@ -129,7 +131,7 @@ export class ApplicationsService {
     });
 
     // Remove internalNote for teachers/businesses
-    return apps.map(app => {
+    return apps.map((app) => {
       const { internalNote, ...rest } = app;
       return rest;
     });
@@ -167,9 +169,12 @@ export class ApplicationsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Filter sensitive info (phone) if not ACCEPTED
+    // Filter sensitive info (phone) if not in active stages
     return applications.map((app) => {
-      if (app.status !== 'ACCEPTED') {
+      const isRevealed = ['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(
+        app.status,
+      );
+      if (!isRevealed) {
         app.user.phone = null; // Hide phone
       }
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -368,7 +373,7 @@ export class ApplicationsService {
       jobTitle: app.jobListing.title,
       date: new Date().toLocaleDateString('ko-KR'),
       subjects: app.jobListing.subjects.join(', '),
-      regions: app.jobListing.regions.join(', ')
+      regions: app.jobListing.regions.join(', '),
     };
 
     return this.pdfGeneratorService.generateContract(data, []);

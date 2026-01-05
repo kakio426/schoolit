@@ -41,7 +41,7 @@ describe('ReviewsController (TDD)', () => {
     expect(controller).toBeDefined();
   });
 
-  // Test 14.2.1: 403 if not HIRED or COMPLETED
+  // Test 14.2.1: 403 if not HIRED
   it('should throw ForbiddenException if user is not hired for the job (Test 14.2.1)', async () => {
     // Mock application that is PENDING
     mockPrisma.jobApplication.findUnique.mockResolvedValue({

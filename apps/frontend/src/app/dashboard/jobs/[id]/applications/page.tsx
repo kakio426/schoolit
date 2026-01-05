@@ -94,24 +94,37 @@ export default function JobApplicantsPage() {
 
     const getStatusText = (status: ApplicationStatus) => {
         switch (status) {
-            case ApplicationStatus.PENDING: return '검토중';
-            case ApplicationStatus.ACCEPTED: return '수락됨';
-            case ApplicationStatus.INTERVIEWING: return '면접중 💬';
-            case ApplicationStatus.HIRED: return '채용확정 🎉';
-            case ApplicationStatus.REJECTED: return '거절됨';
+            case ApplicationStatus.PENDING: return '대기 중';
+            case ApplicationStatus.DOCUMENT_SCREENING: return '서류 심사 중 📄';
+            case ApplicationStatus.INTERVIEWING: return '면접/시연 진행 중 💬';
+            case ApplicationStatus.VERIFICATION: return '결격사유 확인 중 🔍';
+            case ApplicationStatus.HIRED: return '채용 확정 🎉';
+            case ApplicationStatus.REJECTED: return '탈락';
             default: return status;
         }
     }
 
     const getStatusColor = (status: ApplicationStatus) => {
         switch (status) {
-            case ApplicationStatus.PENDING: return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-800';
-            case ApplicationStatus.ACCEPTED: return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800';
-            case ApplicationStatus.INTERVIEWING: return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800';
-            case ApplicationStatus.HIRED: return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800';
-            default: return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-700';
+            case ApplicationStatus.PENDING: return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+            case ApplicationStatus.DOCUMENT_SCREENING: return 'bg-blue-100 text-blue-700 border-blue-200';
+            case ApplicationStatus.INTERVIEWING: return 'bg-purple-100 text-purple-700 border-purple-200';
+            case ApplicationStatus.VERIFICATION: return 'bg-orange-100 text-orange-700 border-orange-200';
+            case ApplicationStatus.HIRED: return 'bg-emerald-100 text-emerald-700 border-emerald-200';
+            default: return 'bg-slate-100 text-slate-700 border-slate-200';
         }
     }
+
+    const stages = [
+        { id: ApplicationStatus.PENDING, label: '접수됨', icon: '📥' },
+        { id: ApplicationStatus.DOCUMENT_SCREENING, label: '서류전형', icon: '📄' },
+        { id: ApplicationStatus.INTERVIEWING, label: '면접/시연', icon: '💬' },
+        { id: ApplicationStatus.VERIFICATION, label: '결격사유 조회', icon: '🔍' },
+        { id: ApplicationStatus.HIRED, label: '채용완료', icon: '🎉' },
+    ];
+
+    const [activeTab, setActiveTab] = useState<ApplicationStatus>(ApplicationStatus.PENDING);
+    const filteredApplicants = applicants.filter(a => a.status === activeTab || (activeTab === ApplicationStatus.PENDING && !a.status));
 
     if (user?.role !== Role.SCHOOL) {
         return <DashboardLayout><div>권한이 없습니다.</div></DashboardLayout>;
@@ -128,17 +141,39 @@ export default function JobApplicantsPage() {
                     <p className="text-foreground-muted text-lg">우리 학교 공고에 지원한 선생님 목록입니다.</p>
                 </div>
 
+                {/* Pipeline Tabs */}
+                <div className="flex overflow-x-auto gap-2 mb-8 no-scrollbar pb-2">
+                    {stages.map((stage) => {
+                        const count = applicants.filter(a => a.status === stage.id).length;
+                        return (
+                            <button
+                                key={stage.id}
+                                onClick={() => setActiveTab(stage.id)}
+                                className={`flex items-center gap-2 px-6 py-4 rounded-[24px] font-bold border-2 transition-all whitespace-nowrap ${activeTab === stage.id
+                                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                                    : 'bg-surface border-slate-200 dark:border-slate-700 text-foreground-muted hover:border-slate-300'
+                                    }`}
+                            >
+                                <span className="text-xl">{stage.icon}</span>
+                                <span>{stage.label}</span>
+                                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] ${activeTab === stage.id ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                                    {count}
+                                </span>
+                            </button>
+                        );
+                    })}
+                </div>
+
                 {isLoading ? (
                     <div className="text-center py-20 text-foreground-muted">로딩 중...</div>
-                ) : applicants.length === 0 ? (
+                ) : filteredApplicants.length === 0 ? (
                     <div className="text-center py-24 bg-surface rounded-[40px] border border-slate-200 dark:border-slate-700 shadow-sm">
                         <div className="w-20 h-20 rounded-full bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-3xl mx-auto mb-6">🏜️</div>
-                        <p className="text-foreground-muted text-lg font-medium">아직 지원자가 없습니다.</p>
-                        <p className="text-sm text-foreground-muted mt-1">추천 목록에서 인재를 찾아보세요.</p>
+                        <p className="text-foreground-muted text-lg font-medium">이 단계의 지원자가 없습니다.</p>
                     </div>
                 ) : (
                     <div className="grid gap-6">
-                        {applicants.map(app => (
+                        {filteredApplicants.map(app => (
                             <div key={app.id} className="bg-surface p-8 rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-8">
                                 <div className="flex-1">
                                     <div className="flex items-center gap-4 mb-4">
@@ -169,13 +204,49 @@ export default function JobApplicantsPage() {
                                         {app.message || '인사말이 없습니다.'}
                                         <span className="text-2xl ml-2">❞</span>
                                     </div>
-                                    {/* Contact Info - Visible if status is INTERVIEWING, ACCEPTED or HIRED */}
-                                    {(app.status === ApplicationStatus.INTERVIEWING || app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.HIRED) && (
-                                        <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2.5 rounded-xl w-fit border border-emerald-100 dark:border-emerald-800/50">
-                                            <span className="text-lg">📞</span>
-                                            <span className="text-sm font-bold">연락처: {app.user?.email}</span>
+                                    {/* Contact Info - Visible if status is INTERVIEWING or later */}
+                                    {['INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(app.status) && (
+                                        <div className="flex flex-wrap gap-3">
+                                            <div className="flex items-center gap-3 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-4 py-2.5 rounded-xl w-fit border border-emerald-100 dark:border-emerald-800/50">
+                                                <span className="text-lg">📞</span>
+                                                <span className="text-sm font-bold">연락처: {app.user?.phone || app.user?.teacherProfile?.bankAccount ? '(확인됨)' : '(연락처 없음)'}</span>
+                                            </div>
+                                            {app.user?.teacherProfile?.bankAccount && (
+                                                <div className="flex items-center gap-3 text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-4 py-2.5 rounded-xl w-fit border border-blue-100 dark:border-blue-800/50">
+                                                    <span className="text-lg">💰</span>
+                                                    <span className="text-sm font-bold">계좌: {app.user.teacherProfile.bankAccount}</span>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
+
+                                    {/* Admin Document Readiness (Visual Indicator) */}
+                                    <div className="mt-4 flex items-center gap-4">
+                                        <div className="text-xs font-bold text-foreground-muted">행정 서류 준비도</div>
+                                        <div className="flex-1 max-w-[200px] h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                                            <div
+                                                className="h-full bg-primary transition-all"
+                                                style={{
+                                                    width: `${(() => {
+                                                        const checklist = app.user?.teacherProfile?.checklist || app.user?.businessProfile?.checklist || {};
+                                                        const items = Object.values(checklist);
+                                                        if (items.length === 0) return 0;
+                                                        const checked = items.filter(v => v === true).length;
+                                                        return (checked / items.length) * 100;
+                                                    })()}%`
+                                                }}
+                                            ></div>
+                                        </div>
+                                        <span className="text-[10px] font-bold text-primary">
+                                            {(() => {
+                                                const checklist = app.user?.teacherProfile?.checklist || app.user?.businessProfile?.checklist || {};
+                                                const items = Object.values(checklist);
+                                                if (items.length === 0) return '미준비';
+                                                const checked = items.filter(v => v === true).length;
+                                                return `${checked}/${items.length}`;
+                                            })()}
+                                        </span>
+                                    </div>
                                 </div>
 
                                 <div className="flex flex-col gap-3 min-w-[200px] justify-center">
@@ -188,32 +259,44 @@ export default function JobApplicantsPage() {
                                     {app.status === ApplicationStatus.PENDING && (
                                         <>
                                             <button
-                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.ACCEPTED)}
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
                                                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 text-sm active:scale-95"
                                             >
-                                                합격 처리
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
-                                                className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20 text-sm active:scale-95"
-                                            >
-                                                면접 제안 (채팅)
+                                                서류 전형 합격
                                             </button>
                                             <button
                                                 onClick={() => handleStatusClick(app.id, ApplicationStatus.REJECTED)}
-                                                className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-900/20 transition-all text-sm active:scale-95"
+                                                className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-red-50 hover:text-red-500 transition-all text-sm active:scale-95"
                                             >
-                                                거절
+                                                불합격
                                             </button>
                                         </>
                                     )}
 
-                                    {(app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.INTERVIEWING) && (
+                                    {app.status === ApplicationStatus.DOCUMENT_SCREENING && (
+                                        <button
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
+                                            className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20 text-sm active:scale-95"
+                                        >
+                                            면접 · 시연 제안
+                                        </button>
+                                    )}
+
+                                    {app.status === ApplicationStatus.INTERVIEWING && (
+                                        <button
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.VERIFICATION)}
+                                            className="w-full py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 text-sm active:scale-95"
+                                        >
+                                            결격사유 확인 진행
+                                        </button>
+                                    )}
+
+                                    {app.status === ApplicationStatus.VERIFICATION && (
                                         <button
                                             onClick={() => handleStatusClick(app.id, ApplicationStatus.HIRED)}
                                             className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
                                         >
-                                            🎉 채용 확정
+                                            🎉 최종 채용 확정
                                         </button>
                                     )}
 
@@ -228,12 +311,6 @@ export default function JobApplicantsPage() {
                                                 className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm active:scale-95 flex items-center justify-center gap-2"
                                             >
                                                 📄 계약서 초안 (PDF)
-                                            </button>
-                                            <button
-                                                onClick={() => updateStatus(app.id, ApplicationStatus.COMPLETED)}
-                                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 text-sm active:scale-95 flex items-center justify-center gap-2"
-                                            >
-                                                ✅ 활동 종료 (완료 처리)
                                             </button>
                                             <button
                                                 onClick={() => {

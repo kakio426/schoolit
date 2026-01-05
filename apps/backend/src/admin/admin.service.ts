@@ -1,12 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
-
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) { }
-
-
+  constructor(private prisma: PrismaService) {}
 
   async getSystemStats() {
     const [totalUsers, totalJobs, totalSchools, totalTeachers] = await Promise.all([
@@ -160,11 +157,7 @@ export class AdminService {
     });
   }
 
-  async broadcastNotification(
-    title: string,
-    content: string,
-    targetRoles?: string[],
-  ) {
+  async broadcastNotification(title: string, content: string, targetRoles?: string[]) {
     // Get target users
     const where: any = {};
     if (targetRoles && targetRoles.length > 0) {

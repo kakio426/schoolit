@@ -20,8 +20,7 @@ import { Role } from '@prisma/client';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private adminService: AdminService) { }
-
+  constructor(private adminService: AdminService) {}
 
   @Get('stats')
   async getStats() {
@@ -51,20 +50,12 @@ export class AdminController {
   }
 
   @Patch('users/:id/ban')
-  async toggleBanUser(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('isBanned') isBanned: boolean,
-  ) {
-    return isBanned
-      ? this.adminService.banUser(id)
-      : this.adminService.unbanUser(id);
+  async toggleBanUser(@Param('id', ParseIntPipe) id: number, @Body('isBanned') isBanned: boolean) {
+    return isBanned ? this.adminService.banUser(id) : this.adminService.unbanUser(id);
   }
 
   @Patch('users/:id/role')
-  async changeUserRole(
-    @Param('id', ParseIntPipe) id: number,
-    @Body('role') role: string,
-  ) {
+  async changeUserRole(@Param('id', ParseIntPipe) id: number, @Body('role') role: string) {
     return this.adminService.changeUserRole(id, role);
   }
 

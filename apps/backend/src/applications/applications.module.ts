@@ -12,4 +12,4 @@ import { PdfModule } from '../common/pdf/pdf.module';
   controllers: [ApplicationsController],
   exports: [ApplicationsService],
 })
-export class ApplicationsModule { }
+export class ApplicationsModule {}

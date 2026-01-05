@@ -90,28 +90,29 @@ export default function MyApplicationsPage() {
             return (
                 <div className="flex gap-1 scale-90 origin-right">
                     <button
-                        onClick={() => updateStatus(app.id, ApplicationStatus.ACCEPTED)}
+                        onClick={() => updateStatus(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
                         className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/10"
                     >
-                        합격
+                        서류 합격
                     </button>
                     <button
-                        onClick={() => updateStatus(app.id, ApplicationStatus.INTERVIEWING)}
-                        className="px-3 py-1 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/10"
+                        onClick={() => updateStatus(app.id, ApplicationStatus.REJECTED)}
+                        className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg hover:bg-red-50 hover:text-red-500 transition-all"
                     >
-                        면접
+                        불합격
                     </button>
                 </div>
             )
         }
 
         switch (status) {
-            case ApplicationStatus.PENDING: return <span className="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 px-3 py-1 rounded-full text-xs font-bold border border-yellow-200 dark:border-yellow-800">검토중</span>;
-            case ApplicationStatus.ACCEPTED: return <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-xs font-bold border border-green-200 dark:border-green-800">합격 🎉</span>;
-            case ApplicationStatus.INTERVIEWING: return <span className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 px-3 py-1 rounded-full text-xs font-bold border border-purple-200 dark:border-purple-800">면접중 💬</span>;
-            case ApplicationStatus.HIRED: return <span className="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200 dark:border-emerald-800">채용확정 🎊</span>;
-            case ApplicationStatus.REJECTED: return <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1 rounded-full text-xs font-bold border border-red-200 dark:border-red-800">불합격</span>;
-            default: return <span className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-400 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 dark:border-slate-700">{status}</span>;
+            case ApplicationStatus.PENDING: return <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-bold border border-yellow-200 text-center">대기 중</span>;
+            case ApplicationStatus.DOCUMENT_SCREENING: return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold border border-blue-200 text-center">서류 심사 중</span>;
+            case ApplicationStatus.INTERVIEWING: return <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-xs font-bold border border-purple-200 text-center">면접/시연 중 💬</span>;
+            case ApplicationStatus.VERIFICATION: return <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold border border-orange-200 text-center">결격사유 확인 중</span>;
+            case ApplicationStatus.HIRED: return <span className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold border border-emerald-200 text-center">채용 확정 🎊</span>;
+            case ApplicationStatus.REJECTED: return <span className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-bold border border-red-200 text-center">탈락/거절</span>;
+            default: return <span className="bg-slate-100 text-slate-700 px-3 py-1 rounded-full text-xs font-bold border border-slate-200 text-center">{status}</span>;
         }
     }
 
@@ -148,9 +149,11 @@ export default function MyApplicationsPage() {
                         className="px-4 py-3 bg-surface border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-primary/20 transition-all text-sm outline-none cursor-pointer"
                     >
                         <option value="ALL">모든 상태</option>
-                        <option value={ApplicationStatus.PENDING}>검토중/대기</option>
-                        <option value={ApplicationStatus.INTERVIEWING}>면접/제안수락</option>
-                        <option value={ApplicationStatus.HIRED}>채용확정</option>
+                        <option value={ApplicationStatus.PENDING}>대기 중</option>
+                        <option value={ApplicationStatus.DOCUMENT_SCREENING}>서류 심사</option>
+                        <option value={ApplicationStatus.INTERVIEWING}>면접/시연</option>
+                        <option value={ApplicationStatus.VERIFICATION}>결격조회/확정 중</option>
+                        <option value={ApplicationStatus.HIRED}>채용 완료</option>
                         <option value={ApplicationStatus.REJECTED}>불합격/거절</option>
                     </select>
                 </div>
@@ -217,7 +220,7 @@ export default function MyApplicationsPage() {
                                     </div>
                                     <div className="flex flex-col items-end gap-3 min-w-[120px]">
                                         {getStatusBadge(app)}
-                                        {(app.status === ApplicationStatus.INTERVIEWING || app.status === ApplicationStatus.ACCEPTED || app.status === ApplicationStatus.HIRED) && (
+                                        {['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(app.status) && (
                                             <div className="flex flex-col gap-2 items-end">
                                                 <Link
                                                     href="/dashboard/messages"

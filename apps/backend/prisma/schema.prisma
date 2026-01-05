@@ -119,6 +119,7 @@ model JobListing {
   certifications  String[]         @default([])              // ["교육부 인증", "청소년수련활동 인증"]
   
   applications    JobApplication[]
+  internalChecklist Json?      @map("internal_checklist") // { planningCompleted: boolean, announcementPosted: boolean, etc. }
   
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
@@ -228,11 +229,11 @@ model TeacherLicense {
 
 enum ApplicationStatus {
   PENDING
-  ACCEPTED
-  REJECTED
-  INTERVIEWING
-  HIRED
-  COMPLETED
+  DOCUMENT_SCREENING // 서류 심사
+  INTERVIEWING       // 면접/시연
+  VERIFICATION       // 결격 사유 조회/신원 대조
+  HIRED              // 최종 채용
+  REJECTED           // 탈락
 }
 
 model JobApplication {

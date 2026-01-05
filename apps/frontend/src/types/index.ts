@@ -8,6 +8,8 @@ export interface TeacherProfile {
     subjects: string[];
     regions: string[];
     isVerified: boolean;
+    bankAccount?: string;
+    checklist?: any;
     createdAt: string;
     updatedAt: string;
 }
@@ -51,6 +53,8 @@ export interface BusinessProfile {
     canIssueTaxInvoice: boolean;
     categories: string[];
     isVerified: boolean;
+    bankAccount?: string;
+    checklist?: any;
     portfolios?: BusinessPortfolio[];
 }
 
@@ -59,6 +63,7 @@ export interface User {
     email: string;
     name: string;
     role: Role;
+    phone?: string;
     isBanned?: boolean;
     teacherProfile?: TeacherProfile;
     businessProfile?: BusinessProfile;
@@ -101,6 +106,7 @@ export interface JobListing {
     regions: string[];
     status: 'OPEN' | 'CLOSED';
     active: boolean;
+    internalChecklist?: any;
     createdAt: string;
     schoolProfile?: SchoolProfile;
 }

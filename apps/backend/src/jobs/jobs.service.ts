@@ -8,7 +8,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) { }
+  ) {}
 
   async createJob(userId: number, data: CreateJobDto) {
     const schoolProfile = await this.userService.getSchoolProfile(userId);

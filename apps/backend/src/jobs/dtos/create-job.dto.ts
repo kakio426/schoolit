@@ -1,4 +1,12 @@
-import { IsString, IsArray, IsOptional, IsBoolean, IsNumber, IsEnum, ValidateIf } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsEnum,
+  ValidateIf,
+} from 'class-validator';
 
 export enum JobType {
   TEACHER_HIRING = 'TEACHER_HIRING',
@@ -30,46 +38,49 @@ export class CreateJobDto {
   // Teacher-specific fields
   @IsString()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.TEACHER_HIRING)
+  @ValidateIf((o) => o.jobType === JobType.TEACHER_HIRING)
   contractPeriod?: string;
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.TEACHER_HIRING)
+  @ValidateIf((o) => o.jobType === JobType.TEACHER_HIRING)
   gradeLevel?: string[];
 
   @IsNumber()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.TEACHER_HIRING)
+  @ValidateIf((o) => o.jobType === JobType.TEACHER_HIRING)
   teachingHours?: number;
 
   // Event-specific fields
   @IsString()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.EVENT_VENDOR)
+  @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   eventType?: string;
 
   @IsString()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.EVENT_VENDOR)
+  @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   eventDuration?: string;
 
   @IsString()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.EVENT_VENDOR)
+  @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   participantCount?: string;
 
   @IsBoolean()
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.EVENT_VENDOR)
+  @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   equipmentProvided?: boolean;
 
   @IsArray()
   @IsString({ each: true })
   @IsOptional()
-  @ValidateIf(o => o.jobType === JobType.EVENT_VENDOR)
+  @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   certifications?: string[];
+
+  @IsOptional()
+  internalChecklist?: any;
 }
 
 export class UpdateJobDto {
@@ -94,4 +105,7 @@ export class UpdateJobDto {
   @IsBoolean()
   @IsOptional()
   active?: boolean;
+
+  @IsOptional()
+  internalChecklist?: any;
 }

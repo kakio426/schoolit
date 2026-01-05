@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private applicationsService: ApplicationsService) { }
+  constructor(private applicationsService: ApplicationsService) {}
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.TEACHER, Role.BUSINESS)
@@ -76,11 +76,7 @@ export class ApplicationsController {
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':id/contract')
-  async downloadContract(
-    @Request() req,
-    @Param('id', ParseIntPipe) appId: number,
-    @Res() res,
-  ) {
+  async downloadContract(@Request() req, @Param('id', ParseIntPipe) appId: number, @Res() res) {
     const buffer = await this.applicationsService.generateContract(req.user.userId, appId);
 
     res.set({

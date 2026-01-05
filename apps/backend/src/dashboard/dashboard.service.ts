@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { Role } from '@prisma/client';
+import { Role, Prisma } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getStats(userId: number, role: Role) {
     const stats: any = {};
@@ -27,7 +27,7 @@ export class DashboardService {
       stats.activeApplications = await this.prisma.jobApplication.count({
         where: {
           userId,
-          status: { in: ['PENDING', 'INTERVIEWING', 'ACCEPTED'] },
+          status: { in: ['PENDING', 'DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION'] },
         },
       });
 

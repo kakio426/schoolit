@@ -23,7 +23,7 @@ import { UpdateBusinessProfileDto } from '../users/dtos/update-business-profile.
 
 @Controller('business-profiles')
 export class BusinessProfileController {
-  constructor(private readonly service: BusinessProfileService) { }
+  constructor(private readonly service: BusinessProfileService) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Post()

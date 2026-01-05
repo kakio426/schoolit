@@ -9,16 +9,15 @@ interface RecruitmentPipelineProps {
 const RecruitmentPipeline: React.FC<RecruitmentPipelineProps> = ({ status, isSuggestion }) => {
     const stages = [
         { key: ApplicationStatus.PENDING, label: isSuggestion ? '제안됨' : '접수' },
-        { key: ApplicationStatus.INTERVIEWING, label: '면접/대화' },
+        { key: ApplicationStatus.DOCUMENT_SCREENING, label: '서류심사' },
+        { key: ApplicationStatus.INTERVIEWING, label: '면접/시연' },
+        { key: ApplicationStatus.VERIFICATION, label: '결격조회' },
         { key: ApplicationStatus.HIRED, label: '채용확정' },
-        { key: 'COMPLETED', label: '활동종료' },
     ];
 
     const getCurrentStageIndex = () => {
         if (status === ApplicationStatus.REJECTED) return -1;
-        const index = stages.findIndex(s => s.key === status);
-        if (index === -1 && status === ApplicationStatus.ACCEPTED) return 1; // Treat ACCEPTED as moving towards interview
-        return index;
+        return stages.findIndex(s => s.key === status);
     };
 
     const currentIndex = getCurrentStageIndex();

@@ -11,11 +11,11 @@ export enum Role {
 
 export enum ApplicationStatus {
     PENDING = 'PENDING',
-    ACCEPTED = 'ACCEPTED',
-    REJECTED = 'REJECTED',
+    DOCUMENT_SCREENING = 'DOCUMENT_SCREENING',
     INTERVIEWING = 'INTERVIEWING',
+    VERIFICATION = 'VERIFICATION',
     HIRED = 'HIRED',
-    COMPLETED = 'COMPLETED'
+    REJECTED = 'REJECTED'
 }
 
 export enum CertStatus {

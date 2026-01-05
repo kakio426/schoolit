@@ -1,66 +1,66 @@
 import { IsString, IsOptional, IsBoolean, IsDateString, IsEnum } from 'class-validator';
 
 export class CreateTeacherExperienceDto {
-    @IsString()
-    title: string;
+  @IsString()
+  title: string;
 
-    @IsString()
-    organization: string;
+  @IsString()
+  organization: string;
 
-    @IsDateString()
-    startDate: string;
+  @IsDateString()
+  startDate: string;
 
-    @IsOptional()
-    @IsDateString()
-    endDate?: string;
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 
-    @IsBoolean()
-    @IsOptional()
-    isCurrent?: boolean;
+  @IsBoolean()
+  @IsOptional()
+  isCurrent?: boolean;
 
-    @IsString()
-    @IsOptional()
-    description?: string;
+  @IsString()
+  @IsOptional()
+  description?: string;
 }
 
 export class CreateTeacherEducationDto {
-    @IsString()
-    schoolName: string;
+  @IsString()
+  schoolName: string;
 
-    @IsString()
-    degree: string;
+  @IsString()
+  degree: string;
 
-    @IsString()
-    @IsOptional()
-    major?: string;
+  @IsString()
+  @IsOptional()
+  major?: string;
 
-    @IsString()
-    @IsOptional()
-    graduationStatus?: string; // GRADUATED, ATTENDING
+  @IsString()
+  @IsOptional()
+  graduationStatus?: string; // GRADUATED, ATTENDING
 
-    @IsDateString()
-    startDate: string;
+  @IsDateString()
+  startDate: string;
 
-    @IsOptional()
-    @IsDateString()
-    endDate?: string;
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
 }
 
 export class CreateTeacherLinkDto {
-    @IsString()
-    title: string;
+  @IsString()
+  title: string;
 
-    @IsString()
-    url: string;
+  @IsString()
+  url: string;
 }
 
 export class CreateTeacherLicenseDto {
-    @IsString()
-    name: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    issuer: string;
+  @IsString()
+  issuer: string;
 
-    @IsString()
-    date: string; // YYYY-MM
+  @IsString()
+  date: string; // YYYY-MM
 }

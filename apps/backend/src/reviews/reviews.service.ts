@@ -27,8 +27,8 @@ export class ReviewsService {
       throw new ForbiddenException('Only the job owner can leave a review');
     }
 
-    if (application.status !== 'HIRED' && application.status !== 'COMPLETED') {
-      throw new ForbiddenException('Reviews can only be written for HIRED or COMPLETED jobs');
+    if (application.status !== 'HIRED') {
+      throw new ForbiddenException('Reviews can only be written for HIRED jobs');
     }
 
     // 2. Determine Receiver Type
@@ -64,13 +64,7 @@ export class ReviewsService {
       },
     });
 
-    // 5. Auto-complete the job application
-    if (application.status !== 'COMPLETED') {
-      await this.prisma.jobApplication.update({
-        where: { id: application.id },
-        data: { status: 'COMPLETED' },
-      });
-    }
+    // 5. Auto-complete logic removed - HIRED is the final active stage
 
     return review;
   }
