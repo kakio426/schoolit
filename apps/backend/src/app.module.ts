@@ -39,7 +39,6 @@ import { ContractsModule } from './context/contracts/contracts.module';
     ChatModule,
     ReviewsModule,
     NotificationsModule,
-    NotificationsModule,
     FeedbackModule,
     StorageModule,
     ContractsModule,
