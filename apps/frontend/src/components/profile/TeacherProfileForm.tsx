@@ -51,7 +51,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         subjects: [] as string[],
         regions: [] as string[],
         targetGrades: [] as string[],
-        profileImage: ''
+        profileImage: '',
+        bankAccount: ''
     });
 
     // Checklist & Documents
@@ -87,7 +88,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 subjects: user.teacherProfile.subjects || [],
                 regions: user.teacherProfile.regions || [],
                 targetGrades: user.teacherProfile.targetGrades || [],
-                profileImage: user.teacherProfile.profileImage || ''
+                profileImage: user.teacherProfile.profileImage || '',
+                bankAccount: user.teacherProfile.bankAccount || ''
             });
 
             // Restore Checklist
@@ -133,6 +135,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             regions: basicInfo.regions,
             profileImage: basicInfo.profileImage,
             targetGrades: basicInfo.targetGrades,
+            bankAccount: basicInfo.bankAccount,
             checklist: checklistObj
         });
 
@@ -234,9 +237,18 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 </div>
             )}
 
-            {/* 0. Security/Compliance Zone - Red Zone Only */}
+            {/* Administrative Documents Section (AdminManager) - Repositioned to top for high visibility */}
             <div className="w-full">
-                <SmartChecklist items={checklist} onChange={handleChecklistChange} />
+                <AdminManager
+                    type="TEACHER"
+                    items={checklist}
+                    onCheck={handleChecklistChange}
+                    quickData={[
+                        { label: '지원자 성명', value: user?.name || '' },
+                        { label: '연락처', value: user?.phone || '(비공개)' },
+                        { label: '정산 계좌', value: basicInfo.bankAccount || '(미등록)' },
+                    ]}
+                />
             </div>
 
             {/* 1. Basic Info & Photo */}
@@ -274,17 +286,17 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             placeholder="선생님의 강점과 교육 철학을 짧게 소개해주세요."
                         />
                     </div>
-                    {/* Administrative Documents Section (AdminManager) */}
-                    <div className="space-y-4">
-                        <AdminManager
-                            type="TEACHER"
-                            items={checklist}
-                            onCheck={handleChecklistChange}
-                            quickData={[
-                                { label: '지원자 성명', value: user?.name || '' },
-                                { label: '연락처', value: user?.phone || '(비공개)' },
-                            ]}
+                    {/* bankAccount Input Field */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">정산용 계좌 정보 (정보 입력)</label>
+                        <input
+                            type="text"
+                            value={basicInfo.bankAccount}
+                            onChange={(e) => setBasicInfo(prev => ({ ...prev, bankAccount: e.target.value }))}
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            placeholder="예: 농협 302-1234-5678 (본인 명의)"
                         />
+                        <p className="text-[10px] text-slate-400 mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

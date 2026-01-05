@@ -28,5 +28,9 @@ export class UpdateProfileDto {
   transientDocuments?: any;
 
   @IsOptional()
+  @IsString()
+  bankAccount?: string;
+
+  @IsOptional()
   checklist?: any;
 }

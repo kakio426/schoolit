@@ -40,5 +40,9 @@ export class UpdateBusinessProfileDto {
     registrationFile?: string;
 
     @IsOptional()
+    @IsString()
+    bankAccount?: string;
+
+    @IsOptional()
     checklist?: any; // Allow JSON object
 }

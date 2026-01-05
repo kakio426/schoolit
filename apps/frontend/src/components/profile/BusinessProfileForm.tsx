@@ -27,7 +27,8 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
         website: '',
         address: '',
         canIssueTaxInvoice: false,
-        categories: [] as string[]
+        categories: [] as string[],
+        bankAccount: ''
     });
     const [categoryInput, setCategoryInput] = useState('');
     // registrationFile state removed
@@ -45,7 +46,8 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                 website: user.businessProfile.website || '',
                 address: user.businessProfile.address || '',
                 canIssueTaxInvoice: user.businessProfile.canIssueTaxInvoice || false,
-                categories: user.businessProfile.categories || []
+                categories: user.businessProfile.categories || [],
+                bankAccount: user.businessProfile.bankAccount || ''
             });
 
             if (user.businessProfile.checklist) {
@@ -155,7 +157,19 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                         />
                     </div>
 
-                    {/* File Upload Section Removed - Replaced by AdminManager below */}
+                    {/* Bank Account Section */}
+                    <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <label className="block text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">정산 계좌 정보 (정보 입력)</label>
+                        <input
+                            type="text"
+                            name="bankAccount"
+                            value={formData.bankAccount}
+                            onChange={handleChange}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-foreground text-sm"
+                            placeholder="예: 농협 301-1234-5678-01 (법인/개인사업자 명의)"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-2">*실제 통장사본은 학교 행정실 요청 시 오프라인으로 제출해 주세요.</p>
+                    </div>
 
                     <div>
                         <label className="block text-sm font-semibold text-foreground mb-2">업체 소개</label>
@@ -248,6 +262,7 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                     quickData={[
                         { label: '사업자등록번호', value: formData.registrationNum || '(미입력)' },
                         { label: 'S2B 업체번호', value: formData.s2bNumber || '(미입력)' },
+                        { label: '사업자 계좌', value: formData.bankAccount || '(미입력)' },
                         { label: '업체명', value: formData.companyName || '' },
                     ]}
                 />

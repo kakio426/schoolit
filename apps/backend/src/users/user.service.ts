@@ -105,6 +105,8 @@ export class UserService {
         subjects: true,
         regions: true,
         isVerified: true,
+        bankAccount: true,
+        checklist: true,
         createdAt: true,
         updatedAt: true,
       },

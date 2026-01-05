@@ -144,6 +144,7 @@ model TeacherProfile {
   
   // New Fields
   targetGrades   String[]        @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
+  bankAccount    String?         @map("bank_account")
   
   transientDocuments Json?       @map("transient_documents") // [{ type: 'BANK', url: '...', expiresAt: '...' }]
   checklist          Json?       // { criminalRecord: boolean, drugTest: boolean }
@@ -337,7 +338,7 @@ model BusinessProfile {
   portfolios       BusinessPortfolio[]
   
   isVerified       Boolean  @default(false) @map("is_verified")
-  
+  bankAccount      String?  @map("bank_account")
   checklist        Json?    // Added checklist field
 
   createdAt        DateTime @default(now()) @map("created_at")
