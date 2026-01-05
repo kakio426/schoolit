@@ -1,5 +1,7 @@
-import React from 'react';
-import { CheckSquare, Square, Copy, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Square, Copy, FileText, CheckCircle2, Loader2 } from 'lucide-react';
+import { PDFDocument, rgb } from 'pdf-lib';
+import fontkit from '@pdf-lib/fontkit';
 
 interface ChecklistItem {
     id: string;
@@ -19,6 +21,7 @@ interface AdminManagerProps {
 }
 
 export default function AdminManager({ type, items, onCheck, quickData }: AdminManagerProps) {
+    const [isGenerating, setIsGenerating] = React.useState(false);
     const total = items.length;
     const checkedCount = items.filter(i => i.checked).length;
     const progress = total > 0 ? Math.round((checkedCount / total) * 100) : 0;
@@ -26,8 +29,128 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
     const copyToClipboard = (text: string) => {
         if (!text) return;
         navigator.clipboard.writeText(text);
-        // In a real app, use a toast notification here
         alert('복사되었습니다: ' + text);
+    };
+
+    const generatePDF = async () => {
+        setIsGenerating(true);
+        try {
+            const pdfDoc = await PDFDocument.create();
+            pdfDoc.registerFontkit(fontkit);
+
+            // Load Korean Font (NanumGothic)
+            const fontUrl = 'https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_01@1.0/NanumGothic.ttf';
+            const fontBytes = await fetch(fontUrl).then(res => res.arrayBuffer());
+            const customFont = await pdfDoc.embedFont(fontBytes);
+
+            const page = pdfDoc.addPage();
+            const { width, height } = page.getSize();
+            const margin = 50;
+            let currentY = height - margin;
+
+            // Title
+            page.drawText(type === 'TEACHER' ? '행정 서류 제출 협조 요청 (강사용)' : '행정 서류 제출 협조 요청 (업체용)', {
+                x: margin,
+                y: currentY,
+                size: 20,
+                font: customFont,
+                color: rgb(0.1, 0.1, 0.1),
+            });
+            currentY -= 40;
+
+            // Header Info (Name, Date)
+            page.drawText(`발급 일시: ${new Date().toLocaleString('ko-KR')}`, {
+                x: margin,
+                y: currentY,
+                size: 10,
+                font: customFont,
+                color: rgb(0.5, 0.5, 0.5),
+            });
+            currentY -= 30;
+
+            // Quick Data Section
+            if (quickData && quickData.length > 0) {
+                page.drawText('기본 인적 사항 (연동 정보)', {
+                    x: margin,
+                    y: currentY,
+                    size: 14,
+                    font: customFont,
+                    color: rgb(0, 0, 0),
+                });
+                currentY -= 25;
+
+                quickData.forEach(data => {
+                    page.drawText(`- ${data.label}: ${data.value || '(미입력)'}`, {
+                        x: margin + 10,
+                        y: currentY,
+                        size: 12,
+                        font: customFont,
+                    });
+                    currentY -= 20;
+                });
+                currentY -= 20;
+            }
+
+            // Checklist Section
+            page.drawText(`서류 준비 현황 (진행률: ${progress}%)`, {
+                x: margin,
+                y: currentY,
+                size: 14,
+                font: customFont,
+                color: rgb(0, 0, 0),
+            });
+            currentY -= 25;
+
+            items.forEach(item => {
+                const status = item.checked ? '[V] 준비완료' : '[  ] 미비';
+                page.drawText(`${status} - ${item.label}`, {
+                    x: margin + 10,
+                    y: currentY,
+                    size: 12,
+                    font: customFont,
+                    color: item.checked ? rgb(0, 0.5, 0.2) : rgb(0.8, 0, 0),
+                });
+                currentY -= 20;
+                page.drawText(`   (${item.description})`, {
+                    x: margin + 10,
+                    y: currentY,
+                    size: 10,
+                    font: customFont,
+                    color: rgb(0.5, 0.5, 0.5),
+                });
+                currentY -= 20;
+            });
+
+            // Note
+            currentY -= 40;
+            page.drawText('* 본 서류는 시스템에 입력된 정보를 바탕으로 생성된 확인용 명단입니다.', {
+                x: margin,
+                y: currentY,
+                size: 9,
+                font: customFont,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+            currentY -= 15;
+            page.drawText('* 실제 증빙 서류 사본을 지참하여 행정실을 방문해 주시기 바랍니다.', {
+                x: margin,
+                y: currentY,
+                size: 9,
+                font: customFont,
+                color: rgb(0.4, 0.4, 0.4),
+            });
+
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `edupin_admin_list_${new Date().toISOString().split('T')[0]}.pdf`;
+            link.click();
+        } catch (error) {
+            console.error('PDF Generation Error:', error);
+            alert('PDF 생성 중 오류가 발생했습니다.');
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     return (
@@ -141,9 +264,18 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
                         )}
 
                         <div className="mt-6 pt-6 border-t border-slate-100 dark:border-slate-700">
-                            <button type="button" className="w-full py-4 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold text-sm shadow-lg hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2 group">
-                                <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                                행정실 제출용 목록 생성
+                            <button
+                                type="button"
+                                onClick={generatePDF}
+                                disabled={isGenerating}
+                                className="w-full py-4 bg-slate-900 dark:bg-slate-700 text-white rounded-xl font-bold text-sm shadow-lg hover:translate-y-[-2px] transition-all flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isGenerating ? (
+                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                ) : (
+                                    <FileText className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                                )}
+                                {isGenerating ? 'PDF 생성 중...' : '행정실 제출용 목록 생성'}
                             </button>
                             <p className="text-[10px] text-center text-slate-400 mt-3 leading-relaxed">
                                 *준비된 항목을 바탕으로 인쇄 가능한 PDF를 생성합니다.<br />
