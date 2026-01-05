@@ -40,8 +40,22 @@ export function useProfile() {
         }
     };
 
+    const updateSchoolProfile = async (data: any) => {
+        setIsSaving(true);
+        try {
+            await api.patch('/users/school/profile', data);
+            await refreshProfile();
+            return { success: true };
+        } catch (error: any) {
+            return { success: false, error: error.message };
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     return {
         updateTeacherProfile,
+        updateSchoolProfile,
         certifications,
         fetchCertifications,
         isSaving,

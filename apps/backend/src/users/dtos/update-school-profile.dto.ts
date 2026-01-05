@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsUrl, IsArray, IsNumber } from 'class-validator';
 
 export class UpdateSchoolProfileDto {
   @IsString()
@@ -7,7 +7,19 @@ export class UpdateSchoolProfileDto {
 
   @IsString()
   @IsOptional()
+  schoolType?: string;
+
+  @IsString()
+  @IsOptional()
   address?: string;
+
+  @IsString()
+  @IsOptional()
+  detailAddress?: string;
+
+  @IsString()
+  @IsOptional()
+  phoneNumber?: string;
 
   @IsUrl()
   @IsOptional()
@@ -15,5 +27,22 @@ export class UpdateSchoolProfileDto {
 
   @IsString()
   @IsOptional()
+  homepage?: string; // Website alias
+
+  @IsString()
+  @IsOptional()
   description?: string;
+
+  @IsNumber()
+  @IsOptional()
+  studentCount?: number;
+
+  @IsString()
+  @IsOptional()
+  logoImage?: string;
+
+  @IsArray()
+  @IsOptional()
+  @IsString({ each: true })
+  tags?: string[];
 }

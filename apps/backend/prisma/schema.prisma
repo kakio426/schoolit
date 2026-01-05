@@ -59,10 +59,21 @@ model SchoolProfile {
   userId      Int          @unique @map("user_id")
   user        User         @relation(fields: [userId], references: [id])
   schoolName  String?      @map("school_name")
+  
+  // New Fields 
+  schoolType  String?      @default("ELEMENTARY") @map("school_type") // ELEMENTARY, MIDDLE, HIGH, SPECIAL, ALTERNATIVE
   address     String?
+  detailAddress String?    @map("detail_address")
+  phoneNumber String?      @map("phone_number")
   website     String?
+  homepage    String?      // Alias or alternative link
   description String?
+  
+  studentCount Int?        @map("student_count") // Approximate number of students
   logoImage   String?      @map("logo_image")
+  
+  tags        String[]     @default([])
+  
   jobListings JobListing[]
   
   createdAt   DateTime     @default(now()) @map("created_at")

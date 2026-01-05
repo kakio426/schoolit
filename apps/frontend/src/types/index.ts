@@ -23,9 +23,16 @@ export interface SchoolProfile {
     id: number;
     userId: number;
     schoolName?: string;
+    schoolType?: string; // ELEMENTARY, MIDDLE, HIGH, etc.
+    studentCount?: number;
     address?: string;
+    detailAddress?: string;
+    phoneNumber?: string;
     website?: string;
+    homepage?: string;
     description?: string;
+    logoImage?: string;
+    tags?: string[];
     isVerified: boolean;
     createdAt: string;
     updatedAt: string;

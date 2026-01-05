@@ -30,7 +30,7 @@ export class UserController {
   constructor(
     private userService: UserService,
     private certService: CertificationService,
-  ) {}
+  ) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
@@ -100,6 +100,26 @@ export class UserController {
     });
 
     return certification;
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.SCHOOL)
+  @Post('school/logo/upload')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (req, file, cb) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `school-logo-${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
+  async uploadSchoolLogo(@UploadedFile() file: Express.Multer.File) {
+    if (!file) throw new BadRequestException('File is required');
+    return { fileUrl: `/uploads/${file.filename}` };
   }
 
   @UseGuards(AuthGuard('jwt'))

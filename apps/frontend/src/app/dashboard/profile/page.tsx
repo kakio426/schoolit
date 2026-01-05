@@ -9,6 +9,8 @@ import BusinessProfileForm from '@/components/profile/BusinessProfileForm';
 import BusinessPortfolioManager from '@/components/profile/BusinessPortfolioManager';
 import { useProfile } from '@/hooks/useProfile';
 
+import SchoolProfileForm from '@/components/profile/SchoolProfileForm';
+
 export default function ProfilePage() {
     const { user, token, refreshProfile } = useAuth();
     const { updateTeacherProfile, certifications, fetchCertifications, isSaving } = useProfile();
@@ -18,7 +20,7 @@ export default function ProfilePage() {
     const [regions, setRegions] = useState<string[]>([]);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
-    const isBusiness = user?.role === 'BUSINESS';
+    const isSchool = user?.role === 'SCHOOL';
 
     useEffect(() => {
         if (user?.teacherProfile) {
@@ -44,7 +46,9 @@ export default function ProfilePage() {
 
     const isVerified = isBusiness
         ? user.businessProfile?.isVerified
-        : user.teacherProfile?.isVerified;
+        : isSchool
+            ? false // School verification logic later
+            : user.teacherProfile?.isVerified;
 
     return (
         <DashboardLayout>
@@ -54,7 +58,7 @@ export default function ProfilePage() {
                         <h1 className="text-2xl font-bold text-foreground">프로필 관리</h1>
                         <p className="text-foreground-muted text-sm mt-1">나의 정보와 자격을 관리하세요.</p>
                     </div>
-                    < ProfileBadge isVerified={isVerified || false} />
+                    <ProfileBadge isVerified={isVerified || false} />
                 </div>
 
                 {isBusiness ? (
@@ -62,6 +66,8 @@ export default function ProfilePage() {
                         <BusinessProfileForm user={user} token={token} onRefresh={refreshProfile} />
                         <BusinessPortfolioManager portfolios={user.businessProfile?.portfolios || []} token={token} onRefresh={refreshProfile} />
                     </>
+                ) : isSchool ? (
+                    <SchoolProfileForm user={user} token={token} onRefresh={refreshProfile} />
                 ) : (
                     <form onSubmit={handleSave} className="space-y-6">
                         <div className="bg-surface p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
