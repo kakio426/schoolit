@@ -136,21 +136,40 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
 
                 {/* S2B Number Section */}
                 <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">S2B</span>
-                        <label className="block text-sm font-bold text-slate-900 dark:text-slate-100">학교장터(S2B) 업체번호</label>
+                    <div className="flex items-center justify-between gap-2 mb-3">
+                        <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">S2B</span>
+                            <label className="block text-sm font-bold text-slate-900 dark:text-slate-100">학교장터(S2B) 업체번호 <span className="text-[10px] font-medium text-slate-400 ml-1">(선택사항)</span></label>
+                        </div>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                        행정실의 원활한 계약 처리를 위해 S2B에 등록된 업체번호를 입력해주세요.
+                        행정실의 원활한 계약 처리를 위해 S2B에 등록된 경우 번호를 입력해주세요.
                     </p>
-                    <input
-                        type="text"
-                        name="s2bNumber"
-                        value={formData.s2bNumber}
-                        onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-foreground"
-                        placeholder="예: 20240105-1234 (S2B 업체번호)"
-                    />
+                    <div className="space-y-3">
+                        <input
+                            type="text"
+                            name="s2bNumber"
+                            value={formData.s2bNumber}
+                            onChange={handleChange}
+                            disabled={formData.s2bNumber === 'S2B 미가입'}
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-foreground disabled:bg-slate-50 disabled:text-slate-400"
+                            placeholder="예: 20240105-1234 (S2B 업체번호)"
+                        />
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={formData.s2bNumber === 'S2B 미가입'}
+                                onChange={(e) => {
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        s2bNumber: e.target.checked ? 'S2B 미가입' : ''
+                                    }));
+                                }}
+                                className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">S2B에 현재 등록되어 있지 않습니다.</span>
+                        </label>
+                    </div>
                 </div>
 
                 {/* Bank Account Section */}
