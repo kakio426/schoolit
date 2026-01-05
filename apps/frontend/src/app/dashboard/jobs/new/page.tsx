@@ -37,10 +37,10 @@ export default function NewJobPage() {
     const [lastWarningValue, setLastWarningValue] = useState(0);
 
     const checkBudgetLimit = (value: string) => {
+        if (jobType !== JobType.EVENT_VENDOR) return;
+
         const numValue = parseInt(value.replace(/,/g, ''), 10) || 0;
         if (numValue > 20000000) {
-            // Only warn if we haven't warned for this "crossing" yet (simple debounce logic or just show it)
-            // Implementation: Show simple warning modal
             setShowBudgetWarning(true);
         }
     };
@@ -122,18 +122,22 @@ export default function NewJobPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-2">예상 예산 (원)</label>
+                            <label className="block text-sm font-semibold text-foreground mb-2">
+                                {jobType === JobType.TEACHER_HIRING ? '지급 예정 급여 (원)' : '예상 예산 (원)'}
+                            </label>
                             <input
                                 name="budget"
                                 type="number"
                                 value={formData.budget}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
-                                placeholder="숫자만 입력 (예: 15000000)"
+                                placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2500000 (월 급여 또는 총액)" : "숫자만 입력 (예: 15000000)"}
                             />
-                            <p className="text-xs text-foreground-muted mt-1">
-                                * 2,000만 원 초과 시 수의계약 대상에서 제외될 수 있습니다.
-                            </p>
+                            {jobType === JobType.EVENT_VENDOR && (
+                                <p className="text-xs text-foreground-muted mt-1">
+                                    * 2,000만 원 초과 시 수의계약 대상에서 제외될 수 있습니다.
+                                </p>
+                            )}
                         </div>
 
                         <div>
@@ -204,8 +208,8 @@ export default function NewJobPage() {
                                                     setFormData({ ...formData, gradeLevel: newLevels });
                                                 }}
                                                 className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${formData.gradeLevel.includes(level)
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                    ? 'bg-primary text-white'
+                                                    : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
                                                     }`}
                                             >
                                                 {level}
@@ -300,8 +304,8 @@ export default function NewJobPage() {
                                                     setFormData({ ...formData, certifications: newCerts });
                                                 }}
                                                 className={`px-3 py-2 rounded-lg font-bold text-xs transition-all ${formData.certifications.includes(cert)
-                                                        ? 'bg-primary text-white'
-                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                    ? 'bg-primary text-white'
+                                                    : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
                                                     }`}
                                             >
                                                 {cert}
