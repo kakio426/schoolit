@@ -53,7 +53,7 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            검증된 선생님 프로필부터 학교 행사 중개까지.<br />
+            상세한 선생님 프로필부터 학교 행사 중개까지.<br />
             복잡한 채용과 매칭 프로세스를 School It에서 간편하게 해결하세요.
           </p>
 
@@ -81,8 +81,8 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
               icon={<UserCheck className="w-8 h-8 text-blue-400" />}
-              title="검증된 선생님"
-              description="자격증과 경력이 확인된 전문 선생님들을 쉽고 빠르게 찾아보세요."
+              title="준비된 선생님"
+              description="상세한 경력과 자격 정보를 갖춘 전문 선생님들을 쉽고 빠르게 찾아보세요."
             />
             <FeatureCard
               icon={<School className="w-8 h-8 text-purple-400" />}
