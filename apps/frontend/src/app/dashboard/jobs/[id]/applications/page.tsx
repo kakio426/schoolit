@@ -10,7 +10,7 @@ import WarningModal from '@/components/ui/WarningModal';
 import ComplianceCheck from '@/components/ui/ComplianceCheck';
 import { api } from '@/lib/api';
 import { JobApplication, JobListing } from '@/types';
-import { ApplicationStatus, Role } from '@/lib/constants';
+import { ApplicationStatus, Role, JobType } from '@/lib/constants';
 
 export default function JobApplicantsPage() {
     const { id } = useParams(); // jobId
@@ -115,13 +115,23 @@ export default function JobApplicantsPage() {
         }
     }
 
-    const stages = [
+    const teacherStages = [
         { id: ApplicationStatus.PENDING, label: '접수됨', icon: '📥' },
         { id: ApplicationStatus.DOCUMENT_SCREENING, label: '서류전형', icon: '📄' },
         { id: ApplicationStatus.INTERVIEWING, label: '면접/시연', icon: '💬' },
         { id: ApplicationStatus.VERIFICATION, label: '결격사유 조회', icon: '🔍' },
         { id: ApplicationStatus.HIRED, label: '채용완료', icon: '🎉' },
     ];
+
+    const eventStages = [
+        { id: ApplicationStatus.PENDING, label: '견적접수', icon: '📥' },
+        { id: ApplicationStatus.BIDDING, label: '업체선정', icon: '⚖️' },
+        { id: ApplicationStatus.CONTRACTING, label: '계약체결', icon: '✍️' },
+        { id: ApplicationStatus.EXECUTING, label: '행사/과업', icon: '🏃' },
+        { id: ApplicationStatus.PAYMENT_COMPLETED, label: '대금지급/완료', icon: '💰' },
+    ];
+
+    const stages = job?.jobType === JobType.EVENT_VENDOR ? eventStages : teacherStages;
 
     const [activeTab, setActiveTab] = useState<ApplicationStatus>(ApplicationStatus.PENDING);
     const filteredApplicants = applicants.filter(a => a.status === activeTab || (activeTab === ApplicationStatus.PENDING && !a.status));
@@ -256,23 +266,27 @@ export default function JobApplicantsPage() {
                                         </span>
                                     </div>
 
+                                    {/* STATUS TRANSITIONS */}
+
+                                    {/* PENDING -> NEXT STEP */}
                                     {app.status === ApplicationStatus.PENDING && (
                                         <>
                                             <button
-                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
+                                                onClick={() => handleStatusClick(app.id, job?.jobType === JobType.EVENT_VENDOR ? ApplicationStatus.BIDDING : ApplicationStatus.DOCUMENT_SCREENING)}
                                                 className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 text-sm active:scale-95"
                                             >
-                                                서류 전형 합격
+                                                {job?.jobType === JobType.EVENT_VENDOR ? '견적 심사 진행 (업체선정)' : '서류 전형 합격'}
                                             </button>
                                             <button
                                                 onClick={() => handleStatusClick(app.id, ApplicationStatus.REJECTED)}
                                                 className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-red-50 hover:text-red-500 transition-all text-sm active:scale-95"
                                             >
-                                                불합격
+                                                {job?.jobType === JobType.EVENT_VENDOR ? '미선정 (반려)' : '불합격'}
                                             </button>
                                         </>
                                     )}
 
+                                    {/* TEACHER WORKFLOW */}
                                     {app.status === ApplicationStatus.DOCUMENT_SCREENING && (
                                         <button
                                             onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
@@ -300,7 +314,35 @@ export default function JobApplicantsPage() {
                                         </button>
                                     )}
 
-                                    {app.status === ApplicationStatus.HIRED && (
+                                    {/* EVENT WORKFLOW */}
+                                    {app.status === ApplicationStatus.BIDDING && (
+                                        <button
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.CONTRACTING)}
+                                            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 text-sm active:scale-95"
+                                        >
+                                            업체 선정 및 계약 진행
+                                        </button>
+                                    )}
+
+                                    {app.status === ApplicationStatus.CONTRACTING && (
+                                        <button
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.EXECUTING)}
+                                            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
+                                        >
+                                            계약 체결 완료 (행사 준비)
+                                        </button>
+                                    )}
+
+                                    {app.status === ApplicationStatus.EXECUTING && (
+                                        <button
+                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.PAYMENT_COMPLETED)}
+                                            className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-500/20 text-sm active:scale-95"
+                                        >
+                                            행사/용역 완료 (대금 지급)
+                                        </button>
+                                    )}
+
+                                    {(app.status === ApplicationStatus.HIRED || app.status === ApplicationStatus.PAYMENT_COMPLETED) && (
                                         <div className="flex flex-col gap-2 w-full">
                                             <button
                                                 onClick={() => {
@@ -310,7 +352,7 @@ export default function JobApplicantsPage() {
                                                 }}
                                                 className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm active:scale-95 flex items-center justify-center gap-2"
                                             >
-                                                📄 계약서 초안 (PDF)
+                                                📄 {job?.jobType === JobType.EVENT_VENDOR ? '완료보고서 / 검수조서' : '계약서 초안 (PDF)'}
                                             </button>
                                             <button
                                                 onClick={() => {

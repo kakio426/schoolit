@@ -9,13 +9,23 @@ export enum Role {
     PENDING = 'PENDING'
 }
 
+export enum JobType {
+    TEACHER_HIRING = 'TEACHER_HIRING',
+    EVENT_VENDOR = 'EVENT_VENDOR',
+}
+
 export enum ApplicationStatus {
     PENDING = 'PENDING',
     DOCUMENT_SCREENING = 'DOCUMENT_SCREENING',
     INTERVIEWING = 'INTERVIEWING',
     VERIFICATION = 'VERIFICATION',
     HIRED = 'HIRED',
-    REJECTED = 'REJECTED'
+    REJECTED = 'REJECTED',
+    // Event specific
+    BIDDING = 'BIDDING',
+    CONTRACTING = 'CONTRACTING',
+    EXECUTING = 'EXECUTING',
+    PAYMENT_COMPLETED = 'PAYMENT_COMPLETED'
 }
 
 export enum CertStatus {

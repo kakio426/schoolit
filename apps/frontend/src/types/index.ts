@@ -106,6 +106,7 @@ export interface JobListing {
     regions: string[];
     status: 'OPEN' | 'CLOSED';
     active: boolean;
+    jobType?: string;
     internalChecklist?: any;
     createdAt: string;
     schoolProfile?: SchoolProfile;

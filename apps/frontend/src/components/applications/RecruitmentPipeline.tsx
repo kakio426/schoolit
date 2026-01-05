@@ -1,19 +1,30 @@
 import React from 'react';
-import { ApplicationStatus } from '@/lib/constants';
+import { ApplicationStatus, JobType } from '@/lib/constants';
 
 interface RecruitmentPipelineProps {
     status: ApplicationStatus;
     isSuggestion?: boolean;
+    jobType?: JobType;
 }
 
-const RecruitmentPipeline: React.FC<RecruitmentPipelineProps> = ({ status, isSuggestion }) => {
-    const stages = [
+const RecruitmentPipeline: React.FC<RecruitmentPipelineProps> = ({ status, isSuggestion, jobType }) => {
+    const teacherStages = [
         { key: ApplicationStatus.PENDING, label: isSuggestion ? '제안됨' : '접수' },
         { key: ApplicationStatus.DOCUMENT_SCREENING, label: '서류심사' },
         { key: ApplicationStatus.INTERVIEWING, label: '면접/시연' },
         { key: ApplicationStatus.VERIFICATION, label: '결격조회' },
         { key: ApplicationStatus.HIRED, label: '채용확정' },
     ];
+
+    const eventStages = [
+        { key: ApplicationStatus.PENDING, label: '견적접수' },
+        { key: ApplicationStatus.BIDDING, label: '업체선정' },
+        { key: ApplicationStatus.CONTRACTING, label: '계약체결' },
+        { key: ApplicationStatus.EXECUTING, label: '행사/과업' },
+        { key: ApplicationStatus.PAYMENT_COMPLETED, label: '대금지급' },
+    ];
+
+    const stages = jobType === JobType.EVENT_VENDOR ? eventStages : teacherStages;
 
     const getCurrentStageIndex = () => {
         if (status === ApplicationStatus.REJECTED) return -1;

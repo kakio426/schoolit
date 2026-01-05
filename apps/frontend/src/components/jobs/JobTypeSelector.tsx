@@ -1,11 +1,9 @@
 "use client";
 
 import React from 'react';
+import { JobType } from '@/lib/constants';
 
-export enum JobType {
-    TEACHER_HIRING = 'TEACHER_HIRING',
-    EVENT_VENDOR = 'EVENT_VENDOR',
-}
+export { JobType }; // Re-export for compatibility if needed, but better to update consumers
 
 interface JobTypeSelectorProps {
     value: JobType;

@@ -6,7 +6,9 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import WarningModal from '@/components/ui/WarningModal';
-import { JobTypeSelector, JobType } from '@/components/jobs/JobTypeSelector';
+import { JobTypeSelector } from '@/components/jobs/JobTypeSelector';
+import { JobType } from '@/lib/constants';
+import { BudgetGuideline } from '@/components/jobs/BudgetGuideline';
 
 export default function NewJobPage() {
     const { user } = useAuth();
@@ -104,6 +106,33 @@ export default function NewJobPage() {
         }
     }
 
+    // Dynamic Checklist Items
+    const checklistItems = jobType === JobType.TEACHER_HIRING ? [
+        { id: 'planningApproved', label: '채용 계획서에 대한 내부 결재(기안)를 완료했습니까?' },
+        { id: 'budgetConfirmed', label: '인건비 예산 과목 및 지원 한도가 확정되었습니까?' },
+        { id: 'vacancyConfirmed', label: '결원 사유 및 대상 학급/과목이 명확히 확인되었습니까?' }
+    ] : [
+        { id: 'planningApproved', label: '행사 기본 계획서 내부 기안(결재)을 완료했습니까?' },
+        { id: 'budgetConfirmed', label: '학교운영위원회 심의(필요 시) 및 예산 확정을 확인했습니까?' },
+        { id: 'vacancyConfirmed', label: '과업지시서(Task Description) 및 규격서 작성을 완료했습니까?' } // reusing vacancyConfirmed key for simplicity
+    ];
+
+    // Dynamic Guide Steps
+    const guideSteps = jobType === JobType.TEACHER_HIRING ? [
+        { step: '1', title: '계획 수립', desc: '내부 결재 및 예산 편성 여부 재확인' },
+        { step: '2', title: '공고 게시', desc: '에듀핀 및 교육청 게시판에 동시 게시' },
+        { step: '3', title: '서류 심사', desc: '이력서 검토 및 2~3배수 면접 대상 선정' },
+        { step: '4', title: '면접 및 시연', desc: '수업 능력 및 학생 생활지도 역량 검정' },
+        { step: '5', title: '결격 조회', desc: '성범죄/아동학대 전력 조회 필수 (가장 중요)' }
+    ] : [
+        { step: '1', title: '계획 수립', desc: '내부 기안, 학운위 심의, 일상감사 확인' },
+        { step: '2', title: '계약 요청', desc: '과업지시서 및 산출내역서 행정실 제출' },
+        { step: '3', title: '공고/선정', desc: 'S2B/G2B 공고 또는 수의계약 업체 선정' },
+        { step: '4', title: '계약 체결', desc: '계약서 작성 및 청렴이행각서 징구' },
+        { step: '5', title: '행사 진행', desc: '과업 수행 관리 및 증빙 사진 촬영' },
+        { step: '6', title: '검수/지급', desc: '검수조서 작성 및 대금 지급 요청' }
+    ];
+
     if (user?.role !== 'SCHOOL') {
         return <DashboardLayout><div>접근 권한 없음</div></DashboardLayout>
     }
@@ -126,11 +155,7 @@ export default function NewJobPage() {
                                     <span className="text-lg">⚖️</span> 1단계: 내부 채용 계획 확인
                                 </h3>
                                 <div className="space-y-3">
-                                    {[
-                                        { id: 'planningApproved', label: '채용 계획서에 대한 내부 결재(기안)를 완료했습니까?' },
-                                        { id: 'budgetConfirmed', label: '인건비 예산 과목 및 지원 한도가 확정되었습니까?' },
-                                        { id: 'vacancyConfirmed', label: '결원 사유 및 대상 학급/과목이 명확히 확인되었습니까?' }
-                                    ].map(item => (
+                                    {checklistItems.map(item => (
                                         <label key={item.id} className="flex items-start gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
@@ -149,6 +174,7 @@ export default function NewJobPage() {
                                     ))}
                                 </div>
                             </div>
+
                             {/* Job Type Selector */}
                             <JobTypeSelector value={jobType} onChange={setJobType} />
 
@@ -197,10 +223,9 @@ export default function NewJobPage() {
                                 </div>
 
                                 {jobType === JobType.EVENT_VENDOR && (
-                                    <p className="text-xs text-foreground-muted mt-1">
-                                        * 2,000만 원 초과 시 수의계약 대상에서 제외될 수 있습니다.
-                                    </p>
+                                    <BudgetGuideline budget={parseInt(formData.budget, 10)} />
                                 )}
+
                             </div>
 
                             <div>
@@ -403,16 +428,10 @@ export default function NewJobPage() {
                 <div className="w-full lg:w-80 shrink-0 space-y-6">
                     <div className="p-6 bg-primary/5 border border-primary/20 rounded-3xl sticky top-8">
                         <h3 className="font-extrabold text-primary mb-4 flex items-center gap-2">
-                            <span>📚</span> 채용 마스터 가이드
+                            <span>📚</span> {jobType === JobType.TEACHER_HIRING ? '교원 채용 가이드' : '행사/용역 계약 가이드'}
                         </h3>
                         <div className="space-y-6">
-                            {[
-                                { step: '1', title: '계획 수립', desc: '내부 결재 및 예산 편성 여부 재확인' },
-                                { step: '2', title: '공고 게시', desc: '에듀핀 및 교육청 게시판에 동시 게시' },
-                                { step: '3', title: '서류 심사', desc: '이력서 검토 및 2~3배수 면접 대상 선정' },
-                                { step: '4', title: '면접 및 시연', desc: '수업 능력 및 학생 생활지도 역량 검정' },
-                                { step: '5', title: '결격 조회', desc: '성범죄/아동학대 전력 조회 필수 (가장 중요)' }
-                            ].map((g, i) => (
+                            {guideSteps.map((g, i) => (
                                 <div key={i} className="flex gap-4">
                                     <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold shrink-0 text-sm">
                                         {g.step}
@@ -427,7 +446,7 @@ export default function NewJobPage() {
 
                         <div className="mt-8 pt-6 border-t border-primary/10">
                             <p className="text-[10px] text-foreground-muted italic leading-relaxed">
-                                💡 <b>Tip</b>: 기간제 교사의 경우, 호봉 획정용 경력증명서 원본을 미리 요청하시면 계약 과정이 빨라집니다.
+                                💡 <b>Tip</b>: {jobType === JobType.TEACHER_HIRING ? '기간제 교사의 경우, 호봉 획정용 경력증명서 원본을 미리 요청하시면 계약 과정이 빨라집니다.' : '과업지시서에 구체적인 페널티 조항(지체상금 등)을 포함해야 향후 분쟁을 예방할 수 있습니다.'}
                             </p>
                         </div>
                     </div>

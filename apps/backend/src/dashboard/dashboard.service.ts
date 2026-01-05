@@ -38,22 +38,35 @@ export class DashboardService {
       });
       const reMatchCount = reviews.filter((r) => r.reMatchIntent).length;
       stats.reMatchRate = reviews.length > 0 ? (reMatchCount / reviews.length) * 100 : 100;
-    } else if (role === Role.SCHOOL || role === Role.BUSINESS) {
+    } else if (role === Role.BUSINESS) {
+      stats.activeApplications = await this.prisma.jobApplication.count({
+        where: {
+          userId,
+          status: { in: ['PENDING', 'BIDDING', 'CONTRACTING', 'EXECUTING'] },
+        },
+      });
+      // Business match rate?
+      const reviews = await this.prisma.review.findMany({
+        where: { receiverId: userId },
+      });
+      const reMatchCount = reviews.filter((r) => r.reMatchIntent).length;
+      stats.reMatchRate = reviews.length > 0 ? (reMatchCount / reviews.length) * 100 : 100;
+
+    } else if (role === Role.SCHOOL) {
       const user: any = await this.prisma.user.findUnique({
         where: { id: userId },
         include: {
           schoolProfile: true,
-          businessProfile: true,
         },
       });
 
-      const profile = role === Role.SCHOOL ? user?.schoolProfile : user?.businessProfile;
+      const profile = user?.schoolProfile;
 
       if (profile) {
         const profileId = (profile as any).id;
         stats.activeListings = await this.prisma.jobListing.count({
           where: {
-            schoolProfileId: role === Role.SCHOOL ? profileId : undefined,
+            schoolProfileId: profileId,
             status: 'OPEN',
           },
         });
@@ -61,7 +74,7 @@ export class DashboardService {
         stats.pendingApplications = await this.prisma.jobApplication.count({
           where: {
             jobListing: {
-              schoolProfileId: role === Role.SCHOOL ? profileId : undefined,
+              schoolProfileId: profileId,
             },
             status: 'PENDING',
           },

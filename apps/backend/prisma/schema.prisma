@@ -234,6 +234,12 @@ enum ApplicationStatus {
   VERIFICATION       // 결격 사유 조회/신원 대조
   HIRED              // 최종 채용
   REJECTED           // 탈락
+  
+  // Event/Procurement Specific
+  BIDDING            // 입찰/업체선정
+  CONTRACTING        // 계약체결
+  EXECUTING          // 행사/업무수행
+  PAYMENT_COMPLETED  // 대금지급완료
 }
 
 model JobApplication {
