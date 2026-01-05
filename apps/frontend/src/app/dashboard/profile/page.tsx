@@ -20,6 +20,7 @@ export default function ProfilePage() {
     const [regions, setRegions] = useState<string[]>([]);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
+    const isBusiness = user?.role === 'BUSINESS';
     const isSchool = user?.role === 'SCHOOL';
 
     useEffect(() => {
