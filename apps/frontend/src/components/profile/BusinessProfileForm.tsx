@@ -14,6 +14,7 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
     const [formData, setFormData] = useState({
         companyName: '',
         registrationNum: '',
+        s2bNumber: '',
         description: '',
         website: '',
         address: '',
@@ -32,6 +33,7 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
             setFormData({
                 companyName: user.businessProfile.companyName || '',
                 registrationNum: user.businessProfile.registrationNum || '',
+                s2bNumber: user.businessProfile.s2bNumber || '',
                 description: user.businessProfile.description || '',
                 website: user.businessProfile.website || '',
                 address: user.businessProfile.address || '',
@@ -128,6 +130,25 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                             placeholder="예: 123-45-67890"
                         />
                     </div>
+                </div>
+
+                {/* S2B Number Section */}
+                <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
+                    <div className="flex items-center gap-2 mb-3">
+                        <span className="px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded">S2B</span>
+                        <label className="block text-sm font-bold text-slate-900 dark:text-slate-100">학교장터(S2B) 업체번호</label>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
+                        행정실의 원활한 계약 처리를 위해 S2B에 등록된 업체번호를 입력해주세요.
+                    </p>
+                    <input
+                        type="text"
+                        name="s2bNumber"
+                        value={formData.s2bNumber}
+                        onChange={handleChange}
+                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-foreground"
+                        placeholder="예: 20240105-1234 (S2B 업체번호)"
+                    />
                 </div>
 
                 {/* Registration Certificate Upload */}

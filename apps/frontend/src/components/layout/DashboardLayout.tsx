@@ -7,6 +7,7 @@ import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
 import FeedbackButton from '../ui/FeedbackButton';
+import ComplianceModal from '../ui/ComplianceModal';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
@@ -57,6 +58,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             navItems.push(
                 { label: '학교 프로필', href: '/dashboard/school/profile', icon: '🏫' },
                 { label: '채용 공고 관리', href: '/dashboard/jobs', icon: '📋' },
+                { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
                 { label: '인재 찾기', href: '/dashboard/teachers', icon: '🔎' },
             );
         } else {
@@ -232,6 +234,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </main>
                 <FooterDisclaimer />
                 <FeedbackButton />
+                <ComplianceModal userRole={user.role} onAccept={() => { }} />
             </div >
         </div >
     );

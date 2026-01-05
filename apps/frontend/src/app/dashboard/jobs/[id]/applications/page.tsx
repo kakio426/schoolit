@@ -146,7 +146,18 @@ export default function JobApplicantsPage() {
                                             {app.user?.name?.[0]}
                                         </div>
                                         <div>
-                                            <h3 className="text-xl font-bold text-foreground">{app.user?.name} 선생님</h3>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-xl font-bold text-foreground">
+                                                    {app.user?.role === Role.BUSINESS
+                                                        ? (app.user?.businessProfile?.companyName || app.user?.name)
+                                                        : `${app.user?.name} 선생님`}
+                                                </h3>
+                                                {app.user?.businessProfile?.s2bNumber && (
+                                                    <span className="flex items-center gap-1 px-2 py-0.5 bg-blue-600 text-white text-[10px] font-bold rounded shadow-sm">
+                                                        S2B 등록업체
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-foreground-muted text-sm">{app.user?.email}</p>
                                         </div>
                                         {app.isSuggestion && (
@@ -241,10 +252,13 @@ export default function JobApplicantsPage() {
                     </div>
                 )}
 
-                <div className="mt-12 p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 text-center">
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                        🔒 <b>개인정보보호 및 채용절차 안내</b>: 「개인정보 보호법」에 따라 지원자의 개인정보는 채용 종료일로부터 <b>90일 후 자동으로 파기(익명화)</b>됩니다.<br />
-                        학교 관리자께서는 별도로 이력서를 다운로드하여 보관하실 경우, 이에 대한 보안 책임은 학교 측에 있음을 유의해 주세요.
+                <div className="mt-12 p-8 rounded-3xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-center">
+                    <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed font-medium">
+                        🛡️ <b>행정 안내 및 책임 소재</b>: 본 매칭 결과는 참고용이며, 최종 계약(S2B 등) 및 자격 서류 검증은 반드시 <b>학교 내부 결재 및 지침</b>에 따라 진행해 주세요. <br />
+                        플랫폼은 베타 연구용(Research Prototype) 서비스로서 어떠한 법적 계약 대행 및 보증 책임도 지지 않습니다.
+                    </p>
+                    <p className="text-[10px] text-slate-400 mt-3 italic">
+                        「개인정보 보호법」에 따라 지원자의 개인정보는 90일 후 자동으로 파기됩니다. 지원 서류의 관리는 학교 보안 규정을 준수해 주세요.
                     </p>
                 </div>
             </div>

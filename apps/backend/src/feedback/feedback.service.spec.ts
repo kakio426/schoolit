@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { FeedbackService } from './feedback.service';
 import { PrismaService } from '../prisma.service';
 import { DiscordService } from './discord.service';
+import { NotificationsService } from '../notifications/notifications.service';
 
 describe('FeedbackService', () => {
   let service: FeedbackService;
@@ -26,6 +27,12 @@ describe('FeedbackService', () => {
           provide: DiscordService,
           useValue: {
             sendFeedbackNotification: jest.fn(),
+          },
+        },
+        {
+          provide: NotificationsService,
+          useValue: {
+            create: jest.fn(),
           },
         },
       ],

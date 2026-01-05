@@ -4,6 +4,9 @@ import { PrismaService } from '../prisma.service';
 import { ChatService } from '../chat/chat.service';
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 
+import { NotificationsService } from '../notifications/notifications.service';
+import { PdfGeneratorService } from '../common/pdf/pdf-generator.service';
+
 describe('ApplicationsService', () => {
   let service: ApplicationsService;
   let prisma: PrismaService;
@@ -19,11 +22,20 @@ describe('ApplicationsService', () => {
       findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
   const mockChatService = {
     createRoom: jest.fn(),
+  };
+
+  const mockNotificationsService = {
+    create: jest.fn(),
+  };
+
+  const mockPdfGeneratorService = {
+    generateContract: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -32,6 +44,8 @@ describe('ApplicationsService', () => {
         ApplicationsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ChatService, useValue: mockChatService },
+        { provide: NotificationsService, useValue: mockNotificationsService },
+        { provide: PdfGeneratorService, useValue: mockPdfGeneratorService },
       ],
     }).compile();
 

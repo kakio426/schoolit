@@ -145,6 +145,9 @@ model TeacherProfile {
   // New Fields
   targetGrades   String[]        @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
   
+  transientDocuments Json?       @map("transient_documents") // [{ type: 'BANK', url: '...', expiresAt: '...' }]
+  checklist          Json?       // { criminalRecord: boolean, drugTest: boolean }
+  
   // Relations
   experiences    TeacherExperience[]
   educations     TeacherEducation[]
@@ -244,6 +247,9 @@ model JobApplication {
   createdAt  DateTime          @default(now()) @map("created_at")
   updatedAt  DateTime          @updatedAt @map("updated_at")
 
+  viewedAt     DateTime?         @map("viewed_at")
+  internalNote String?           @map("internal_note")
+
   @@unique([jobId, userId])
   @@map("job_applications")
 }
@@ -321,6 +327,7 @@ model BusinessProfile {
   user             User     @relation(fields: [userId], references: [id])
   companyName      String   @map("company_name")
   registrationNum  String?  @map("registration_num")
+  s2bNumber        String?  @map("s2b_number")
   registrationFile String?  @map("registration_file")
   description      String?
   website          String?

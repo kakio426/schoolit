@@ -43,6 +43,7 @@ export interface BusinessProfile {
     userId: number;
     companyName: string;
     registrationNum?: string;
+    s2bNumber?: string;
     registrationFile?: string;
     description?: string;
     website?: string;
@@ -112,6 +113,8 @@ export interface JobApplication {
     message?: string;
     isSuggestion: boolean;
     createdAt: string;
+    viewedAt?: string;
+    internalNote?: string;
     jobListing?: JobListing;
     user?: User;
 }

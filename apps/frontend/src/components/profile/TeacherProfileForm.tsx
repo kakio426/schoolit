@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { useProfile } from '@/hooks/useProfile';
+import SmartChecklist from './SmartChecklist';
+import SecureUploader from './SecureUploader';
 import {
     User, MapPin, BookOpen, GraduationCap, Briefcase, Link as LinkIcon,
     Plus, Trash2, X, Save, Upload, CheckCircle, Award, AlertTriangle
@@ -19,6 +21,18 @@ const TARGET_GRADES = [
     { value: 'ELEMENTARY_HIGH', label: '초등 고학년 (4-6학년)' },
     { value: 'MIDDLE', label: '중학교' },
     { value: 'HIGH', label: '고등학교' },
+];
+
+const INITIAL_CHECKLIST = [
+    { id: 'criminalRecord', label: '성범죄 경력 조회', description: '학교 행정실에서 조회를 요청합니다.', checked: false },
+    { id: 'drugTest', label: '마약/향정신성검사', description: '보건소 등에서 발급받은 원본을 제출해야 합니다.', checked: false },
+    { id: 'physicalExam', label: '채용신체검사', description: '채용 건강검진 결과서를 준비해주세요.', checked: false },
+];
+
+const INITIAL_SECURE_FILES = [
+    { id: 'bankAccount', name: '통장 사본', isUploaded: false },
+    { id: 'degreeCert', name: '최종 학력 증명서', isUploaded: false },
+    { id: 'teachingLicense', name: '교원 자격증', isUploaded: false },
 ];
 
 export default function TeacherProfileForm({ user, token, onRefresh }: TeacherProfileFormProps) {
@@ -39,6 +53,10 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         targetGrades: [] as string[],
         profileImage: ''
     });
+
+    // Checklist & Documents
+    const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
+    const [secureFiles, setSecureFiles] = useState<{ id: string, name: string, isUploaded: boolean, url?: string, expirationDate?: string, key?: string }[]>(INITIAL_SECURE_FILES);
 
     // Inputs
     const [inputs, setInputs] = useState({
@@ -71,6 +89,28 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 targetGrades: user.teacherProfile.targetGrades || [],
                 profileImage: user.teacherProfile.profileImage || ''
             });
+
+            // Restore Checklist
+            if (user.teacherProfile.checklist) {
+                setChecklist(prev => prev.map(item => ({
+                    ...item,
+                    checked: user.teacherProfile.checklist[item.id] || false
+                })));
+            }
+
+            // Restore Secure Files
+            if (user.teacherProfile.transientDocuments) {
+                // user.teacherProfile.transientDocuments is Array or Object? 
+                // We stored it as Json, assuming array of document objects
+                const docs = Array.isArray(user.teacherProfile.transientDocuments)
+                    ? user.teacherProfile.transientDocuments
+                    : [];
+
+                setSecureFiles(prev => prev.map(f => {
+                    const found = docs.find((d: any) => d.id === f.id);
+                    return found ? { ...f, isUploaded: true, ...found } : f;
+                }));
+            }
         }
     }, [user]);
 
@@ -96,23 +136,88 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
     const handleSaveBasic = async (e?: React.FormEvent) => {
         e?.preventDefault();
 
+        // Convert checklist array to object
+        const checklistObj = checklist.reduce((acc, item) => ({ ...acc, [item.id]: item.checked }), {});
+
         const result = await updateTeacherProfile({
             bio: basicInfo.bio,
             subjects: basicInfo.subjects,
             regions: basicInfo.regions,
             profileImage: basicInfo.profileImage,
-            targetGrades: basicInfo.targetGrades
+            targetGrades: basicInfo.targetGrades,
+            checklist: checklistObj
         });
 
         if (result.success) {
-            setMessage({ type: 'success', text: '기본 정보가 저장되었습니다.' });
+            setMessage({ type: 'success', text: '기본 정보와 체크리스트가 저장되었습니다.' });
         } else {
             setMessage({ type: 'error', text: '저장 실패: ' + result.error });
         }
     };
 
-    // --- List Managers ---
+    const handleChecklistChange = (id: string, checked: boolean) => {
+        setChecklist(prev => prev.map(item => item.id === id ? { ...item, checked } : item));
+    };
 
+    const handleSecureUpload = async (category: string, file: File) => {
+        // 1. Upload to Server
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('consent', 'true'); // Required by Guard
+
+        try {
+            // Use axios/fetch directly or api wrapper?
+            // api.upload wrapper usually assumes response.data
+            const res = await api.upload<any>('/upload', formData);
+            // res: { key, location, expirationDate } (from FileUploadController)
+
+            // 2. Update Local State & Persist to Profile
+            const newFileState = {
+                id: category,
+                name: secureFiles.find(f => f.id === category)?.name || '',
+                isUploaded: true,
+                url: res.location,
+                expirationDate: res.expirationDate,
+                key: res.key
+            };
+
+            const updatedFiles = secureFiles.map(f => f.id === category ? newFileState : f);
+            setSecureFiles(updatedFiles);
+
+            // Persist immediately
+            const docsForSave = updatedFiles.filter(f => f.isUploaded).map(f => ({
+                id: f.id,
+                url: f.url,
+                expirationDate: f.expirationDate,
+                key: f.key
+            }));
+
+            await updateTeacherProfile({ transientDocuments: docsForSave });
+
+            setMessage({ type: 'success', text: '보안 업로드 완료. 7일 후 자동 삭제됩니다.' });
+
+        } catch (err: any) {
+            console.error(err);
+            setMessage({ type: 'error', text: '업로드 실패: ' + err.message });
+        }
+    };
+
+    const handleSecureRemove = async (category: string) => {
+        const updatedFiles = secureFiles.map(f => f.id === category ? { ...f, isUploaded: false, url: undefined, expirationDate: undefined, key: undefined } : f);
+        setSecureFiles(updatedFiles);
+
+        const docsForSave = updatedFiles.filter(f => f.isUploaded).map(f => ({
+            id: f.id,
+            url: f.url,
+            expirationDate: f.expirationDate,
+            key: f.key
+        }));
+
+        await updateTeacherProfile({ transientDocuments: docsForSave });
+        setMessage({ type: 'success', text: '파일 정보가 삭제되었습니다.' });
+    };
+
+    // --- List Managers (Same as before) ---
     const addSubject = () => {
         if (inputs.subject.trim() && !basicInfo.subjects.includes(inputs.subject.trim())) {
             setBasicInfo(prev => ({ ...prev, subjects: [...prev.subjects, inputs.subject.trim()] }));
@@ -122,7 +227,6 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
     const removeSubject = (idx: number) => {
         setBasicInfo(prev => ({ ...prev, subjects: prev.subjects.filter((_, i) => i !== idx) }));
     };
-
     const addRegion = () => {
         if (inputs.region.trim() && !basicInfo.regions.includes(inputs.region.trim())) {
             setBasicInfo(prev => ({ ...prev, regions: [...prev.regions, inputs.region.trim()] }));
@@ -132,21 +236,17 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
     const removeRegion = (idx: number) => {
         setBasicInfo(prev => ({ ...prev, regions: prev.regions.filter((_, i) => i !== idx) }));
     };
-
     const toggleGrade = (grade: string) => {
         setBasicInfo(prev => {
             const exists = prev.targetGrades.includes(grade);
             return {
                 ...prev,
-                targetGrades: exists
-                    ? prev.targetGrades.filter(g => g !== grade)
-                    : [...prev.targetGrades, grade]
+                targetGrades: exists ? prev.targetGrades.filter(g => g !== grade) : [...prev.targetGrades, grade]
             };
         });
     };
 
-    // --- Sub-resource Handlers ---
-
+    // --- Sub-resource Handlers (Same as before) ---
     const submitExp = async () => {
         if (!newExp.title || !newExp.organization || !newExp.startDate) return;
         const res = await addTeacherExperience(newExp);
@@ -157,7 +257,6 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             setMessage({ type: 'error', text: res.error });
         }
     };
-
     const submitEdu = async () => {
         if (!newEdu.schoolName || !newEdu.startDate) return;
         const res = await addTeacherEducation(newEdu);
@@ -168,7 +267,6 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             setMessage({ type: 'error', text: res.error });
         }
     };
-
     const submitLink = async () => {
         if (!newLink.title || !newLink.url) return;
         const res = await addTeacherLink(newLink);
@@ -179,7 +277,6 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             setMessage({ type: 'error', text: res.error });
         }
     };
-
     const submitLicense = async () => {
         if (!newLicense.name || !newLicense.date) return;
         const res = await addTeacherLicense(newLicense);
@@ -192,7 +289,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
     };
 
     return (
-        <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Header Message */}
             {message && (
@@ -204,6 +301,12 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     <button onClick={() => setMessage(null)} className="ml-4 text-white/80 hover:text-white">✕</button>
                 </div>
             )}
+
+            {/* 0. Security/Compliance Zone */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <SmartChecklist items={checklist} onChange={handleChecklistChange} />
+                <SecureUploader files={secureFiles} onUpload={handleSecureUpload} onRemove={handleSecureRemove} />
+            </div>
 
             {/* 1. Basic Info & Photo */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-8">
@@ -307,7 +410,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     <div className="flex justify-end pt-4">
                         <button onClick={() => handleSaveBasic()} className="px-6 py-2 bg-slate-900 dark:bg-white dark:text-slate-900 text-white rounded-xl font-bold hover:opacity-90 transition-all flex items-center gap-2">
                             <Save className="w-4 h-4" />
-                            기본 정보 저장
+                            기본 정보 및 체크리스트 저장
                         </button>
                     </div>
                 </div>
@@ -456,7 +559,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             {/* 5. Licenses Section */}
             <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
                 <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-bold flex items-center gap-2"><Award className="w-5 h-5 text-amber-500" /> 자격증 및 면허</h3>
+                    <h3 className="text-lg font-bold flex items-center gap-2"><Award className="w-5 h-5 text-amber-500" /> 자격증 및 면허 (정보 입력)</h3>
                     <button onClick={() => setShowAddLicense(!showAddLicense)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
                 </div>
 

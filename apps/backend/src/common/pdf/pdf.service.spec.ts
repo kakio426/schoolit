@@ -12,6 +12,10 @@ describe('PdfService', () => {
         service = module.get<PdfService>(PdfService);
     });
 
+    afterEach(async () => {
+        await service.onModuleDestroy();
+    });
+
     it('should be defined', () => {
         expect(service).toBeDefined();
     });

@@ -17,6 +17,8 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { BusinessProfileModule } from './business-profile/business-profile.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { StorageModule } from './common/storage/storage.module';
+import { ContractsModule } from './context/contracts/contracts.module';
 
 @Module({
   imports: [
@@ -37,9 +39,12 @@ import { FeedbackModule } from './feedback/feedback.module';
     ChatModule,
     ReviewsModule,
     NotificationsModule,
+    NotificationsModule,
     FeedbackModule,
+    StorageModule,
+    ContractsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

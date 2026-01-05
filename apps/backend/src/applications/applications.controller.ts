@@ -23,7 +23,7 @@ export class ApplicationsController {
   constructor(private applicationsService: ApplicationsService) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.TEACHER)
+  @Roles(Role.TEACHER, Role.BUSINESS)
   @Post(':id/apply')
   async apply(@Request() req, @Param('id', ParseIntPipe) jobId: number, @Body() dto: ApplyJobDto) {
     return this.applicationsService.applyToJob(req.user.userId, jobId, dto);
@@ -32,7 +32,7 @@ export class ApplicationsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async getMyApplications(@Request() req) {
-    return this.applicationsService.getMyApplications(req.user.userId);
+    return this.applicationsService.getMyApplications(req.user.userId, req.user.role);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -62,6 +62,18 @@ export class ApplicationsController {
   ) {
     return this.applicationsService.updateStatus(req.user.userId, appId, dto.status);
   }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.SCHOOL)
+  @Patch(':id/note')
+  async updateInternalNote(
+    @Request() req,
+    @Param('id', ParseIntPipe) appId: number,
+    @Body('note') note: string,
+  ) {
+    return this.applicationsService.updateInternalNote(req.user.userId, appId, note);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get(':id/contract')
   async downloadContract(

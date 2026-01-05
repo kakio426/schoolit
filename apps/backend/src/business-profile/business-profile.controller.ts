@@ -19,13 +19,15 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
 
+import { UpdateBusinessProfileDto } from '../users/dtos/update-business-profile.dto';
+
 @Controller('business-profiles')
 export class BusinessProfileController {
-  constructor(private readonly service: BusinessProfileService) {}
+  constructor(private readonly service: BusinessProfileService) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Post()
-  async createOrUpdate(@Request() req, @Body() body: any) {
+  async createOrUpdate(@Request() req, @Body() body: UpdateBusinessProfileDto) {
     return this.service.createOrUpdate(req.user.userId, body);
   }
 

@@ -37,6 +37,7 @@ describe('JobsService', () => {
             subjects: ['Math'],
             regions: ['Seoul'],
             budget: 25000000,
+            jobType: 'TEACHER_HIRING' as any,
         };
 
         mockPrismaService.jobListing.create.mockResolvedValue({ id: 1, ...createDto });

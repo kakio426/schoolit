@@ -24,7 +24,7 @@ describe('Recommended Jobs API (e2e)', () => {
     // Cleanup
     await prisma.jobApplication.deleteMany();
     await prisma.jobListing.deleteMany();
-    await prisma.certification.deleteMany();
+
     await prisma.teacherProfile.deleteMany();
     await prisma.schoolProfile.deleteMany();
     await prisma.user.deleteMany();

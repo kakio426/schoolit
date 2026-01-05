@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsArray } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsObject } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -23,4 +23,10 @@ export class UpdateProfileDto {
   @IsArray()
   @IsString({ each: true })
   targetGrades?: string[];
+
+  @IsOptional()
+  transientDocuments?: any;
+
+  @IsOptional()
+  checklist?: any;
 }
