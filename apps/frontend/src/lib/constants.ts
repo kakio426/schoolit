@@ -26,7 +26,7 @@ export enum CertStatus {
 
 export const LEGAL_TEXT = {
     DISCLAIMER_TITLE: "법적 고지 및 책임 제한",
-    DISCLAIMER_BODY: "에듀핀은 교육 인력 정보의 탐색과 매칭을 돕는 정보 제공 플랫폼입니다. 에듀핀은 인력 채용 및 용역 계약의 당사자가 아니며, 모든 계약과 검증(성범죄 경력 조회 포함)의 법적 책임은 채용 주체인 학교에 있습니다.",
+    DISCLAIMER_BODY: "본 서비스는 교육 정보화 연구를 위한 베타 서비스 (Research Prototype)입니다. 영리 목적이 없으며, 인력 매칭 및 계약에 대한 어떠한 법적 책임도 지지 않습니다. 모든 자격 검증과 신원 확인의 책임은 채용 주체인 학교에 있습니다.",
     COPYRIGHT: "© 2026 Edupin (School It). All rights reserved.",
     REPRESENTATIVE_EMAIL: "kakio@korea.kr"
 };

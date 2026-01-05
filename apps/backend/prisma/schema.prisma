@@ -149,7 +149,7 @@ model TeacherProfile {
   experiences    TeacherExperience[]
   educations     TeacherEducation[]
   links          TeacherLink[]
-  certifications Certification[]
+  licenses       TeacherLicense[]
   
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")
@@ -207,19 +207,19 @@ model TeacherLink {
   @@map("teacher_links")
 }
 
-model Certification {
-  id               Int            @id @default(autoincrement())
-  teacherProfileId Int            @map("teacher_profile_id")
-  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  name             String         // Original filename or display name
-  fileUrl          String         @map("file_url")
-  status           CertStatus     @default(PENDING)
-  notes            String?        // Rejection reason, etc.
+model TeacherLicense {
+  id              Int            @id @default(autoincrement())
+  teacherProfileId Int           @map("teacher_profile_id")
+  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
   
-  createdAt        DateTime       @default(now()) @map("created_at")
-  updatedAt        DateTime       @updatedAt @map("updated_at")
-
-  @@map("certifications")
+  name            String
+  issuer          String
+  date            String         // YYYY-MM or YYYY-MM-DD
+  
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+  
+  @@map("teacher_licenses")
 }
 
 enum ApplicationStatus {

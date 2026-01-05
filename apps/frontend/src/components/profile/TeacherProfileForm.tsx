@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 import { useProfile } from '@/hooks/useProfile';
 import {
     User, MapPin, BookOpen, GraduationCap, Briefcase, Link as LinkIcon,
-    Plus, Trash2, X, Save, Upload, CheckCircle
+    Plus, Trash2, X, Save, Upload, CheckCircle, Award, AlertTriangle
 } from 'lucide-react';
 
 interface TeacherProfileFormProps {
@@ -27,6 +27,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         addTeacherExperience, removeTeacherExperience,
         addTeacherEducation, removeTeacherEducation,
         addTeacherLink, removeTeacherLink,
+        addTeacherLicense, removeTeacherLicense,
         isSaving
     } = useProfile();
 
@@ -49,11 +50,13 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
     const [showAddExp, setShowAddExp] = useState(false);
     const [showAddEdu, setShowAddEdu] = useState(false);
     const [showAddLink, setShowAddLink] = useState(false);
+    const [showAddLicense, setShowAddLicense] = useState(false);
 
     // New Item States
     const [newExp, setNewExp] = useState({ title: '', organization: '', startDate: '', endDate: '', isCurrent: false, description: '' });
     const [newEdu, setNewEdu] = useState({ schoolName: '', degree: 'Bachelor', major: '', graduationStatus: 'GRADUATED', startDate: '', endDate: '' });
     const [newLink, setNewLink] = useState({ title: '', url: '' });
+    const [newLicense, setNewLicense] = useState({ name: '', issuer: '', date: '' });
 
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [isUploading, setIsUploading] = useState(false);
@@ -177,14 +180,25 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         }
     };
 
+    const submitLicense = async () => {
+        if (!newLicense.name || !newLicense.date) return;
+        const res = await addTeacherLicense(newLicense);
+        if (res.success) {
+            setShowAddLicense(false);
+            setNewLicense({ name: '', issuer: '', date: '' });
+        } else {
+            setMessage({ type: 'error', text: res.error });
+        }
+    };
+
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
             {/* Header Message */}
             {message && (
                 <div className={`p-4 rounded-2xl text-sm font-bold text-center fixed bottom-6 left-1/2 -translate-x-1/2 z-50 shadow-xl ${message.type === 'success'
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-red-600 text-white'
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-red-600 text-white'
                     }`}>
                     {message.text}
                     <button onClick={() => setMessage(null)} className="ml-4 text-white/80 hover:text-white">✕</button>
@@ -280,8 +294,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                                     type="button"
                                     onClick={() => toggleGrade(grade.value)}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${basicInfo.targetGrades.includes(grade.value)
-                                            ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                            : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                                        ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
+                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                                         }`}
                                 >
                                     {grade.label}
@@ -433,6 +447,61 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             <button onClick={() => removeTeacherLink(link.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><X className="w-4 h-4" /></button>
                         </div>
                     ))}
+                    {(!user?.teacherProfile?.links || user.teacherProfile.links.length === 0) && (
+                        <p className="col-span-full text-center text-slate-400 text-sm py-4">등록된 링크가 없습니다.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* 5. Licenses Section */}
+            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-bold flex items-center gap-2"><Award className="w-5 h-5 text-amber-500" /> 자격증 및 면허</h3>
+                    <button onClick={() => setShowAddLicense(!showAddLicense)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
+                </div>
+
+                {showAddLicense && (
+                    <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input placeholder="자격증 명칭 (예: 정보처리기사)" className="input-std" value={newLicense.name} onChange={e => setNewLicense({ ...newLicense, name: e.target.value })} />
+                            <input placeholder="발급 기관 (예: 한국산업인력공단)" className="input-std" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
+                        </div>
+                        <div className="grid grid-cols-1 gap-4">
+                            <input type="month" className="input-std" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
+                        </div>
+                        <div className="flex justify-end gap-2">
+                            <button onClick={() => setShowAddLicense(false)} className="px-4 py-2 text-sm text-slate-500 font-bold">취소</button>
+                            <button onClick={submitLicense} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold">등록</button>
+                        </div>
+                    </div>
+                )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {user?.teacherProfile?.licenses?.map((lic: any) => (
+                        <div key={lic.id} className="flex items-center justify-between p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors border border-transparent hover:border-slate-100 dark:hover:border-slate-700 group">
+                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                <Award className="w-8 h-8 text-amber-200 flex-shrink-0" />
+                                <div className="min-w-0">
+                                    <h4 className="font-bold text-sm truncate">{lic.name}</h4>
+                                    <p className="text-xs text-slate-500 truncate">{lic.issuer} • {lic.date}</p>
+                                </div>
+                            </div>
+                            <button onClick={() => removeTeacherLicense(lic.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                    ))}
+                    {(!user?.teacherProfile?.licenses || user.teacherProfile.licenses.length === 0) && (
+                        <p className="col-span-full text-center text-slate-400 text-sm py-4">등록된 자격증이 없습니다.</p>
+                    )}
+                </div>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 flex flex-col md:flex-row gap-4 items-start md:items-center text-slate-500 dark:text-slate-400">
+                <AlertTriangle className="w-6 h-6 text-amber-500 flex-shrink-0" />
+                <div className="text-xs leading-relaxed">
+                    <strong className="block text-slate-700 dark:text-slate-300 mb-1">면책 조항 (BETA)</strong>
+                    본 프로필의 모든 정보(경력, 학력, 자격증 등)는 선생님이 직접 작성한 내용으로, 에듀핀은 그 진위 여부를 보증하지 않습니다.
+                    채용 과정에서 학교 측의 <strong>원본 서류 대조가 반드시 필요합니다.</strong> 본 서비스는 교육 정보화 연구를 위한 베타 버전입니다.
                 </div>
             </div>
 
@@ -441,6 +510,6 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     @apply w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm;
                 }
             `}</style>
-        </div>
+        </div >
     );
 }

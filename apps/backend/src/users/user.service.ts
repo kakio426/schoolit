@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
-import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto } from './dtos/teacher-details.dto';
+import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto, CreateTeacherLicenseDto } from './dtos/teacher-details.dto';
 import * as bcrypt from 'bcrypt';
 import { Provider, Role } from '@prisma/client';
 
@@ -144,6 +144,7 @@ export class UserService {
             experiences: true,
             educations: true,
             links: true,
+            licenses: true,
           },
         },
         schoolProfile: true,
@@ -274,5 +275,23 @@ export class UserService {
     if (!item) throw new NotFoundException('Link not found');
     if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
     return this.prisma.teacherLink.delete({ where: { id } });
+  }
+
+  async addLicense(userId: number, dto: CreateTeacherLicenseDto) {
+    const profile = await this.prisma.teacherProfile.upsert({
+      where: { userId },
+      create: { userId, isVerified: false },
+      update: {},
+    });
+    return this.prisma.teacherLicense.create({
+      data: { teacherProfileId: profile.id, ...dto },
+    });
+  }
+
+  async removeLicense(userId: number, id: number) {
+    const item = await this.prisma.teacherLicense.findUnique({ where: { id }, include: { teacherProfile: true } });
+    if (!item) throw new NotFoundException('License not found');
+    if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
+    return this.prisma.teacherLicense.delete({ where: { id } });
   }
 }

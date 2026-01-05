@@ -53,3 +53,14 @@ export class CreateTeacherLinkDto {
     @IsString()
     url: string;
 }
+
+export class CreateTeacherLicenseDto {
+    @IsString()
+    name: string;
+
+    @IsString()
+    issuer: string;
+
+    @IsString()
+    date: string; // YYYY-MM
+}

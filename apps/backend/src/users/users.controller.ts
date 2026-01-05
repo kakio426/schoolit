@@ -15,11 +15,11 @@ import {
   Delete,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CertificationService } from './certification.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateProfileDto } from './dtos/update-profile.dto';
 import { UpdateSchoolProfileDto } from './dtos/update-school-profile.dto';
-import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto } from './dtos/teacher-details.dto';
+
+import { CreateTeacherExperienceDto, CreateTeacherEducationDto, CreateTeacherLinkDto, CreateTeacherLicenseDto } from './dtos/teacher-details.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -31,7 +31,6 @@ import { Role } from '@prisma/client';
 export class UserController {
   constructor(
     private userService: UserService,
-    private certService: CertificationService,
   ) { }
 
   @UseGuards(AuthGuard('jwt'))
@@ -104,41 +103,7 @@ export class UserController {
     return this.userService.removeLink(req.user.userId, id);
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Post('certifications/upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-      fileFilter: (req, file, cb) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|pdf)$/)) {
-          return cb(null, false);
-        }
-        cb(null, true);
-      },
-      limits: {
-        fileSize: 5 * 1024 * 1024, // 5MB
-      },
-    }),
-  )
-  async uploadCertification(@Request() req, @UploadedFile() file: Express.Multer.File) {
-    if (!file) {
-      throw new BadRequestException('File is required or invalid file type');
-    }
 
-    // Create record in DB
-    const certification = await this.certService.createCertification(req.user.userId, {
-      name: file.originalname,
-      fileUrl: `/uploads/${file.filename}`,
-    });
-
-    return certification;
-  }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL)
@@ -180,9 +145,15 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard('jwt'))
-  @Get('certifications')
-  async getCertifications(@Request() req) {
-    return this.certService.getCertifications(req.user.userId);
+  @Post('teacher/license')
+  async addLicense(@Request() req, @Body() dto: CreateTeacherLicenseDto) {
+    return this.userService.addLicense(req.user.userId, dto);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('teacher/license/:id')
+  async removeLicense(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.userService.removeLicense(req.user.userId, id);
   }
 
   @UseGuards(AuthGuard('jwt'))
