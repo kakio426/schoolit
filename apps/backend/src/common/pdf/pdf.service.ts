@@ -1,21 +1,31 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import * as puppeteer from 'puppeteer';
+
+// Skip Puppeteer entirely in Railway/Docker to avoid native library crashes
+const SKIP_PUPPETEER = process.env.SKIP_PUPPETEER === 'true' || process.env.RAILWAY_ENVIRONMENT;
 
 @Injectable()
 export class PdfService implements OnModuleInit, OnModuleDestroy {
-    private browser: puppeteer.Browser | null = null;
+    private browser: any = null;
     private isAvailable: boolean = false;
 
     async onModuleInit() {
+        if (SKIP_PUPPETEER) {
+            console.log('⏭️ PdfService: Puppeteer skipped (SKIP_PUPPETEER or RAILWAY_ENVIRONMENT set)');
+            this.isAvailable = false;
+            return;
+        }
+
         try {
-            this.browser = await puppeteer.launch({
+            // Dynamic import to avoid loading native libraries when skipped
+            const puppeteer = await import('puppeteer');
+            this.browser = await puppeteer.default.launch({
                 headless: true,
                 args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-gpu', '--disable-dev-shm-usage'],
             });
             this.isAvailable = true;
             console.log('✅ PdfService: Puppeteer initialized successfully');
         } catch (error) {
-            console.warn('⚠️ PdfService: Puppeteer not available. HTML-to-PDF feature disabled.', error.message);
+            console.warn('⚠️ PdfService: Puppeteer not available.', error.message);
             this.isAvailable = false;
         }
     }
