@@ -219,6 +219,12 @@ export default function JobApplicantsPage() {
                                                 📄 계약서 초안 (PDF)
                                             </button>
                                             <button
+                                                onClick={() => updateStatus(app.id, ApplicationStatus.COMPLETED)}
+                                                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/20 text-sm active:scale-95 flex items-center justify-center gap-2"
+                                            >
+                                                ✅ 활동 종료 (완료 처리)
+                                            </button>
+                                            <button
                                                 onClick={() => {
                                                     setSelectedApplicant(app);
                                                     setIsReviewModalOpen(true);
