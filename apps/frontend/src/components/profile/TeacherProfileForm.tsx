@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { useProfile } from '@/hooks/useProfile';
 import SmartChecklist from './SmartChecklist';
-import SecureUploader from './SecureUploader';
+// SecureUploader removed - using text-only approach
 import {
     User, MapPin, BookOpen, GraduationCap, Briefcase, Link as LinkIcon,
     Plus, Trash2, X, Save, Upload, CheckCircle, Award, AlertTriangle
@@ -29,11 +29,7 @@ const INITIAL_CHECKLIST = [
     { id: 'physicalExam', label: '채용신체검사', description: '채용 건강검진 결과서를 준비해주세요.', checked: false },
 ];
 
-const INITIAL_SECURE_FILES = [
-    { id: 'bankAccount', name: '통장 사본', isUploaded: false },
-    { id: 'degreeCert', name: '최종 학력 증명서', isUploaded: false },
-    { id: 'teachingLicense', name: '교원 자격증', isUploaded: false },
-];
+// INITIAL_SECURE_FILES removed - no file upload
 
 export default function TeacherProfileForm({ user, token, onRefresh }: TeacherProfileFormProps) {
     const {
@@ -56,7 +52,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
     // Checklist & Documents
     const [checklist, setChecklist] = useState(INITIAL_CHECKLIST);
-    const [secureFiles, setSecureFiles] = useState<{ id: string, name: string, isUploaded: boolean, url?: string, expirationDate?: string, key?: string }[]>(INITIAL_SECURE_FILES);
+    // secureFiles state removed - no file upload
 
     // Inputs
     const [inputs, setInputs] = useState({
@@ -98,19 +94,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 })));
             }
 
-            // Restore Secure Files
-            if (user.teacherProfile.transientDocuments) {
-                // user.teacherProfile.transientDocuments is Array or Object? 
-                // We stored it as Json, assuming array of document objects
-                const docs = Array.isArray(user.teacherProfile.transientDocuments)
-                    ? user.teacherProfile.transientDocuments
-                    : [];
-
-                setSecureFiles(prev => prev.map(f => {
-                    const found = docs.find((d: any) => d.id === f.id);
-                    return found ? { ...f, isUploaded: true, ...found } : f;
-                }));
-            }
+            // Secure Files restore removed - using text-only approach
         }
     }, [user]);
 
@@ -159,63 +143,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         setChecklist(prev => prev.map(item => item.id === id ? { ...item, checked } : item));
     };
 
-    const handleSecureUpload = async (category: string, file: File) => {
-        // 1. Upload to Server
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('consent', 'true'); // Required by Guard
-
-        try {
-            // Use axios/fetch directly or api wrapper?
-            // api.upload wrapper usually assumes response.data
-            const res = await api.upload<any>('/upload', formData);
-            // res: { key, location, expirationDate } (from FileUploadController)
-
-            // 2. Update Local State & Persist to Profile
-            const newFileState = {
-                id: category,
-                name: secureFiles.find(f => f.id === category)?.name || '',
-                isUploaded: true,
-                url: res.location,
-                expirationDate: res.expirationDate,
-                key: res.key
-            };
-
-            const updatedFiles = secureFiles.map(f => f.id === category ? newFileState : f);
-            setSecureFiles(updatedFiles);
-
-            // Persist immediately
-            const docsForSave = updatedFiles.filter(f => f.isUploaded).map(f => ({
-                id: f.id,
-                url: f.url,
-                expirationDate: f.expirationDate,
-                key: f.key
-            }));
-
-            await updateTeacherProfile({ transientDocuments: docsForSave });
-
-            setMessage({ type: 'success', text: '보안 업로드 완료. 7일 후 자동 삭제됩니다.' });
-
-        } catch (err: any) {
-            console.error(err);
-            setMessage({ type: 'error', text: '업로드 실패: ' + err.message });
-        }
-    };
-
-    const handleSecureRemove = async (category: string) => {
-        const updatedFiles = secureFiles.map(f => f.id === category ? { ...f, isUploaded: false, url: undefined, expirationDate: undefined, key: undefined } : f);
-        setSecureFiles(updatedFiles);
-
-        const docsForSave = updatedFiles.filter(f => f.isUploaded).map(f => ({
-            id: f.id,
-            url: f.url,
-            expirationDate: f.expirationDate,
-            key: f.key
-        }));
-
-        await updateTeacherProfile({ transientDocuments: docsForSave });
-        setMessage({ type: 'success', text: '파일 정보가 삭제되었습니다.' });
-    };
+    // handleSecureUpload and handleSecureRemove removed - using text-only approach
 
     // --- List Managers (Same as before) ---
     const addSubject = () => {
@@ -302,10 +230,9 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 </div>
             )}
 
-            {/* 0. Security/Compliance Zone */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 0. Security/Compliance Zone - Red Zone Only */}
+            <div className="w-full">
                 <SmartChecklist items={checklist} onChange={handleChecklistChange} />
-                <SecureUploader files={secureFiles} onUpload={handleSecureUpload} onRemove={handleSecureRemove} />
             </div>
 
             {/* 1. Basic Info & Photo */}

@@ -17,7 +17,7 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { BusinessProfileModule } from './business-profile/business-profile.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { FeedbackModule } from './feedback/feedback.module';
-import { StorageModule } from './common/storage/storage.module';
+// StorageModule removed - using text-only approach
 import { ContractsModule } from './context/contracts/contracts.module';
 
 @Module({
@@ -40,7 +40,7 @@ import { ContractsModule } from './context/contracts/contracts.module';
     ReviewsModule,
     NotificationsModule,
     FeedbackModule,
-    StorageModule,
+    // StorageModule, // Removed - no file upload
     ContractsModule,
   ],
   controllers: [],
