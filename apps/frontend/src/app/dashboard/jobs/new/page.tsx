@@ -32,6 +32,7 @@ export default function NewJobPage() {
     });
     const [isSaving, setIsSaving] = useState(false);
     const [showBudgetWarning, setShowBudgetWarning] = useState(false);
+    const [isStandardSalary, setIsStandardSalary] = useState(true);
 
     // Compliance Limit: 20 Million KRW
     const [lastWarningValue, setLastWarningValue] = useState(0);
@@ -116,23 +117,43 @@ export default function NewJobPage() {
                                 value={formData.title}
                                 onChange={handleChange}
                                 className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
-                                placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제 교사 모집" : "예: 2024 진로체험의 날 행사 업체 모집"}
+                                placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제, 늘봄 강사 등" : "예: 2024 진로체험의 날 행사 업체 모집"}
                                 required
                             />
                         </div>
 
                         <div>
                             <label className="block text-sm font-semibold text-foreground mb-2">
-                                {jobType === JobType.TEACHER_HIRING ? '지급 예정 급여 (원)' : '예상 예산 (원)'}
+                                {jobType === JobType.TEACHER_HIRING ? '보수 / 강사료 정보' : '예상 예산 (원)'}
                             </label>
-                            <input
-                                name="budget"
-                                type="number"
-                                value={formData.budget}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
-                                placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2500000 (월 급여 또는 총액)" : "숫자만 입력 (예: 15000000)"}
-                            />
+
+                            <div className="space-y-3">
+                                {jobType === JobType.TEACHER_HIRING && (
+                                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <input
+                                            type="checkbox"
+                                            checked={isStandardSalary}
+                                            onChange={(e) => {
+                                                setIsStandardSalary(e.target.checked);
+                                                if (e.target.checked) setFormData({ ...formData, budget: '0' });
+                                            }}
+                                            className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
+                                        />
+                                        <span className="text-xs font-bold text-slate-700 dark:text-slate-300">공무원 보수 규정 / 교육청 지침에 따름</span>
+                                    </label>
+                                )}
+
+                                <input
+                                    name="budget"
+                                    type="number"
+                                    value={formData.budget}
+                                    onChange={handleChange}
+                                    disabled={jobType === JobType.TEACHER_HIRING && isStandardSalary}
+                                    className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground disabled:opacity-50"
+                                    placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2500000 (월 급여 또는 총액)" : "숫자만 입력 (예: 15000000)"}
+                                />
+                            </div>
+
                             {jobType === JobType.EVENT_VENDOR && (
                                 <p className="text-xs text-foreground-muted mt-1">
                                     * 2,000만 원 초과 시 수의계약 대상에서 제외될 수 있습니다.
@@ -178,10 +199,10 @@ export default function NewJobPage() {
                             </div>
                         </div>
 
-                        {/* Teacher-specific fields */}
+                        {/* Teacher/Instructor-specific fields */}
                         {jobType === JobType.TEACHER_HIRING && (
                             <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
-                                <h3 className="font-bold text-foreground">기간제 교사 상세 정보</h3>
+                                <h3 className="font-bold text-foreground">채용 상세 정보</h3>
 
                                 <div>
                                     <label className="block text-sm font-semibold text-foreground mb-2">계약 기간</label>

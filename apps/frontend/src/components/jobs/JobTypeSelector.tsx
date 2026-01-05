@@ -21,14 +21,14 @@ export function JobTypeSelector({ value, onChange }: JobTypeSelectorProps) {
                     type="button"
                     onClick={() => onChange(JobType.TEACHER_HIRING)}
                     className={`p-6 rounded-2xl border-2 transition-all ${value === JobType.TEACHER_HIRING
-                            ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                         }`}
                 >
                     <div className="text-5xl mb-3">👨‍🏫</div>
-                    <div className="font-bold text-lg text-foreground mb-1">기간제 교사 채용</div>
+                    <div className="font-bold text-lg text-foreground mb-1">교사 · 강사 채용</div>
                     <div className="text-xs text-foreground-muted">
-                        수업 대체, 정규직 공백 충원
+                        기간제, 시간강사, 늘봄 · 돌봄, 방과후 등
                     </div>
                 </button>
 
@@ -36,8 +36,8 @@ export function JobTypeSelector({ value, onChange }: JobTypeSelectorProps) {
                     type="button"
                     onClick={() => onChange(JobType.EVENT_VENDOR)}
                     className={`p-6 rounded-2xl border-2 transition-all ${value === JobType.EVENT_VENDOR
-                            ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
-                            : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                        ? 'border-primary bg-primary/5 shadow-lg shadow-primary/10'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
                         }`}
                 >
                     <div className="text-5xl mb-3">🎪</div>
