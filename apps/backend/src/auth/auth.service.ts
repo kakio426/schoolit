@@ -135,11 +135,14 @@ export class AuthService {
       }
 
       // Return new token because role changed
-      console.log(`[FinishSignup] Generating new token...`);
-      const user = await this.userService.findOne((await this.userService.getProfile(userId)).email);
-      return this.login(user);
+      console.log(`[FinishSignup] Generating new token for user ${userId}...`);
+      const updatedUser = await this.userService.findById(userId);
+      if (!updatedUser) {
+        throw new Error('Updated user not found');
+      }
+      return this.login(updatedUser);
     } catch (error) {
-      console.error(`[FinishSignup] Error:`, error);
+      console.error(`[FinishSignup] Error during signup completion:`, error);
       throw error;
     }
   }
