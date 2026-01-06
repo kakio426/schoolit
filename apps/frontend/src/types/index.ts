@@ -149,6 +149,7 @@ export interface JobListing {
     internalChecklist?: any;
     createdAt: string;
     schoolProfile?: SchoolProfile;
+    schoolId?: number;
 }
 
 export interface JobApplication {
