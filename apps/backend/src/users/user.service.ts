@@ -84,21 +84,26 @@ export class UserService {
   }
 
   async updateProfile(userId: number, data: any) {
-    // Only update fields allowed in TeacherProfile
-    // Upsert: Create if not exists, Update if exists
-    // Explicitly filter out sensitive fields just in case DTO validation fails or isn't strict enough
+    // Separate User fields (phone) from TeacherProfile fields
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { isVerified, ...safeData } = data;
+    const { isVerified, phone, ...teacherData } = data;
+
+    if (phone) {
+      await this.prisma.user.update({
+        where: { id: userId },
+        data: { phone },
+      });
+    }
 
     return this.prisma.teacherProfile.upsert({
       where: { userId },
       create: {
         userId,
-        ...safeData,
+        ...teacherData,
         isVerified: false, // Force default on create
       },
       update: {
-        ...safeData,
+        ...teacherData,
         // isVerified is NOT updated here
       },
       // Ensure we see the isVerified status in response
@@ -112,6 +117,7 @@ export class UserService {
         isVerified: true,
         bankAccount: true,
         checklist: true,
+        targetGrades: true,
         createdAt: true,
         updatedAt: true,
       },

@@ -7,7 +7,7 @@ export function useProfile() {
     const [isSaving, setIsSaving] = useState(false);
 
 
-    const updateTeacherProfile = async (data: { bio?: string; subjects?: string[]; regions?: string[]; profileImage?: string; targetGrades?: string[]; transientDocuments?: any; checklist?: any; bankAccount?: string }) => {
+    const updateTeacherProfile = async (data: { bio?: string; subjects?: string[]; regions?: string[]; profileImage?: string; targetGrades?: string[]; transientDocuments?: any; checklist?: any; bankAccount?: string; phone?: string }) => {
         setIsSaving(true);
         try {
             await api.patch('/users/profile', data);

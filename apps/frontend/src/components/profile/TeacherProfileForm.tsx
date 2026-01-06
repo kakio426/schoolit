@@ -52,7 +52,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         regions: [] as string[],
         targetGrades: [] as string[],
         profileImage: '',
-        bankAccount: ''
+        bankAccount: '',
+        phone: ''
     });
 
     // Checklist & Documents
@@ -89,7 +90,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 regions: user.teacherProfile.regions || [],
                 targetGrades: user.teacherProfile.targetGrades || [],
                 profileImage: user.teacherProfile.profileImage || '',
-                bankAccount: user.teacherProfile.bankAccount || ''
+                bankAccount: user.teacherProfile.bankAccount || '',
+                phone: user.phone || ''
             });
 
             // Restore Checklist
@@ -136,6 +138,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             profileImage: basicInfo.profileImage,
             targetGrades: basicInfo.targetGrades,
             bankAccount: basicInfo.bankAccount,
+            phone: basicInfo.phone,
             checklist: checklistObj
         });
 
@@ -299,6 +302,19 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         <p className="text-[10px] text-slate-400 mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
                     </div>
 
+                    {/* Phone Input Field */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">연락처 (학교 공개용)</label>
+                        <input
+                            type="text"
+                            value={basicInfo.phone}
+                            onChange={(e) => setBasicInfo(prev => ({ ...prev, phone: e.target.value }))}
+                            className="input-std"
+                            placeholder="예: 010-1234-5678"
+                        />
+                        <p className="text-[10px] text-slate-400 mt-2">*서류 전형 합격 시 학교 담당자에게 공개됩니다.</p>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">가능 과목</label>
@@ -372,7 +388,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             {/* 2. Experience Section */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="section-card border-l-purple-500">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2"><Briefcase className="w-5 h-5 text-purple-500" /> 경력 사항</h3>
                     <button onClick={() => setShowAddExp(!showAddExp)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
@@ -385,8 +401,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             <input placeholder="소속 (학교/학원명)" className="input-std" value={newExp.organization} onChange={e => setNewExp({ ...newExp, organization: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="date" className="input-std dark:[color-scheme:dark]" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
-                            <input type="date" className="input-std dark:[color-scheme:dark]" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
+                            <input type="date" className="input-std max-w-[200px] dark:[color-scheme:dark]" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
+                            <input type="date" className="input-std max-w-[200px] dark:[color-scheme:dark]" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
                             <label className="flex items-center gap-2 text-sm font-bold cursor-pointer">
                                 <input type="checkbox" checked={newExp.isCurrent} onChange={e => setNewExp({ ...newExp, isCurrent: e.target.checked })} className="w-5 h-5 accent-primary" />
                                 현재 재직 중
@@ -434,7 +450,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             {/* 3. Education Section */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="section-card border-l-blue-500">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2"><GraduationCap className="w-5 h-5 text-blue-500" /> 학력 사항</h3>
                     <button onClick={() => setShowAddEdu(!showAddEdu)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
@@ -458,7 +474,9 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                                 <option value="ATTENDING">재학 중</option>
                                 <option value="LEAVE">휴학/중퇴</option>
                             </select>
-                            <input type="date" className="input-std dark:[color-scheme:dark]" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
+
+                            <input type="date" className="input-std max-w-[200px] dark:[color-scheme:dark]" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
+                            <input type="date" className="input-std max-w-[200px] dark:[color-scheme:dark]" value={newEdu.endDate || ''} onChange={e => setNewEdu({ ...newEdu, endDate: e.target.value })} placeholder="졸업일 (선택)" />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setShowAddEdu(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
@@ -494,11 +512,14 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             {/* 4. Links Section */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="section-card border-l-slate-500">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2"><LinkIcon className="w-5 h-5 text-slate-500" /> 포트폴리오 / 링크</h3>
                     <button onClick={() => setShowAddLink(!showAddLink)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
                 </div>
+                <p className="text-sm text-slate-500 mb-6 -mt-4">
+                    유튜브(수업 시연 영상), 블로그(교육 철학), 인스타그램(활동 기록) 등 선생님을 어필할 수 있는 링크를 자유롭게 추가해주세요.
+                </p>
 
                 {showAddLink && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
@@ -530,7 +551,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             {/* 5. Licenses Section */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm">
+            <div className="section-card border-l-amber-500">
                 <div className="flex items-center justify-between mb-6">
                     <h3 className="text-lg font-bold flex items-center gap-2"><Award className="w-5 h-5 text-amber-500" /> 자격증 및 면허 (정보 입력)</h3>
                     <button onClick={() => setShowAddLicense(!showAddLicense)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
@@ -543,7 +564,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             <input placeholder="발급 기관 (예: 한국산업인력공단)" className="input-std" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            <input type="month" className="input-std dark:[color-scheme:dark]" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
+                            <input type="month" className="input-std max-w-[200px] dark:[color-scheme:dark]" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setShowAddLicense(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
@@ -583,7 +604,11 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
             <style jsx>{`
                 .input-std {
-                    @apply w-full px-4 py-3 bg-white dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-foreground;
+                    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-foreground font-medium placeholder:text-slate-400;
+                }
+                /* Higher contrast for section cards */
+                .section-card {
+                    @apply bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md border-l-4;
                 }
             `}</style>
         </div >

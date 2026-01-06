@@ -177,6 +177,7 @@ export default function JobApplicantsPage() {
         { id: ApplicationStatus.INTERVIEWING, label: '면접/시연', icon: '💬' },
         { id: ApplicationStatus.VERIFICATION, label: '결격사유 조회', icon: '🔍' },
         { id: ApplicationStatus.HIRED, label: '채용완료', icon: '🎉' },
+        { id: ApplicationStatus.REJECTED, label: '탈락/반려', icon: '🚫' },
     ];
 
     const eventStages = [
@@ -185,6 +186,7 @@ export default function JobApplicantsPage() {
         { id: ApplicationStatus.CONTRACTING, label: '계약체결', icon: '✍️' },
         { id: ApplicationStatus.EXECUTING, label: '행사/과업', icon: '🏃' },
         { id: ApplicationStatus.PAYMENT_COMPLETED, label: '대금지급/완료', icon: '💰' },
+        { id: ApplicationStatus.REJECTED, label: '미선정', icon: '🚫' },
     ];
 
     const stages = job?.jobType === JobType.EVENT_VENDOR ? eventStages : teacherStages;
@@ -355,6 +357,20 @@ export default function JobApplicantsPage() {
                                                 {job?.jobType === JobType.EVENT_VENDOR ? '미선정 (반려)' : '불합격'}
                                             </button>
                                         </>
+
+                                    )}
+
+                                    {app.status === ApplicationStatus.REJECTED && (
+                                        <button
+                                            onClick={() => {
+                                                if (confirm('지원자를 복구하시겠습니까? (대기 중 상태로 변경됩니다)')) {
+                                                    handleStatusClick(app.id, ApplicationStatus.PENDING);
+                                                }
+                                            }}
+                                            className="w-full py-3 bg-white border border-emerald-200 text-emerald-600 rounded-xl font-bold hover:bg-emerald-50 transition-all text-sm active:scale-95"
+                                        >
+                                            ↩️ 재검토 (복구)
+                                        </button>
                                     )}
 
                                     {/* Always show Chat Button if not Pending/Rejected? Or even then? User asked for generally available. */}
@@ -369,12 +385,20 @@ export default function JobApplicantsPage() {
 
                                     {/* TEACHER WORKFLOW */}
                                     {app.status === ApplicationStatus.DOCUMENT_SCREENING && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
-                                            className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20 text-sm active:scale-95"
-                                        >
-                                            면접 · 시연 제안
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
+                                                className="w-full py-3 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-500/20 text-sm active:scale-95"
+                                            >
+                                                면접 · 시연 제안
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.PENDING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 이전 단계로 (대기 중)
+                                            </button>
+                                        </div>
                                     )}
 
                                     {app.status === ApplicationStatus.INTERVIEWING && (
@@ -411,14 +435,37 @@ export default function JobApplicantsPage() {
                                         </div>
                                     )}
 
+                                    {app.status === ApplicationStatus.HIRED && (
+                                        <div className="flex flex-col gap-2 w-full mt-4">
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('채용을 취소하고 결격사유 확인 단계로 되돌리시겠습니까?')) {
+                                                        handleStatusClick(app.id, ApplicationStatus.VERIFICATION);
+                                                    }
+                                                }}
+                                                className="w-full py-3 bg-white border border-red-200 text-red-500 rounded-xl font-bold hover:bg-red-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 채용 취소 (결격사유 단계로)
+                                            </button>
+                                        </div>
+                                    )}
+
                                     {/* EVENT WORKFLOW */}
                                     {app.status === ApplicationStatus.BIDDING && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.CONTRACTING)}
-                                            className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 text-sm active:scale-95"
-                                        >
-                                            업체 선정 및 계약 진행
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.CONTRACTING)}
+                                                className="w-full py-3 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 text-sm active:scale-95"
+                                            >
+                                                업체 선정 및 계약 진행
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.PENDING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 이전 단계로 (대기 중)
+                                            </button>
+                                        </div>
                                     )}
 
                                     {app.status === ApplicationStatus.CONTRACTING && (
@@ -434,6 +481,21 @@ export default function JobApplicantsPage() {
                                                 className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
                                             >
                                                 ↩️ 업체 선정 단계로 복귀
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    {app.status === ApplicationStatus.PAYMENT_COMPLETED && (
+                                        <div className="flex flex-col gap-2 w-full mt-4">
+                                            <button
+                                                onClick={() => {
+                                                    if (confirm('완료 처리를 취소하고 과업 수행 단계로 되돌리시겠습니까?')) {
+                                                        handleStatusClick(app.id, ApplicationStatus.EXECUTING);
+                                                    }
+                                                }}
+                                                className="w-full py-3 bg-white border border-red-200 text-red-500 rounded-xl font-bold hover:bg-red-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 완료 취소 (과업 단계로)
                                             </button>
                                         </div>
                                     )}
@@ -492,28 +554,30 @@ export default function JobApplicantsPage() {
                 </div>
             </div>
 
-            {selectedApplicant && (
-                <ReviewModal
-                    isOpen={isReviewModalOpen}
-                    onClose={() => setIsReviewModalOpen(false)}
-                    receiverName={selectedApplicant.user?.name || ''}
-                    receiverRole={selectedApplicant.user?.role || Role.TEACHER}
-                    onSubmit={async (data) => {
-                        try {
-                            await api.post('/reviews', {
-                                jobId: parseInt(id as string),
-                                receiverId: selectedApplicant.user?.id,
-                                ...data
-                            });
-                            alert('후기 및 평가가 성공적으로 전달되었습니다! ✨');
-                            fetchData();
-                        } catch (e: any) {
-                            console.error(e);
-                            alert(e.message || '저장에 실패했습니다.');
-                        }
-                    }}
-                />
-            )}
+            {
+                selectedApplicant && (
+                    <ReviewModal
+                        isOpen={isReviewModalOpen}
+                        onClose={() => setIsReviewModalOpen(false)}
+                        receiverName={selectedApplicant.user?.name || ''}
+                        receiverRole={selectedApplicant.user?.role || Role.TEACHER}
+                        onSubmit={async (data) => {
+                            try {
+                                await api.post('/reviews', {
+                                    jobId: parseInt(id as string),
+                                    receiverId: selectedApplicant.user?.id,
+                                    ...data
+                                });
+                                alert('후기 및 평가가 성공적으로 전달되었습니다! ✨');
+                                fetchData();
+                            } catch (e: any) {
+                                console.error(e);
+                                alert(e.message || '저장에 실패했습니다.');
+                            }
+                        }}
+                    />
+                )
+            }
 
             <UserProfileModal
                 isOpen={!!viewProfileId}
@@ -542,6 +606,6 @@ export default function JobApplicantsPage() {
                 onConfirm={handleComplianceConfirmed}
                 candidateName={applicants.find(a => a.id === pendingApplicantId)?.user?.name || '지원자'}
             />
-        </DashboardLayout>
+        </DashboardLayout >
     );
 }
