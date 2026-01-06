@@ -16,27 +16,41 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         const storedTheme = localStorage.getItem('theme') as Theme | null;
-        if (storedTheme) {
-            setThemeState(storedTheme);
-            applyTheme(storedTheme);
-        } else {
-            applyTheme('system');
-        }
+        const initialTheme = storedTheme || 'system';
+        setThemeState(initialTheme);
+        applyTheme(initialTheme);
+
+        // Listen for system theme changes
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleChange = () => {
+            const currentTheme = localStorage.getItem('theme') as Theme | null;
+            if (!currentTheme || currentTheme === 'system') {
+                applyTheme('system');
+            }
+        };
+
+        mediaQuery.addEventListener('change', handleChange);
+        return () => mediaQuery.removeEventListener('change', handleChange);
     }, []);
 
     const applyTheme = (newTheme: Theme) => {
         const root = window.document.documentElement;
-        root.classList.remove('light', 'dark');
 
-        let actualTheme = newTheme;
+        let isDark = false;
         if (newTheme === 'system') {
-            actualTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        } else {
+            isDark = newTheme === 'dark';
         }
 
-        root.classList.add(actualTheme);
+        if (isDark) {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
+        }
 
-        // Update color scheme for browser elements
-        root.style.colorScheme = actualTheme;
+        // Update color scheme for browser elements (scrollbars, etc)
+        root.style.colorScheme = isDark ? 'dark' : 'light';
     };
 
     const setTheme = (newTheme: Theme) => {

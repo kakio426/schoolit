@@ -76,7 +76,7 @@ export default function SettingsPage() {
                     {/* Theme Section */}
                     <section className="bg-surface p-8 rounded-[32px] border border-slate-200/50 dark:border-slate-700 shadow-sm">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                            <span className="text-2xl">🎨</span> 모양 설정
+                            <span className="text-2xl">🎨</span> 테마 설정
                         </h2>
                         <div className="grid grid-cols-3 gap-4">
                             {[
