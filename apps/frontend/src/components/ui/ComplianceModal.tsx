@@ -45,8 +45,8 @@ export default function ComplianceModal({ userRole, onAccept }: ComplianceModalP
                                 <span className="w-1.5 h-1.5 bg-primary rounded-full"></span>
                                 서비스 성격 (Research Prototype)
                             </p>
-                            <p className="text-xs">
-                                본 서비스는 교육 정보화 및 인력 매칭 효율화를 위한 **연구용 프로토타입**입니다. 영리 목적이 없으며, 정식 채용 대행 기관이 아닙니다.
+                            <p className="text-xs text-slate-600 dark:text-slate-300">
+                                본 서비스는 교육 정보화 및 인력 매칭 효율화를 위한 <strong className="text-slate-900 dark:text-slate-50 underline decoration-primary/30">연구용 프로토타입</strong>입니다. 영리 목적이 없으며, 정식 채용 대행 기관이 아닙니다.
                             </p>
                         </div>
 
@@ -55,8 +55,8 @@ export default function ComplianceModal({ userRole, onAccept }: ComplianceModalP
                                 <span className="w-1.5 h-1.5 bg-blue-600 rounded-full"></span>
                                 행정 및 법적 계약 준수
                             </p>
-                            <p className="text-xs">
-                                본 매칭 결과와 제공되는 정보는 **단순 참고용**입니다. 실제 채용 계약 및 용역 거래(S2B 등)는 반드시 **학교 내부 행정 지침 및 교육청 규정**에 따라 별도로 진행해야 합니다.
+                            <p className="text-xs text-blue-800 dark:text-blue-200">
+                                본 매칭 결과와 제공되는 정보는 <strong className="text-blue-900 dark:text-blue-100 underline decoration-blue-400/30">단순 참고용</strong>입니다. 실제 채용 계약 및 용역 거래(S2B 등)는 반드시 <strong className="text-blue-900 dark:text-blue-100 underline decoration-blue-400/30">학교 내부 행정 지침 및 교육청 규정</strong>에 따라 별도로 진행해야 합니다.
                             </p>
                         </div>
 
@@ -65,8 +65,8 @@ export default function ComplianceModal({ userRole, onAccept }: ComplianceModalP
                                 <span className="w-1.5 h-1.5 bg-amber-600 rounded-full"></span>
                                 정보 확인 책임
                             </p>
-                            <p className="text-xs">
-                                지원자의 자격 증명 및 신원 확인에 대한 최종 책임은 **학교(채용 주체)**에 있습니다. 플랫폼은 자격의 진위 여부를 보증하지 않습니다.
+                            <p className="text-xs text-amber-800 dark:text-amber-200">
+                                지원자의 자격 증명 및 신원 확인에 대한 최종 책임은 <strong className="text-amber-900 dark:text-amber-100 underline decoration-amber-400/30">학교(채용 주체)</strong>에 있습니다. 플랫폼은 자격의 진위 여부를 보증하지 않습니다.
                             </p>
                         </div>
                     </div>
