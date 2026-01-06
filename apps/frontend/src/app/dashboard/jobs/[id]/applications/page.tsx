@@ -378,21 +378,37 @@ export default function JobApplicantsPage() {
                                     )}
 
                                     {app.status === ApplicationStatus.INTERVIEWING && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.VERIFICATION)}
-                                            className="w-full py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 text-sm active:scale-95"
-                                        >
-                                            결격사유 확인 진행
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.VERIFICATION)}
+                                                className="w-full py-3 bg-orange-500 text-white rounded-xl font-bold hover:bg-orange-600 transition-all shadow-lg shadow-orange-500/20 text-sm active:scale-95"
+                                            >
+                                                결격사유 확인 진행
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 서류 심사로 복귀
+                                            </button>
+                                        </div>
                                     )}
 
                                     {app.status === ApplicationStatus.VERIFICATION && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.HIRED)}
-                                            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
-                                        >
-                                            🎉 최종 채용 확정
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.HIRED)}
+                                                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
+                                            >
+                                                🎉 최종 채용 확정
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 면접 단계로 복귀
+                                            </button>
+                                        </div>
                                     )}
 
                                     {/* EVENT WORKFLOW */}
@@ -406,21 +422,37 @@ export default function JobApplicantsPage() {
                                     )}
 
                                     {app.status === ApplicationStatus.CONTRACTING && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.EXECUTING)}
-                                            className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
-                                        >
-                                            계약 체결 완료 (행사 준비)
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.EXECUTING)}
+                                                className="w-full py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-sm active:scale-95"
+                                            >
+                                                계약 체결 완료 (행사 준비)
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.BIDDING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 업체 선정 단계로 복귀
+                                            </button>
+                                        </div>
                                     )}
 
                                     {app.status === ApplicationStatus.EXECUTING && (
-                                        <button
-                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.PAYMENT_COMPLETED)}
-                                            className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-500/20 text-sm active:scale-95"
-                                        >
-                                            행사/용역 완료 (대금 지급)
-                                        </button>
+                                        <div className="flex flex-col gap-2 w-full">
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.PAYMENT_COMPLETED)}
+                                                className="w-full py-3 bg-slate-800 text-white rounded-xl font-bold hover:bg-slate-900 transition-all shadow-lg shadow-slate-500/20 text-sm active:scale-95"
+                                            >
+                                                행사/용역 완료 (대금 지급)
+                                            </button>
+                                            <button
+                                                onClick={() => handleStatusClick(app.id, ApplicationStatus.CONTRACTING)}
+                                                className="w-full py-3 bg-white border border-slate-200 text-slate-500 rounded-xl font-medium hover:bg-slate-50 transition-all text-sm active:scale-95"
+                                            >
+                                                ↩️ 계약 단계로 복귀
+                                            </button>
+                                        </div>
                                     )}
 
 

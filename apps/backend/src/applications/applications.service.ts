@@ -200,7 +200,7 @@ export class ApplicationsService {
     const existing = await this.prisma.jobApplication.findUnique({
       where: { jobId_userId: { jobId, userId: teacherUserId } },
     });
-    if (existing) throw new BadRequestException('Application/Suggestion already exists');
+    if (existing) throw new BadRequestException('이미 지원했거나 제안을 받았습니다.');
 
     const suggestion = await this.prisma.jobApplication.create({
       data: {

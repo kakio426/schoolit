@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
+import * as fontkit from '@pdf-lib/fontkit';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class PdfGeneratorService {
@@ -7,42 +10,54 @@ export class PdfGeneratorService {
     // Create a new PDFDocument
     const pdfDoc = await PDFDocument.create();
 
+    // Register fontkit
+    pdfDoc.registerFontkit(fontkit);
+
+    // Load Korean Font
+    const fontPath = path.join(__dirname, 'NanumGothic-Regular.ttf');
+    const fontBytes = fs.readFileSync(fontPath);
+    const customFont = await pdfDoc.embedFont(fontBytes);
+
     // Add a blank page
     const page = pdfDoc.addPage();
     const { width, height } = page.getSize();
-
-    // Embed font
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
     const fontSize = 12;
 
-    // Draw text
-    page.drawText(`Contract Agreement`, {
+    // Draw text with custom font
+    page.drawText(`계약서 (Contract Agreement)`, {
       x: 50,
       y: height - 50,
       size: 20,
-      font,
+      font: customFont,
       color: rgb(0, 0, 0),
     });
 
-    page.drawText(`Teacher: ${data.teacherName}`, {
+    page.drawText(`성명 (Teacher): ${data.teacherName}`, {
       x: 50,
       y: height - 100,
       size: fontSize,
-      font,
+      font: customFont,
     });
 
-    page.drawText(`School: ${data.schoolName}`, {
+    page.drawText(`기관명 (School): ${data.schoolName}`, {
       x: 50,
       y: height - 120,
       size: fontSize,
-      font,
+      font: customFont,
     });
 
-    page.drawText(`Period: ${data.contractPeriod}`, {
+    page.drawText(`공고명 (Job Title): ${data.jobTitle}`, {
       x: 50,
       y: height - 140,
       size: fontSize,
-      font,
+      font: customFont,
+    });
+
+    page.drawText(`작성일 (Date): ${data.date}`, {
+      x: 50,
+      y: height - 160,
+      size: fontSize,
+      font: customFont,
     });
 
     // Save
@@ -50,3 +65,4 @@ export class PdfGeneratorService {
     return Buffer.from(pdfBytes);
   }
 }
+
