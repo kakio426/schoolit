@@ -397,12 +397,12 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 {showAddExp && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="직위/역할 (예: 수학 강사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newExp.title} onChange={e => setNewExp({ ...newExp, title: e.target.value })} />
-                            <input placeholder="소속 (학교/학원명)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newExp.organization} onChange={e => setNewExp({ ...newExp, organization: e.target.value })} />
+                            <input placeholder="직위/역할 (예: 수학 강사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newExp.title} onChange={e => setNewExp({ ...newExp, title: e.target.value })} />
+                            <input placeholder="소속 (학교/학원명)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newExp.organization} onChange={e => setNewExp({ ...newExp, organization: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:[color-scheme:dark]" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:[color-scheme:dark]" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
+                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
+                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
                             <label className="flex items-center gap-2 text-sm font-bold cursor-pointer">
                                 <input type="checkbox" checked={newExp.isCurrent} onChange={e => setNewExp({ ...newExp, isCurrent: e.target.checked })} className="w-5 h-5 accent-primary" />
                                 현재 재직 중
@@ -410,8 +410,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         </div>
                         <textarea
                             placeholder="상세 업무 내용"
-                            style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }}
-                            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none dark:bg-slate-900 dark:border-slate-600"
+                            style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }}
+                            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
                             rows={4}
                             value={newExp.description}
                             onChange={e => setNewExp({ ...newExp, description: e.target.value })}
@@ -460,24 +460,24 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 {showAddEdu && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="학교명" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newEdu.schoolName} onChange={e => setNewEdu({ ...newEdu, schoolName: e.target.value })} />
-                            <input placeholder="전공" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newEdu.major} onChange={e => setNewEdu({ ...newEdu, major: e.target.value })} />
+                            <input placeholder="학교명" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newEdu.schoolName} onChange={e => setNewEdu({ ...newEdu, schoolName: e.target.value })} />
+                            <input placeholder="전공" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newEdu.major} onChange={e => setNewEdu({ ...newEdu, major: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })}>
+                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })}>
                                 <option value="HighSchool">고등학교</option>
                                 <option value="Bachelor">학사 (대학교)</option>
                                 <option value="Master">석사 (대학원)</option>
                                 <option value="Doctor">박사</option>
                             </select>
-                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white" value={newEdu.graduationStatus} onChange={e => setNewEdu({ ...newEdu, graduationStatus: e.target.value })}>
+                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white" value={newEdu.graduationStatus} onChange={e => setNewEdu({ ...newEdu, graduationStatus: e.target.value })}>
                                 <option value="GRADUATED">졸업</option>
                                 <option value="ATTENDING">재학 중</option>
                                 <option value="LEAVE">휴학/중퇴</option>
                             </select>
 
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:[color-scheme:dark]" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:[color-scheme:dark]" value={newEdu.endDate || ''} onChange={e => setNewEdu({ ...newEdu, endDate: e.target.value })} placeholder="졸업일 (선택)" />
+                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
+                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newEdu.endDate || ''} onChange={e => setNewEdu({ ...newEdu, endDate: e.target.value })} placeholder="졸업일 (선택)" />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setShowAddEdu(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
@@ -527,8 +527,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 {showAddLink && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="제목 (예: 수업 시연 영상)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newLink.title} onChange={e => setNewLink({ ...newLink, title: e.target.value })} />
-                            <input placeholder="URL (https://...)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} />
+                            <input placeholder="제목 (예: 수업 시연 영상)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLink.title} onChange={e => setNewLink({ ...newLink, title: e.target.value })} />
+                            <input placeholder="URL (https://...)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setShowAddLink(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
@@ -563,11 +563,11 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 {showAddLicense && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="자격증 명칭 (예: 정보처리기사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newLicense.name} onChange={e => setNewLicense({ ...newLicense, name: e.target.value })} />
-                            <input placeholder="발급 기관 (예: 한국산업인력공단)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:bg-slate-900 dark:border-slate-600" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
+                            <input placeholder="자격증 명칭 (예: 정보처리기사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLicense.name} onChange={e => setNewLicense({ ...newLicense, name: e.target.value })} />
+                            <input placeholder="발급 기관 (예: 한국산업인력공단)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            <input type="month" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:bg-slate-900 dark:border-slate-600 dark:[color-scheme:dark]" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
+                            <input type="month" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
                         </div>
                         <div className="flex justify-end gap-2">
                             <button onClick={() => setShowAddLicense(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
