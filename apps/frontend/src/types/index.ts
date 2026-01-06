@@ -133,6 +133,8 @@ export interface ChatMessage {
     content: string;
     read: boolean;
     createdAt: string;
+    /** Populated when fetching messages with sender details */
+    sender?: Pick<User, 'id' | 'name' | 'role'>;
 }
 
 export interface JobListing {
@@ -161,4 +163,36 @@ export interface JobApplication {
     internalNote?: string;
     jobListing?: JobListing;
     user?: User;
+}
+
+/**
+ * Internal checklist for job posting compliance.
+ */
+export interface InternalChecklist {
+    planningApproved: boolean;
+    budgetConfirmed: boolean;
+    vacancyConfirmed: boolean;
+}
+
+/**
+ * Payload for creating a new job posting.
+ */
+export interface JobCreationPayload {
+    jobType: string;
+    title: string;
+    description: string;
+    subjects: string[];
+    regions: string[];
+    budget: number;
+    internalChecklist: InternalChecklist;
+    // Teacher-specific
+    contractPeriod?: string;
+    gradeLevel?: string[];
+    teachingHours?: number;
+    // Event-specific
+    eventType?: string;
+    eventDuration?: string;
+    participantCount?: string;
+    equipmentProvided?: boolean;
+    certifications?: string[];
 }

@@ -12,7 +12,7 @@ export default function MessagesPage() {
     const { user } = useAuth();
     const [rooms, setRooms] = useState<ChatRoom[]>([]);
     const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
-    const [messages, setMessages] = useState<any[]>([]); // Messages with sender info
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const { socket } = useSocket();
@@ -32,7 +32,7 @@ export default function MessagesPage() {
     useEffect(() => {
         if (!socket) return;
 
-        const onNewMessage = (msg: any) => {
+        const onNewMessage = (msg: ChatMessage) => {
             if (selectedRoom && msg.chatRoomId === selectedRoom.id) {
                 setMessages((prev) => {
                     if (prev.find(m => m.id === msg.id)) return prev;
@@ -80,7 +80,7 @@ export default function MessagesPage() {
 
     const fetchMessages = async (roomId: number) => {
         try {
-            const data = await api.get<any[]>(`/chat/rooms/${roomId}/messages`);
+            const data = await api.get<ChatMessage[]>(`/chat/rooms/${roomId}/messages`);
             setMessages(data);
         } catch (e) {
             console.error(e);
@@ -201,11 +201,14 @@ export default function MessagesPage() {
                             <div className="p-6 bg-surface border-t border-slate-100 dark:border-slate-800">
                                 <div className="flex gap-3 items-end">
                                     <button
-                                        onClick={() => alert('파일 전송 기능은 준비 중입니다. 견적서는 이메일로 발송해 주세요.')}
-                                        className="p-3 text-slate-400 hover:text-primary hover:bg-primary/5 rounded-xl transition-colors shrink-0"
-                                        title="파일 첨부"
+                                        disabled
+                                        className="p-3 text-slate-300 dark:text-slate-600 rounded-xl shrink-0 cursor-not-allowed relative group"
+                                        title="파일 첨부 (준비 중)"
                                     >
                                         <span className="text-xl">📎</span>
+                                        <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 text-[10px] bg-slate-800 dark:bg-slate-700 text-white rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                                            준비 중
+                                        </span>
                                     </button>
                                     <div className="flex-1 flex gap-3">
                                         <input
