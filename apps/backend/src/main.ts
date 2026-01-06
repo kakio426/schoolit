@@ -19,7 +19,7 @@ async function bootstrap() {
   // CORS configuration
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-    : '*';
+    : true; // true = reflect request origin (allows credentials to work without wildcard)
 
   app.enableCors({
     origin: corsOrigins,
