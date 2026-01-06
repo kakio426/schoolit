@@ -11,6 +11,9 @@ interface User {
     role: string;
     provider: string;
     createdAt: string;
+    phone?: string;
+    schoolProfile?: { schoolName: string };
+    businessProfile?: { companyName: string };
 }
 
 export default function AdminUsersPage() {
@@ -74,6 +77,8 @@ export default function AdminUsersPage() {
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">ID</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">이메일</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">이름</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-foreground">연락처</th>
+                                    <th className="px-6 py-4 text-left text-sm font-bold text-foreground">소속</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">역할</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">가입 방법</th>
                                     <th className="px-6 py-4 text-left text-sm font-bold text-foreground">가입일</th>
@@ -86,12 +91,18 @@ export default function AdminUsersPage() {
                                         <td className="px-6 py-4 text-sm text-foreground font-mono">{user.id}</td>
                                         <td className="px-6 py-4 text-sm text-foreground">{user.email}</td>
                                         <td className="px-6 py-4 text-sm text-foreground font-semibold">{user.name}</td>
+                                        <td className="px-6 py-4 text-sm text-foreground-muted">{user.phone || '-'}</td>
+                                        <td className="px-6 py-4 text-sm text-foreground">
+                                            {user.role === 'SCHOOL' ? user.schoolProfile?.schoolName :
+                                                user.role === 'BUSINESS' ? user.businessProfile?.companyName :
+                                                    '-'}
+                                        </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold ${user.role === 'ADMIN' ? 'bg-purple-500/20 text-purple-600' :
-                                                    user.role === 'SCHOOL' ? 'bg-blue-500/20 text-blue-600' :
-                                                        user.role === 'TEACHER' ? 'bg-green-500/20 text-green-600' :
-                                                            user.role === 'BUSINESS' ? 'bg-orange-500/20 text-orange-600' :
-                                                                'bg-slate-500/20 text-slate-600'
+                                                user.role === 'SCHOOL' ? 'bg-blue-500/20 text-blue-600' :
+                                                    user.role === 'TEACHER' ? 'bg-green-500/20 text-green-600' :
+                                                        user.role === 'BUSINESS' ? 'bg-orange-500/20 text-orange-600' :
+                                                            'bg-slate-500/20 text-slate-600'
                                                 }`}>
                                                 {user.role}
                                             </span>

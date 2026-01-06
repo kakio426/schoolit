@@ -13,8 +13,8 @@ import VerificationPendingView from '../auth/VerificationPendingView';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
-    const { unreadCount, unreadNotificationCount, notifications, markNotificationAsRead } = useSocket();
-    const { theme, setTheme } = useTheme();
+    const { unreadMessageCount, unreadNotificationCount, notifications, markNotificationAsRead } = useSocket();
+    const { theme } = useTheme();
     const router = useRouter();
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -114,9 +114,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 {item.icon}
                             </span>
                             <span className="font-medium">{item.label}</span>
-                            {item.label === '메시지' && unreadCount > 0 && (
+                            {item.label === '메시지' && unreadMessageCount > 0 && (
                                 <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ring-2 ring-surface">
-                                    {unreadCount > 99 ? '99+' : unreadCount}
+                                    {unreadMessageCount > 99 ? '99+' : unreadMessageCount}
                                 </span>
                             )}
                         </a>
@@ -168,13 +168,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </h2>
                     </div>
                     <div className="flex items-center gap-3">
-                        <button
-                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                            className="p-2 rounded-full hover:bg-surface-hover transition-colors text-xl"
-                            title={theme === 'dark' ? '라이트 모드로 변경' : '다크 모드로 변경'}
-                        >
-                            {theme === 'dark' ? '☀️' : '🌙'}
-                        </button>
                         <div className="relative">
                             <button
                                 onClick={() => setShowNotifications(!showNotifications)}

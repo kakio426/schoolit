@@ -437,7 +437,14 @@ export class UserService {
         name: true,
         role: true,
         provider: true,
+        phone: true,
         createdAt: true,
+        schoolProfile: {
+          select: { schoolName: true },
+        },
+        businessProfile: {
+          select: { companyName: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
