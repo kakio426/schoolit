@@ -17,13 +17,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   // CORS configuration
-  const corsOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
-    : true; // true = reflect request origin (allows credentials to work without wildcard)
-
+  // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
+  // This resolves "Failed to fetch" caused by strict CORS + Wildcard conflicts.
   app.enableCors({
-    origin: corsOrigins,
-    credentials: true,
+    origin: '*',
+    credentials: false,
   });
 
   app.setGlobalPrefix('api');
