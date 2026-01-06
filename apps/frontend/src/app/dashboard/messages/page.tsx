@@ -24,6 +24,8 @@ export default function MessagesPage() {
     useEffect(() => {
         if (selectedRoom) {
             fetchMessages(selectedRoom.id);
+            // Mark messages as read
+            api.post(`/chat/rooms/${selectedRoom.id}/read`).catch(console.error);
         }
     }, [selectedRoom]);
 

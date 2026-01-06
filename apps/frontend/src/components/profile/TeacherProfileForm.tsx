@@ -309,7 +309,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             type="text"
                             value={basicInfo.phone}
                             onChange={(e) => setBasicInfo(prev => ({ ...prev, phone: e.target.value }))}
-                            className="input-std"
+                            className="w-full px-4 py-3 !bg-slate-100 dark:!bg-slate-900 rounded-xl !border-2 !border-slate-400 dark:!border-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                             placeholder="예: 010-1234-5678"
                         />
                         <p className="text-[10px] text-slate-400 mt-2">*서류 전형 합격 시 학교 담당자에게 공개됩니다.</p>
@@ -517,9 +517,11 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     <h3 className="text-lg font-bold flex items-center gap-2"><LinkIcon className="w-5 h-5 text-slate-500" /> 포트폴리오 / 링크</h3>
                     <button onClick={() => setShowAddLink(!showAddLink)} className="text-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg hover:bg-primary/20 transition-colors">+ 추가</button>
                 </div>
-                <p className="text-sm text-slate-500 mb-6 -mt-4">
-                    유튜브(수업 시연 영상), 블로그(교육 철학), 인스타그램(활동 기록) 등 선생님을 어필할 수 있는 링크를 자유롭게 추가해주세요.
-                </p>
+                <div className="!bg-blue-50 dark:!bg-blue-900/20 !border-2 !border-blue-200 dark:!border-blue-700 p-4 rounded-xl mb-6">
+                    <p className="text-sm text-blue-900 dark:text-blue-200 font-medium">
+                        💡 <strong>가이드:</strong> 유튜브(수업 시연 영상), 블로그(교육 철학), 인스타그램(활동 기록) 등 선생님을 어필할 수 있는 링크를 자유롭게 추가해주세요.
+                    </p>
+                </div>
 
                 {showAddLink && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
@@ -604,7 +606,16 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
             <style jsx>{`
                 .input-std {
-                    @apply w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-300 dark:border-slate-600 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-sm text-foreground font-medium placeholder:text-slate-400;
+                    @apply w-full px-4 py-3 rounded-xl outline-none transition-all text-sm text-foreground font-medium placeholder:text-slate-400;
+                    background-color: rgb(241, 245, 249) !important;
+                    border: 2px solid rgb(148, 163, 184) !important;
+                }
+                .dark .input-std {
+                    background-color: rgb(15, 23, 42) !important;
+                    border: 2px solid rgb(71, 85, 105) !important;
+                }
+                .input-std:focus {
+                    @apply ring-2 ring-primary/20 border-primary;
                 }
                 /* Higher contrast for section cards */
                 .section-card {

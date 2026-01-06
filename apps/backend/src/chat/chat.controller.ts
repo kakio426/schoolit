@@ -52,4 +52,9 @@ export class ChatController {
   ) {
     return this.chatService.createRoom(req.user.userId, targetUserId, jobId);
   }
+
+  @Post('rooms/:id/read')
+  async markAsRead(@Request() req, @Param('id', ParseIntPipe) roomId: number) {
+    return this.chatService.markAsRead(roomId, req.user.userId);
+  }
 }

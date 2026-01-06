@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import * as fontkit from '@pdf-lib/fontkit';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -7,62 +7,193 @@ import * as path from 'path';
 @Injectable()
 export class PdfGeneratorService {
   async generateContract(data: any, images: any[]): Promise<Buffer> {
-    // Create a new PDFDocument
     const pdfDoc = await PDFDocument.create();
-
-    // Register fontkit
     pdfDoc.registerFontkit(fontkit);
 
     // Load Korean Font
     const fontPath = path.join(__dirname, 'NanumGothic-Regular.ttf');
     const fontBytes = fs.readFileSync(fontPath);
     const customFont = await pdfDoc.embedFont(fontBytes);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-    // Add a blank page
-    const page = pdfDoc.addPage();
+    // Create page
+    const page = pdfDoc.addPage([595, 842]); // A4 size
     const { width, height } = page.getSize();
-    const fontSize = 12;
+    const margin = 50;
+    let yPos = height - margin;
 
-    // Draw text with custom font
-    page.drawText(`계약서 (Contract Agreement)`, {
-      x: 50,
-      y: height - 50,
-      size: 20,
+    // Header Box
+    page.drawRectangle({
+      x: margin,
+      y: yPos - 60,
+      width: width - 2 * margin,
+      height: 60,
+      color: rgb(0.95, 0.95, 0.95),
+      borderColor: rgb(0.6, 0.6, 0.6),
+      borderWidth: 1,
+    });
+
+    // Title
+    page.drawText('표준 근로 계약서', {
+      x: margin + 150,
+      y: yPos - 25,
+      size: 24,
       font: customFont,
       color: rgb(0, 0, 0),
     });
 
-    page.drawText(`성명 (Teacher): ${data.teacherName}`, {
-      x: 50,
-      y: height - 100,
-      size: fontSize,
+    page.drawText('Standard Employment Contract', {
+      x: margin + 120,
+      y: yPos - 45,
+      size: 12,
+      font: boldFont,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+
+    yPos -= 90;
+
+    // Contract Details Section
+    const drawField = (label: string, value: string, y: number) => {
+      page.drawRectangle({
+        x: margin,
+        y: y - 25,
+        width: width - 2 * margin,
+        height: 30,
+        borderColor: rgb(0.8, 0.8, 0.8),
+        borderWidth: 0.5,
+      });
+
+      page.drawText(label, {
+        x: margin + 10,
+        y: y - 15,
+        size: 11,
+        font: customFont,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+
+      page.drawText(value || '-', {
+        x: margin + 150,
+        y: y - 15,
+        size: 12,
+        font: customFont,
+        color: rgb(0, 0, 0),
+      });
+    };
+
+    drawField('학교명 (Institution):', data.schoolName || '', yPos);
+    yPos -= 35;
+    drawField('교사명 (Teacher):', data.teacherName || '', yPos);
+    yPos -= 35;
+    drawField('직위/과목 (Position):', data.jobTitle || '', yPos);
+    yPos -= 35;
+    drawField('계약일 (Contract Date):', data.date || '', yPos);
+    yPos -= 50;
+
+    // Terms Section
+    page.drawRectangle({
+      x: margin,
+      y: yPos - 100,
+      width: width - 2 * margin,
+      height: 110,
+      borderColor: rgb(0.7, 0.7, 0.7),
+      borderWidth: 1,
+    });
+
+    page.drawText('계약 조건 (Terms & Conditions)', {
+      x: margin + 10,
+      y: yPos - 20,
+      size: 13,
+      font: customFont,
+      color: rgb(0, 0, 0),
+    });
+
+    const terms = [
+      '1. 본 계약은 양 당사자의 합의 하에 체결되었습니다.',
+      '2. 근무 조건 및 급여는 별도 협의된 사항을 따릅니다.',
+      '3. 계약 해지 시 1개월 전 사전 통보를 원칙으로 합니다.',
+    ];
+
+    let termY = yPos - 45;
+    terms.forEach((term) => {
+      page.drawText(term, {
+        x: margin + 15,
+        y: termY,
+        size: 9,
+        font: customFont,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+      termY -= 20;
+    });
+
+    yPos -= 130;
+
+    // Signature Section
+    page.drawRectangle({
+      x: margin,
+      y: yPos - 80,
+      width: (width - 2 * margin) / 2 - 10,
+      height: 80,
+      borderColor: rgb(0.6, 0.6, 0.6),
+      borderWidth: 1,
+    });
+
+    page.drawRectangle({
+      x: margin + (width - 2 * margin) / 2 + 10,
+      y: yPos - 80,
+      width: (width - 2 * margin) / 2 - 10,
+      height: 80,
+      borderColor: rgb(0.6, 0.6, 0.6),
+      borderWidth: 1,
+    });
+
+    page.drawText('학교 대표 (School)', {
+      x: margin + 50,
+      y: yPos - 20,
+      size: 10,
       font: customFont,
     });
 
-    page.drawText(`기관명 (School): ${data.schoolName}`, {
-      x: 50,
-      y: height - 120,
-      size: fontSize,
+    page.drawText('서명: _____________', {
+      x: margin + 30,
+      y: yPos - 50,
+      size: 9,
       font: customFont,
     });
 
-    page.drawText(`공고명 (Job Title): ${data.jobTitle}`, {
-      x: 50,
-      y: height - 140,
-      size: fontSize,
+    page.drawText('교사 (Teacher)', {
+      x: margin + (width - 2 * margin) / 2 + 60,
+      y: yPos - 20,
+      size: 10,
       font: customFont,
     });
 
-    page.drawText(`작성일 (Date): ${data.date}`, {
-      x: 50,
-      y: height - 160,
-      size: fontSize,
+    page.drawText('서명: _____________', {
+      x: margin + (width - 2 * margin) / 2 + 30,
+      y: yPos - 50,
+      size: 9,
       font: customFont,
     });
 
-    // Save
+    yPos -= 100;
+
+    // Footer
+    page.drawText('본 계약서는 Edupin 플랫폼을 통해 생성되었습니다.', {
+      x: margin + 100,
+      y: yPos - 30,
+      size: 8,
+      font: customFont,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+
+    page.drawText('Edupin Secure Contract System', {
+      x: margin + 140,
+      y: yPos - 45,
+      size: 7,
+      font: boldFont,
+      color: rgb(0.6, 0.6, 0.6),
+    });
+
     const pdfBytes = await pdfDoc.save();
     return Buffer.from(pdfBytes);
   }
 }
-

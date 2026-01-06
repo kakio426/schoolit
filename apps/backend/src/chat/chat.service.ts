@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ChatService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async createRoom(user1Id: number, user2Id: number, jobId?: number) {
     // Check if room exists
@@ -101,5 +101,28 @@ export class ChatService {
       where: { users: { some: { id: userId } } },
       select: { id: true },
     });
+  }
+
+  async markAsRead(roomId: number, userId: number) {
+    const room = await this.prisma.chatRoom.findUnique({
+      where: { id: roomId },
+      include: { users: { select: { id: true } } },
+    });
+
+    if (!room || !room.users.some((u) => u.id === userId)) {
+      throw new ForbiddenException('Access denied');
+    }
+
+    // Mark all messages in this room that were NOT sent by this user as read
+    await this.prisma.chatMessage.updateMany({
+      where: {
+        chatRoomId: roomId,
+        senderId: { not: userId },
+        read: false,
+      },
+      data: { read: true },
+    });
+
+    return { success: true };
   }
 }
