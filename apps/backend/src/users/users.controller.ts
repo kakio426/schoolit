@@ -160,7 +160,7 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'))
   @Put('role')
   async updateRole(@Request() req, @Body('role') role: Role) {
-    if (!([Role.TEACHER, Role.SCHOOL] as Role[]).includes(role)) {
+    if (!([Role.TEACHER, Role.SCHOOL, Role.BUSINESS] as Role[]).includes(role)) {
       throw new BadRequestException('Invalid role selection');
     }
     return this.userService.updateRole(req.user.userId, role);

@@ -40,6 +40,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         return <UnauthorizedView />;
     }
 
+    // Redirect PENDING users to onboarding
+    if (user.role === 'PENDING' && pathname !== '/onboarding/role' && pathname !== '/onboarding/signup') {
+        router.push('/onboarding/role');
+        return null;
+    }
+
     const navItems = [
         { label: '대시보드', href: '/dashboard', icon: '🏠' },
     ];
