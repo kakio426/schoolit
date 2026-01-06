@@ -360,7 +360,7 @@ export default function JobApplicantsPage() {
                                     {/* Always show Chat Button if not Pending/Rejected? Or even then? User asked for generally available. */}
                                     {app.status !== ApplicationStatus.REJECTED && (
                                         <button
-                                            onClick={() => app.user?.id && startChat(app.user.id)}
+                                            onClick={() => app.user?.id && startChat(Number(app.user.id))}
                                             className="w-full py-3 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all text-sm active:scale-95 flex items-center justify-center gap-2"
                                         >
                                             💬 메시지 보내기
@@ -427,7 +427,7 @@ export default function JobApplicantsPage() {
                                     {(app.status === ApplicationStatus.HIRED || app.status === ApplicationStatus.PAYMENT_COMPLETED || app.status === ApplicationStatus.CONTRACTING || app.status === ApplicationStatus.EXECUTING) && (
                                         <div className="flex flex-col gap-2 w-full">
                                             <button
-                                                onClick={() => downloadContract(app.id, job?.jobType || JobType.TEACHER_HIRING)}
+                                                onClick={() => downloadContract(app.id, (job?.jobType as JobType) || JobType.TEACHER_HIRING)}
                                                 className="w-full py-3 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-sm active:scale-95 flex items-center justify-center gap-2"
                                             >
                                                 📄 {job?.jobType === JobType.EVENT_VENDOR ? '완료보고서 / 검수조서' : '계약서 초안 (PDF)'}
