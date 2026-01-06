@@ -57,11 +57,12 @@ function SignupOnboardingContent() {
                     router.push('/dashboard');
                 }
             } else {
-                alert('가입 처리 중 오류가 발생했습니다.');
+                const errorData = await response.json().catch(() => ({}));
+                alert(`가입 처리 중 오류가 발생했습니다: ${errorData.message || response.statusText}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to finish signup:', error);
-            alert('네트워크 오류가 발생했습니다.');
+            alert(`네트워크 오류가 발생했습니다: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -75,41 +76,41 @@ function SignupOnboardingContent() {
                     <p className="text-foreground-muted mt-2">소셜 계정 정보를 확인하고 가입을 마쳐주세요.</p>
                 </div>
 
-                <div className="bg-white p-8 rounded-3xl border border-background-muted shadow-sm space-y-6">
+                <div className="bg-white/95 backdrop-blur-md p-8 rounded-3xl border border-slate-200 shadow-xl space-y-6">
                     {/* Name */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground-muted">이름 (실명)</label>
+                        <label className="text-sm font-semibold text-slate-500">이름 (실명)</label>
                         <input
                             type="text"
                             value={formData.name}
                             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            className="w-full h-12 px-4 rounded-xl border border-background-muted focus:border-primary outline-none transition-all"
+                            className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             placeholder="이름을 입력하세요"
                         />
                     </div>
 
                     {/* Email (Readonly) */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground-muted">이메일</label>
+                        <label className="text-sm font-semibold text-slate-500">이메일</label>
                         <input
                             type="email"
                             value={formData.email}
                             readOnly
-                            className="w-full h-12 px-4 rounded-xl border border-background-muted bg-background-muted/10 text-foreground-muted outline-none cursor-not-allowed"
+                            className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-100 text-slate-500 outline-none cursor-not-allowed"
                         />
                     </div>
 
                     {/* Phone */}
                     <div className="space-y-2">
-                        <label className="text-sm font-medium text-foreground-muted">휴대폰 번호</label>
+                        <label className="text-sm font-semibold text-slate-500">휴대폰 번호</label>
                         <input
                             type="tel"
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            className="w-full h-12 px-4 rounded-xl border border-background-muted focus:border-primary outline-none transition-all"
+                            className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
                             placeholder="01012345678"
                         />
-                        <p className="text-xs text-foreground-muted">
+                        <p className="text-xs text-slate-400">
                             소셜 계정에 등록된 번호를 자동으로 가져옵니다. 틀린 경우 수정해 주세요.
                         </p>
                     </div>
@@ -118,12 +119,12 @@ function SignupOnboardingContent() {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="w-full h-14 bg-foreground text-white rounded-2xl font-bold text-lg hover:bg-foreground/90 disabled:opacity-30 transition-all mt-4"
+                        className="w-full h-14 bg-slate-900 text-white rounded-2xl font-bold text-lg hover:bg-slate-800 active:scale-[0.98] disabled:opacity-30 transition-all mt-4 shadow-lg shadow-slate-200"
                     >
                         {isSubmitting ? '처리 중...' : '가입 완료하기'}
                     </button>
 
-                    <p className="text-xs text-center text-foreground-muted">
+                    <p className="text-xs text-center text-slate-400">
                         '가입 완료하기'를 누르면 이용약관 및 개인정보 처리방침에 동의하는 것으로 간주됩니다.
                     </p>
                 </div>

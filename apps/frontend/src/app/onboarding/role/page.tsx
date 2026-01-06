@@ -55,7 +55,7 @@ export default function RoleSelectionPage() {
                         onClick={() => setSelectedRole('TEACHER')}
                         className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'TEACHER'
                             ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                            : 'border-background-muted bg-white hover:border-primary/50'
+                            : 'border-white/10 bg-white/5 hover:border-primary/50'
                             }`}
                     >
                         <div className="space-y-4">
@@ -63,8 +63,8 @@ export default function RoleSelectionPage() {
                                 👨‍🏫
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-foreground mb-1">프리랜서 강사</h3>
-                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                <h3 className="text-xl font-bold text-white mb-1">프리랜서 강사</h3>
+                                <p className="text-sm text-slate-400 leading-relaxed">
                                     방과후 학교, 돌봄 교실 등<br />나의 재능을 펼칠 곳을 찾습니다.
                                 </p>
                             </div>
@@ -76,7 +76,7 @@ export default function RoleSelectionPage() {
                         onClick={() => setSelectedRole('SCHOOL')}
                         className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'SCHOOL'
                             ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                            : 'border-background-muted bg-white hover:border-primary/50'
+                            : 'border-white/10 bg-white/5 hover:border-primary/50'
                             }`}
                     >
                         <div className="space-y-4">
@@ -84,8 +84,8 @@ export default function RoleSelectionPage() {
                                 🏫
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-foreground mb-1">학교/기관 담당자</h3>
-                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                <h3 className="text-xl font-bold text-white mb-1">학교/기관 담당자</h3>
+                                <p className="text-sm text-slate-400 leading-relaxed">
                                     위변조 방지 2단계 인증을 거쳐<br />검증된 강사를 채용합니다.
                                 </p>
                             </div>
@@ -94,10 +94,10 @@ export default function RoleSelectionPage() {
 
                     {/* Business Card */}
                     <button
-                        onClick={() => setSelectedRole('BUSINESS' as any)}
+                        onClick={() => setSelectedRole('BUSINESS')}
                         className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'BUSINESS'
                             ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                            : 'border-background-muted bg-white hover:border-primary/50'
+                            : 'border-white/10 bg-white/5 hover:border-primary/50'
                             }`}
                     >
                         <div className="space-y-4">
@@ -105,8 +105,8 @@ export default function RoleSelectionPage() {
                                 🏢
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-foreground mb-1">교육 위탁 업체</h3>
-                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                <h3 className="text-xl font-bold text-white mb-1">교육 위탁 업체</h3>
+                                <p className="text-sm text-slate-400 leading-relaxed">
                                     방과후/돌봄 위탁 운영 및<br />교육 행사 전문 기업입니다.
                                 </p>
                             </div>

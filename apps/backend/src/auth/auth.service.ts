@@ -111,26 +111,36 @@ export class AuthService {
   }
 
   async finishSignup(userId: number, data: { role: Role; name: string; phone: string; profileData?: any }) {
-    // 1. Update Name and Phone
-    await this.userService.updateProfile(userId, { name: data.name, phone: data.phone });
+    console.log(`[FinishSignup] Starting for user ${userId} with role ${data.role}`);
+    try {
+      // 1. Update Name and Phone
+      console.log(`[FinishSignup] Updating name and phone...`);
+      await this.userService.updateProfile(userId, { name: data.name, phone: data.phone });
 
-    // 2. Update Role and create specific profile
-    await this.userService.updateRole(userId, data.role);
+      // 2. Update Role and create specific profile
+      console.log(`[FinishSignup] Updating role to ${data.role}...`);
+      await this.userService.updateRole(userId, data.role);
 
-    // 3. Update specific profile data if exists
-    if (data.profileData) {
-      if (data.role === Role.TEACHER) {
-        await this.userService.updateProfile(userId, data.profileData);
-      } else if (data.role === Role.SCHOOL) {
-        await this.userService.updateSchoolProfile(userId, data.profileData);
-      } else if (data.role === Role.BUSINESS) {
-        // Business Profile update logic
-        await this.userService.updateRole(userId, Role.BUSINESS); // Role update logic handles profile creation
+      // 3. Update specific profile data if exists
+      if (data.profileData) {
+        console.log(`[FinishSignup] Updating specific profile data...`);
+        if (data.role === Role.TEACHER) {
+          await this.userService.updateProfile(userId, data.profileData);
+        } else if (data.role === Role.SCHOOL) {
+          await this.userService.updateSchoolProfile(userId, data.profileData);
+        } else if (data.role === Role.BUSINESS) {
+          // Business Profile update logic
+          await this.userService.updateRole(userId, Role.BUSINESS); // Role update logic handles profile creation
+        }
       }
-    }
 
-    // Return new token because role changed
-    const user = await this.userService.findOne((await this.userService.getProfile(userId)).email);
-    return this.login(user);
+      // Return new token because role changed
+      console.log(`[FinishSignup] Generating new token...`);
+      const user = await this.userService.findOne((await this.userService.getProfile(userId)).email);
+      return this.login(user);
+    } catch (error) {
+      console.error(`[FinishSignup] Error:`, error);
+      throw error;
+    }
   }
 }
