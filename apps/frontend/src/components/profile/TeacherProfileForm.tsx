@@ -248,8 +248,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     onCheck={handleChecklistChange}
                     quickData={[
                         { label: '지원자 성명', value: user?.name || '' },
-                        { label: '연락처', value: user?.phone || '(비공개)' },
-                        { label: '정산 계좌', value: basicInfo.bankAccount || '(미등록)' },
+                        { label: '연락처', value: basicInfo.phone || '⚠️ 입력 필요 (아래에서 입력)' },
+                        { label: '정산 계좌', value: basicInfo.bankAccount || '⚠️ 입력 필요 (아래에서 입력)' },
                     ]}
                 />
             </div>
@@ -279,40 +279,46 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
                 {/* Info Fields */}
                 <div className="flex-1 space-y-6">
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">자기소개</label>
-                        <textarea
-                            value={basicInfo.bio}
-                            onChange={(e) => setBasicInfo(prev => ({ ...prev, bio: e.target.value }))}
-                            rows={3}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
-                            placeholder="선생님의 강점과 교육 철학을 짧게 소개해주세요."
-                        />
-                    </div>
-                    {/* bankAccount Input Field */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">정산용 계좌 정보 (정보 입력)</label>
-                        <input
-                            type="text"
-                            value={basicInfo.bankAccount}
-                            onChange={(e) => setBasicInfo(prev => ({ ...prev, bankAccount: e.target.value }))}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                            placeholder="예: 농협 302-1234-5678 (본인 명의)"
-                        />
-                        <p className="text-[10px] text-slate-400 mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
-                    </div>
-
-                    {/* Phone Input Field */}
-                    <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">연락처 (학교 공개용)</label>
+                    {/* 1. Phone Input Field - Moved to top for visibility */}
+                    <div className="p-5 rounded-2xl bg-primary/5 border border-primary/20 shadow-sm animate-pulse-subtle">
+                        <label className="flex items-center gap-2 text-sm font-bold text-primary mb-2">
+                            <span>📞</span> 연락처 (학교 공개용 - 필수 입력)
+                        </label>
                         <input
                             type="text"
                             value={basicInfo.phone}
                             onChange={(e) => setBasicInfo(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-4 py-3 !bg-slate-100 dark:!bg-slate-900 rounded-xl !border-2 !border-slate-400 dark:!border-slate-600 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 rounded-xl border-2 border-primary/30 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-lg"
                             placeholder="예: 010-1234-5678"
+                            id="phone-input"
                         />
-                        <p className="text-[10px] text-slate-400 mt-2">*서류 전형 합격 시 학교 담당자에게 공개됩니다.</p>
+                        <p className="text-[11px] text-slate-500 mt-2 font-medium">* 학교 담당자가 강사님께 성범죄 조회 동의 요청이나 면접 안내를 드릴 때 사용됩니다.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* bankAccount Input Field */}
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">정산용 계좌 정보 (정보 입력)</label>
+                            <input
+                                type="text"
+                                value={basicInfo.bankAccount}
+                                onChange={(e) => setBasicInfo(prev => ({ ...prev, bankAccount: e.target.value }))}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                placeholder="예: 농협 302-1234-5678 (본인 명의)"
+                            />
+                            <p className="text-[10px] text-slate-400 mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">자기소개 (한 줄 요약)</label>
+                            <input
+                                type="text"
+                                value={basicInfo.bio}
+                                onChange={(e) => setBasicInfo(prev => ({ ...prev, bio: e.target.value }))}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                placeholder="예: 10년 경력의 코딩 전문 강사입니다."
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -621,6 +627,13 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 /* Higher contrast for section cards */
                 .section-card {
                     @apply bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md border-l-4;
+                }
+                @keyframes pulse-subtle {
+                    0%, 100% { opacity: 1; }
+                    50% { opacity: 0.85; }
+                }
+                .animate-pulse-subtle {
+                    animation: pulse-subtle 3s ease-in-out infinite;
                 }
             `}</style>
         </div >
