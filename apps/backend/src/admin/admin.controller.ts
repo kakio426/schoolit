@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private adminService: AdminService) {}
+  constructor(private adminService: AdminService) { }
 
   @Get('stats')
   async getStats() {
@@ -57,6 +57,19 @@ export class AdminController {
   @Patch('users/:id/role')
   async changeUserRole(@Param('id', ParseIntPipe) id: number, @Body('role') role: string) {
     return this.adminService.changeUserRole(id, role);
+  }
+
+  @Get('school/pending')
+  async getPendingSchoolProfiles() {
+    return this.adminService.getPendingSchoolProfiles();
+  }
+
+  @Patch('school/:id/verify')
+  async verifySchoolProfile(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('isVerified') isVerified: boolean,
+  ) {
+    return this.adminService.verifySchoolProfile(id, isVerified);
   }
 
   @Get('reviews')

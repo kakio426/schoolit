@@ -3,14 +3,16 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getSystemStats() {
-    const [totalUsers, totalJobs, totalSchools, totalTeachers] = await Promise.all([
+    const [totalUsers, totalJobs, totalSchools, totalTeachers, pendingSchools, pendingBusinesses] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.jobListing.count(),
       this.prisma.schoolProfile.count(),
       this.prisma.teacherProfile.count(),
+      this.prisma.schoolProfile.count({ where: { isVerified: false } }),
+      this.prisma.businessProfile.count({ where: { isVerified: false } }),
     ]);
 
     return {
@@ -18,6 +20,8 @@ export class AdminService {
       totalJobs,
       totalSchools,
       totalTeachers,
+      pendingSchools,
+      pendingBusinesses,
     };
   }
 
@@ -157,6 +161,7 @@ export class AdminService {
     });
   }
 
+
   async broadcastNotification(title: string, content: string, targetRoles?: string[]) {
     // Get target users
     const where: any = {};
@@ -188,4 +193,27 @@ export class AdminService {
       targetUsers: users.length,
     };
   }
+
+  async getPendingSchoolProfiles() {
+    return this.prisma.schoolProfile.findMany({
+      where: { isVerified: false },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async verifySchoolProfile(id: number, isVerified: boolean) {
+    return this.prisma.schoolProfile.update({
+      where: { id },
+      data: { isVerified },
+    });
+  }
+
 }

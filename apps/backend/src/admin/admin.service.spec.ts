@@ -19,7 +19,13 @@ describe('AdminService', () => {
               update: jest.fn(),
             },
             jobListing: { count: jest.fn() },
-            schoolProfile: { count: jest.fn() },
+            schoolProfile: {
+              count: jest.fn(),
+              findMany: jest.fn().mockResolvedValue([
+                { id: 1, user: { name: 'Test School', email: 'school@test.com' } }
+              ]),
+              update: jest.fn().mockResolvedValue({ id: 1, isVerified: true }),
+            },
             teacherProfile: { count: jest.fn() },
             certification: {
               update: jest.fn(),
@@ -68,6 +74,28 @@ describe('AdminService', () => {
         page: 1,
         limit: 10,
       });
+    });
+  });
+  describe('getPendingSchoolProfiles', () => {
+    it('should return pending school profiles', async () => {
+      const result = await service.getPendingSchoolProfiles();
+      expect(prisma.schoolProfile.findMany).toHaveBeenCalledWith({
+        where: { isVerified: false },
+        include: { user: { select: { name: true, email: true } } },
+        orderBy: { createdAt: 'desc' },
+      });
+      expect(result).toHaveLength(1);
+    });
+  });
+
+  describe('verifySchoolProfile', () => {
+    it('should verify a school profile', async () => {
+      const result = await service.verifySchoolProfile(1, true);
+      expect(prisma.schoolProfile.update).toHaveBeenCalledWith({
+        where: { id: 1 },
+        data: { isVerified: true },
+      });
+      expect(result).toEqual({ id: 1, isVerified: true });
     });
   });
 });

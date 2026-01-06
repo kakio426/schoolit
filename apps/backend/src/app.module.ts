@@ -32,7 +32,7 @@ import { ContractsModule } from './context/contracts/contracts.module';
     BusinessProfileModule,
     DashboardModule,
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
+      rootPath: join(process.cwd(), 'uploads'),
       serveRoot: '/uploads',
     }),
     MatchingModule,
@@ -46,4 +46,4 @@ import { ContractsModule } from './context/contracts/contracts.module';
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }
