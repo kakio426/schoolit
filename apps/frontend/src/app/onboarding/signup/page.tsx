@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 function SignupOnboardingContent() {
     const { user, token, refreshProfile } = useAuth();
