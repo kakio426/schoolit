@@ -126,6 +126,14 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @Post('social/finish-signup')
   async finishSignup(@Request() req, @Body() body: any) {
-    return this.authService.finishSignup(req.user.userId, body);
+    console.log('[AuthController] finishSignup called with body:', JSON.stringify(body));
+    try {
+      const result = await this.authService.finishSignup(req.user.userId, body);
+      console.log('[AuthController] finishSignup succeeded');
+      return result;
+    } catch (error) {
+      console.error('[AuthController] finishSignup error:', error);
+      throw error;
+    }
   }
 }
