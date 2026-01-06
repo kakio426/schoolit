@@ -19,11 +19,16 @@ import { Role } from '@prisma/client';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) {}
+  constructor(private jobsService: JobsService) { }
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {
     return this.jobsService.findAll({ jobType });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.jobsService.findOne(id);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

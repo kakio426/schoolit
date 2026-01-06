@@ -8,7 +8,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   async createJob(userId: number, data: CreateJobDto) {
     const schoolProfile = await this.userService.getSchoolProfile(userId);
@@ -47,6 +47,21 @@ export class JobsService {
       },
       orderBy: { createdAt: 'desc' },
     });
+  }
+
+  async findOne(id: number) {
+    const job = await this.prisma.jobListing.findUnique({
+      where: { id },
+      include: {
+        schoolProfile: true,
+      },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    return job;
   }
 
   async updateJob(userId: number, jobId: number, data: UpdateJobDto) {
