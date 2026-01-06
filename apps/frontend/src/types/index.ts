@@ -1,5 +1,38 @@
 import { Role, ApplicationStatus, CertStatus } from '../lib/constants';
 
+export interface TeacherExperience {
+    id: number;
+    title: string;
+    organization: string;
+    startDate: string;
+    endDate?: string;
+    isCurrent?: boolean;
+    description?: string;
+}
+
+export interface TeacherEducation {
+    id: number;
+    schoolName: string;
+    degree: string;
+    major?: string;
+    graduationStatus?: string;
+    startDate: string;
+    endDate?: string;
+}
+
+export interface TeacherLink {
+    id: number;
+    title: string;
+    url: string;
+}
+
+export interface TeacherLicense {
+    id: number;
+    name: string;
+    issuer: string;
+    date: string;
+}
+
 export interface TeacherProfile {
     id: number;
     userId: number;
@@ -10,6 +43,10 @@ export interface TeacherProfile {
     isVerified: boolean;
     bankAccount?: string;
     checklist?: any;
+    experiences?: TeacherExperience[];
+    educations?: TeacherEducation[];
+    links?: TeacherLink[];
+    licenses?: TeacherLicense[];
     createdAt: string;
     updatedAt: string;
 }

@@ -53,8 +53,13 @@ export default function MessagesPage() {
         };
 
         socket.on('newMessage', onNewMessage);
+
+        // Auto-refresh when socket connects or reconnects to sync state
+        socket.on('connect', fetchRooms);
+
         return () => {
             socket.off('newMessage', onNewMessage);
+            socket.off('connect', fetchRooms);
         };
     }, [socket, selectedRoom]);
 
@@ -103,8 +108,15 @@ export default function MessagesPage() {
             <div className="max-w-6xl mx-auto h-[calc(100vh-140px)] flex flex-col md:flex-row gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Room List */}
                 <div className="w-full md:w-1/3 bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden flex flex-col shadow-sm">
-                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50">
+                    <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
                         <h2 className="font-bold text-foreground">채팅 목록</h2>
+                        <button
+                            onClick={() => fetchRooms()}
+                            className="p-2 -mr-2 text-slate-400 hover:text-primary hover:bg-slate-200 dark:hover:bg-slate-700/50 rounded-full transition-all active:rotate-180"
+                            title="새로고침"
+                        >
+                            🔄
+                        </button>
                     </div>
                     <div className="flex-1 overflow-y-auto">
                         {rooms.length === 0 ? (

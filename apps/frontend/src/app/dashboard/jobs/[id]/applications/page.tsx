@@ -8,6 +8,7 @@ import Link from 'next/link';
 import ReviewModal from '@/components/reviews/ReviewModal';
 import WarningModal from '@/components/ui/WarningModal';
 import ComplianceCheck from '@/components/ui/ComplianceCheck';
+import UserProfileModal from '@/components/profile/UserProfileModal';
 import { api } from '@/lib/api';
 import { JobApplication, JobListing } from '@/types';
 import { ApplicationStatus, Role, JobType } from '@/lib/constants';
@@ -20,6 +21,9 @@ export default function JobApplicantsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<JobApplication | null>(null);
+
+    // Profile Modal State
+    const [viewProfileId, setViewProfileId] = useState<number | null>(null);
 
     // Compliance States
     const [showTimerWarning, setShowTimerWarning] = useState(false);
@@ -188,7 +192,11 @@ export default function JobApplicantsPage() {
                                 <div className="flex-1">
                                     <div className="flex items-center gap-4 mb-4">
                                         <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl font-bold text-primary shadow-inner">
-                                            {app.user?.name?.[0]}
+                                            {app.user?.teacherProfile?.profileImage ? (
+                                                <img src={app.user.teacherProfile.profileImage} className="w-full h-full object-cover rounded-2xl" />
+                                            ) : (
+                                                app.user?.name?.[0]
+                                            )}
                                         </div>
                                         <div>
                                             <div className="flex items-center gap-2">
@@ -202,6 +210,12 @@ export default function JobApplicantsPage() {
                                                         S2B 등록업체
                                                     </span>
                                                 )}
+                                                <button
+                                                    onClick={() => app.user?.id && setViewProfileId(Number(app.user.id))}
+                                                    className="ml-2 px-2 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-200 transition-colors"
+                                                >
+                                                    프로필 보기 🔍
+                                                </button>
                                             </div>
                                             <p className="text-foreground-muted text-sm">{app.user?.email}</p>
                                         </div>
@@ -405,11 +419,17 @@ export default function JobApplicantsPage() {
                 />
             )}
 
+            <UserProfileModal
+                isOpen={!!viewProfileId}
+                onClose={() => setViewProfileId(null)}
+                userId={viewProfileId || 0}
+            />
+
             <WarningModal
                 isOpen={showTimerWarning}
                 onClose={() => setShowTimerWarning(false)}
                 type="warning"
-                title="[권고] 공정 채용 기간 안내"
+                title="[권고] 공정 채용 기간 안내과"
                 description={`선생님, 공고 등록 후 3일이 지나지 않았습니다.\n\n교육청에서는 공정한 채용 기회 부여를 위해 충분한 공고 게시 기간(통상 3일 이상)을 준수할 것을 권장하고 있습니다.`}
                 primaryAction={{
                     label: '이해했습니다 (계속 진행)',
