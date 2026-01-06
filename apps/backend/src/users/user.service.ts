@@ -45,7 +45,7 @@ export class UserService {
     });
   }
 
-  async findOrCreateSocialUser(email: string, name: string, provider: Provider, snsId: string) {
+  async findOrCreateSocialUser(email: string, name: string, provider: Provider, snsId: string, phone?: string) {
     // 1. snsId와 provider로 기존 유저 검색
     let user = await this.findUserBySnsId(provider, snsId);
 
@@ -73,6 +73,7 @@ export class UserService {
       role: 'PENDING',
       provider,
       snsId,
+      phone,
     } as any);
   }
 
@@ -417,5 +418,23 @@ export class UserService {
     });
 
     return { valid: true, email: storedEmail };
+  }
+
+  async resetTestUser(userId: number) {
+    // Delete all linked profiles
+    await this.prisma.teacherProfile.deleteMany({ where: { userId } });
+    await this.prisma.schoolProfile.deleteMany({ where: { userId } });
+    await this.prisma.businessProfile.deleteMany({ where: { userId } });
+
+    // Reset User metadata
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: 'PENDING',
+        phone: null,
+        verificationCode: null,
+        verificationExpires: null,
+      },
+    });
   }
 }

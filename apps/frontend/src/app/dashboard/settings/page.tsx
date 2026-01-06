@@ -122,11 +122,36 @@ export default function SettingsPage() {
                         <h2 className="text-xl font-bold text-red-600 dark:text-red-400 mb-6 flex items-center gap-2">
                             <span className="text-2xl">⚠️</span> 위험 구역
                         </h2>
-                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                            <p className="text-sm text-red-500/80 font-medium">계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
-                            <button className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all text-xs shrink-0">
-                                계정 탈퇴하기
-                            </button>
+                        <div className="space-y-6">
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white/50 dark:bg-black/20 rounded-2xl border border-red-100 dark:border-red-900/20">
+                                <div>
+                                    <h4 className="font-bold text-red-600 dark:text-red-400">가입 프로세스 초기화 (테스트용)</h4>
+                                    <p className="text-xs text-red-500/80">내 계정의 역할과 프로필을 삭제하고 신규 가입 상태로 되돌립니다.</p>
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('정말로 가입 프로세스를 초기화하시겠습니까? (테스트용)')) {
+                                            try {
+                                                await api.post('/users/reset-test-user');
+                                                alert('초기화되었습니다. 메인 페이지로 이동합니다.');
+                                                window.location.href = '/';
+                                            } catch (e) {
+                                                alert('초기화에 실패했습니다.');
+                                            }
+                                        }
+                                    }}
+                                    className="px-6 py-3 bg-red-100 text-red-600 font-bold rounded-xl hover:bg-red-200 transition-all text-xs shrink-0"
+                                >
+                                    프로세스 리셋
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                                <p className="text-sm text-red-500/80 font-medium">계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
+                                <button className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all text-xs shrink-0">
+                                    계정 탈퇴하기
+                                </button>
+                            </div>
                         </div>
                     </section>
                 </div>

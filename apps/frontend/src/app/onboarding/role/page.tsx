@@ -25,14 +25,9 @@ export default function RoleSelectionPage() {
             });
 
             if (response.ok) {
-                await refreshProfile();
-                if (selectedRole === 'SCHOOL') {
-                    router.push('/onboarding/email-verify');
-                } else {
-                    router.push('/dashboard');
-                }
+                router.push(`/onboarding/signup?role=${selectedRole}`);
             } else {
-                alert('역할 설정 중 오류가 발생했습니다.');
+                alert('역할 선택 중 오류가 발생했습니다.');
             }
         } catch (error) {
             console.error('Failed to update role:', error);

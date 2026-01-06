@@ -9,11 +9,13 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { KakaoStrategy } from './strategies/kakao.strategy';
 import { NaverStrategy } from './strategies/naver.strategy';
 import { EmailService } from '../email/email.service';
+import { SmsModule } from '../sms/sms.module';
 
 @Module({
   imports: [
     UsersModule,
     PassportModule,
+    SmsModule,
     JwtModule.register({
       secret: process.env.JWT_SECRET || 'secretKey',
       signOptions: { expiresIn: '60m' },

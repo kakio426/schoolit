@@ -15,12 +15,13 @@ export class NaverStrategy extends PassportStrategy(Strategy, 'naver') {
   }
 
   async validate(accessToken: string, refreshToken: string, profile: any, done: any) {
-    const { email, nickname, id } = profile;
+    const { email, name, mobile, id } = profile;
     const user = await this.authService.validateSocialUser(
       {
         email: email,
-        name: nickname,
+        name: name || profile.nickname,
         snsId: id,
+        phone: mobile,
       },
       Provider.NAVER,
     );

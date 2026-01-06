@@ -108,4 +108,24 @@ export class AuthController {
 
     return this.authService.verifyEmail(req.user.userId, body.code, schoolData);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('phone/request')
+  async requestPhoneVerification(@Request() req, @Body('phone') phone: string) {
+    if (!phone) throw new BadRequestException('Phone number is required');
+    return this.authService.requestPhoneVerification(req.user.userId, phone);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('phone/verify')
+  async verifyPhone(@Request() req, @Body('code') code: string) {
+    if (!code) throw new BadRequestException('Code is required');
+    return this.authService.verifyPhone(req.user.userId, code);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('social/finish-signup')
+  async finishSignup(@Request() req, @Body() body: any) {
+    return this.authService.finishSignup(req.user.userId, body);
+  }
 }

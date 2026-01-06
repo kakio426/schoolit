@@ -170,4 +170,10 @@ export class UserController {
   async updateSettings(@Request() req, @Body() settings: any) {
     return this.userService.updateSettings(req.user.userId, settings);
   }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('reset-test-user')
+  async resetTestUser(@Request() req) {
+    return this.userService.resetTestUser(req.user.userId);
+  }
 }

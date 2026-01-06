@@ -3,9 +3,10 @@ import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
-import { Provider } from '@prisma/client';
+import { Provider, Role } from '@prisma/client';
 
 import { EmailService } from '../email/email.service';
+import { SmsService } from '../sms/sms.service';
 
 @Injectable()
 export class AuthService {
@@ -13,6 +14,7 @@ export class AuthService {
     private userService: UserService,
     private jwtService: JwtService,
     private emailService: EmailService,
+    private smsService: SmsService,
   ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -33,8 +35,8 @@ export class AuthService {
   }
 
   async validateSocialUser(profile: any, provider: Provider): Promise<any> {
-    const { email, name, snsId } = profile;
-    return this.userService.findOrCreateSocialUser(email, name, provider, snsId);
+    const { email, name, snsId, phone } = profile;
+    return this.userService.findOrCreateSocialUser(email, name, provider, snsId, phone);
   }
 
   async signup(createUserDto: CreateUserDto) {
@@ -87,5 +89,48 @@ export class AuthService {
     }
 
     return { success: true };
+  }
+
+  async requestPhoneVerification(userId: number, phone: string) {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // Re-use verification code storage (or specify phone version if needed)
+    // For simplicity, we use the same verification code field but prefix it
+    await this.userService.saveVerificationCode(userId, `PHONE|${code}`, phone);
+    await this.smsService.sendVerificationCode(phone, code);
+    return { sent: true, phone };
+  }
+
+  async verifyPhone(userId: number, code: string) {
+    const { valid, email: phone } = await this.userService.validateVerificationCode(userId, `PHONE|${code}`);
+    if (!valid) return { success: false };
+
+    // Update user phone number
+    await this.userService.updateProfile(userId, { phone });
+
+    return { success: true };
+  }
+
+  async finishSignup(userId: number, data: { role: Role; name: string; phone: string; profileData?: any }) {
+    // 1. Update Name and Phone
+    await this.userService.updateProfile(userId, { name: data.name, phone: data.phone });
+
+    // 2. Update Role and create specific profile
+    await this.userService.updateRole(userId, data.role);
+
+    // 3. Update specific profile data if exists
+    if (data.profileData) {
+      if (data.role === Role.TEACHER) {
+        await this.userService.updateProfile(userId, data.profileData);
+      } else if (data.role === Role.SCHOOL) {
+        await this.userService.updateSchoolProfile(userId, data.profileData);
+      } else if (data.role === Role.BUSINESS) {
+        // Business Profile update logic
+        await this.userService.updateRole(userId, Role.BUSINESS); // Role update logic handles profile creation
+      }
+    }
+
+    // Return new token because role changed
+    const user = await this.userService.findOne((await this.userService.getProfile(userId)).email);
+    return this.login(user);
   }
 }
