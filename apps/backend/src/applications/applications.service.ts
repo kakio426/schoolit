@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) {}
+  ) { }
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     // Check if job exists and is OPEN
@@ -356,8 +356,8 @@ export class ApplicationsService {
       throw new ForbiddenException('Access denied');
     }
 
-    if (app.status !== 'HIRED') {
-      throw new BadRequestException('Contract is only available for HIRED applications');
+    if (!['HIRED', 'CONTRACTING', 'EXECUTING', 'PAYMENT_COMPLETED'].includes(app.status)) {
+      throw new BadRequestException('Contract is only available for HIRED or CONTRACTING applications');
     }
 
     // Template Data
