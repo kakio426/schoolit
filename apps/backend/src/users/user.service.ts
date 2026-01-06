@@ -89,14 +89,19 @@ export class UserService {
   }
 
   async updateProfile(userId: number, data: any) {
-    // Separate User fields (phone) from TeacherProfile fields
+    // Separate User fields (name, phone) from TeacherProfile fields
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { isVerified, phone, ...teacherData } = data;
+    const { isVerified, phone, name, ...teacherData } = data;
 
-    if (phone) {
+    // Update User table fields if provided
+    const userUpdates: any = {};
+    if (phone !== undefined) userUpdates.phone = phone;
+    if (name !== undefined) userUpdates.name = name;
+
+    if (Object.keys(userUpdates).length > 0) {
       await this.prisma.user.update({
         where: { id: userId },
-        data: { phone },
+        data: userUpdates,
       });
     }
 
