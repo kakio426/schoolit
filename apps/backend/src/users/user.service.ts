@@ -421,6 +421,20 @@ export class UserService {
   }
 
   async resetTestUser(userId: number) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    // Protect core test accounts from being reset
+    const protectedEmails = [
+      'admin@schoolit.com',
+      'school@test.com',
+      'teacher@test.com',
+      'business@test.com'
+    ];
+
+    if (user && protectedEmails.includes(user.email)) {
+      throw new ForbiddenException('기본 테스트 계정은 초기화할 수 없습니다.');
+    }
+
     // Delete all linked profiles
     await this.prisma.teacherProfile.deleteMany({ where: { userId } });
     await this.prisma.schoolProfile.deleteMany({ where: { userId } });
