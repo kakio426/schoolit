@@ -82,6 +82,9 @@ export default function JobApplicantsPage() {
         try {
             const updated = await api.patch<JobApplication>(`/applications/${appId}/status`, { status: newStatus });
             setApplicants(prev => prev.map(a => a.id === appId ? { ...a, status: updated.status, user: updated.user } : a));
+
+            // 자동으로 변경된 단계의 탭으로 이동
+            setActiveTab(newStatus);
         } catch (e: any) {
             console.error(e);
             alert(e.message || '오류 발생');
@@ -259,9 +262,9 @@ export default function JobApplicantsPage() {
                 ) : (
                     <div className="grid gap-6">
                         {filteredApplicants.map(app => (
-                            <div key={app.id} className="bg-surface rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800 flex flex-col md:flex-row overflow-hidden">
+                            <div key={app.id} className="bg-surface rounded-[32px] border border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md transition-all divide-y md:divide-y-0 md:divide-x divide-slate-100 dark:divide-slate-800 flex flex-col md:flex-row relative">
                                 {/* 1. Identity & Message Section (Flexible) */}
-                                <div className="flex-1 p-6 md:p-8 space-y-6">
+                                <div className="flex-1 p-6 md:p-8 space-y-6 rounded-t-[32px] md:rounded-t-none md:rounded-l-[32px]">
                                     <div className="flex items-start justify-between gap-4">
                                         <div className="flex items-center gap-4">
                                             <div className="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-2xl font-bold text-primary shadow-inner flex-shrink-0">
@@ -355,7 +358,7 @@ export default function JobApplicantsPage() {
                                 </div>
 
                                 {/* 2. Actions & Status Section (Fixed Width) */}
-                                <div className="w-full md:w-[280px] p-6 md:p-8 bg-slate-50/30 dark:bg-slate-900/10 flex flex-col justify-between gap-6">
+                                <div className="w-full md:w-[280px] p-6 md:p-8 bg-slate-50/30 dark:bg-slate-900/10 flex flex-col justify-between gap-6 rounded-b-[32px] md:rounded-b-none md:rounded-r-[32px]">
                                     <div className="space-y-4">
                                         <div className="flex flex-col items-center gap-1">
                                             <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">진행 단계</span>
