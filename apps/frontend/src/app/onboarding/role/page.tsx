@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { api } from '@/lib/api';
 
 export default function RoleSelectionPage() {
     const [selectedRole, setSelectedRole] = useState<'TEACHER' | 'SCHOOL' | 'BUSINESS' | null>(null);
