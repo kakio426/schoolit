@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     }
 
     // Redirect PENDING users to onboarding
-    if (user.role === 'PENDING' && pathname !== '/onboarding/role' && pathname !== '/onboarding/signup') {
+    if (user.role === 'PENDING' && !pathname.startsWith('/onboarding')) {
         router.push('/onboarding/role');
         return null;
     }
