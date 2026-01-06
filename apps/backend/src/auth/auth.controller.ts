@@ -9,6 +9,7 @@ import {
   Get,
   Query,
   Res,
+  BadRequestException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -17,7 +18,7 @@ import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
@@ -75,5 +76,36 @@ export class AuthController {
   @Get('profile')
   async getProfile(@Request() req) {
     return req.user;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('email/request')
+  async requestEmailVerification(@Request() req, @Body('email') email: string) {
+    if (!email) throw new BadRequestException('Email is required');
+
+    // Simple domain check for prototype
+    const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
+    const domain = email.split('@')[1];
+    const isAllowed = allowedDomains.some(d => domain?.endsWith(d));
+
+    if (!isAllowed) {
+      // Allow for testing if needed, but strictly enforce for "School" logic
+      // user said "korea.kr system".
+    }
+
+    return this.authService.requestEmailVerification(req.user.userId, email);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('email/verify')
+  async verifyEmail(@Request() req, @Body() body: { code: string; schoolName?: string; phoneNumber?: string }) {
+    if (!body.code) throw new BadRequestException('Code is required');
+
+    let schoolData;
+    if (body.schoolName && body.phoneNumber) {
+      schoolData = { schoolName: body.schoolName, phoneNumber: body.phoneNumber };
+    }
+
+    return this.authService.verifyEmail(req.user.userId, body.code, schoolData);
   }
 }

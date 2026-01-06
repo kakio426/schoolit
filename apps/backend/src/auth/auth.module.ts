@@ -8,6 +8,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { KakaoStrategy } from './strategies/kakao.strategy';
 import { NaverStrategy } from './strategies/naver.strategy';
+import { EmailService } from '../email/email.service';
 
 @Module({
   imports: [
@@ -18,8 +19,8 @@ import { NaverStrategy } from './strategies/naver.strategy';
       signOptions: { expiresIn: '60m' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy],
+  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy, EmailService],
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
 })
-export class AuthModule {}
+export class AuthModule { }

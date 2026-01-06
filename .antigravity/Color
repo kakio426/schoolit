@@ -1,158 +1,295 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { 
+  Layout, MousePointer2, Box, Palette, CheckCircle2, Menu, 
+  ChevronRight, Star, Zap, Heart, Activity, Layers, Coffee, 
+  Sparkles, MoveRight, ShieldCheck, Globe, Info
+} from 'lucide-react';
 
-/**
- * 에듀핀(Edupin) '인튜이티브 프리미엄' 디자인 시스템
- * 바이브 코딩의 엉성함과 에디토리얼의 가독성 저하를 모두 해결한 
- * '직관성 중심'의 고감도 인터페이스
- */
-const PremiumDesignGuide = () => {
-  const theme = {
-    primary: '#3182F6',   // 신뢰의 블루 (Toss/Apple Style)
-    textMain: '#191F28',  // 깊은 검정 (가독성 최상)
-    textSub: '#4E5968',   // 부드러운 회색 (설명용)
-    bg: '#F2F4F6',        // 눈이 편한 연회색 배경
-    card: '#FFFFFF',      // 깔끔한 흰색 카드
-    success: '#00D082',   // 직관적인 성공색
-    warn: '#FF4D4F',      // 명확한 경고색
-    radius: '24px',       // 친근하면서도 세련된 곡률
-  };
+const App = () => {
+  const [activeTheme, setActiveTheme] = useState(8); // 기본값을 Retro Pop(ID 9, index 8)으로 설정
+
+  const themes = [
+    {
+      id: 1,
+      name: "Modern Corporate",
+      description: "신뢰감과 전문성을 강조하는 기업용 스타일",
+      colors: { primary: "#002366", secondary: "#F4F4F4", accent: "#00A8E8", text: "#1A1A1A", cardBg: "#FFFFFF" },
+      font: "sans-serif",
+      icon: <ShieldCheck size={18} />
+    },
+    {
+      id: 2,
+      name: "Natural Organic",
+      description: "편안함과 자연스러움을 담은 라이프스타일 스타일",
+      colors: { primary: "#8A9A5B", secondary: "#F5F5DC", accent: "#E2725B", text: "#3E3E3E", cardBg: "#FFFFFF" },
+      font: "serif",
+      icon: <Globe size={18} />
+    },
+    {
+      id: 3,
+      name: "Sleek Tech Dark",
+      description: "미래지향적이고 강렬한 다크 모드 테크 스타일",
+      colors: { primary: "#121212", secondary: "#2C2C2C", accent: "#CCFF00", text: "#FFFFFF", cardBg: "#1E1E1E" },
+      font: "sans-serif",
+      icon: <Zap size={18} />
+    },
+    {
+      id: 4,
+      name: "Pastel Dream",
+      description: "감성적이고 부드러운 분위기의 뷰티/라이프스타일",
+      colors: { primary: "#DCAE96", secondary: "#FFFDF5", accent: "#98D8C8", text: "#5D4037", cardBg: "#FFFFFF" },
+      font: "serif",
+      icon: <Heart size={18} />
+    },
+    {
+      id: 5,
+      name: "Vibrant Startup",
+      description: "혁신적이고 에너제틱한 IT 스타트업 스타일",
+      colors: { primary: "#6200EE", secondary: "#FFFFFF", accent: "#FF6D00", text: "#121212", cardBg: "#F8F9FA" },
+      font: "sans-serif",
+      icon: <Zap size={18} />
+    },
+    {
+      id: 6,
+      name: "Luxury Elegant",
+      description: "고급스럽고 중후한 프리미엄 브랜드 스타일",
+      colors: { primary: "#1A1A1A", secondary: "#2A1B1B", accent: "#D4AF37", text: "#F5F5F5", cardBg: "#222222" },
+      font: "serif",
+      icon: <Star size={18} />
+    },
+    {
+      id: 7,
+      name: "Clean Healthcare",
+      description: "신뢰와 청결함이 중요한 건강 관련 서비스",
+      colors: { primary: "#0077B6", secondary: "#FFFAFA", accent: "#E0E0E0", text: "#023E8A", cardBg: "#FFFFFF" },
+      font: "sans-serif",
+      icon: <Activity size={18} />
+    },
+    {
+      id: 8,
+      name: "Minimalist Monochrome",
+      description: "콘텐츠에 집중하게 만드는 절제된 흑백 스타일",
+      colors: { primary: "#1A1A1B", secondary: "#F9F9F9", accent: "#8E8E93", text: "#1A1A1B", cardBg: "#FFFFFF" },
+      font: "sans-serif",
+      icon: <Layers size={18} />
+    },
+    {
+      id: 9,
+      name: "Retro Pop",
+      description: "개성 넘치는 아트워크나 트렌디한 편집숍 스타일",
+      colors: { primary: "#008080", secondary: "#FFDB58", accent: "#FF7F50", text: "#003333", cardBg: "#FFFFFF" },
+      font: "sans-serif",
+      icon: <Sparkles size={18} />,
+      details: {
+        vibe: "Nostalgic yet Modern",
+        analysis: [
+          { color: "Deep Teal (#008080)", role: "무게 중심", desc: "고전적인 중후함을 베이스로 깔아 디자인이 가벼워 보이지 않게 균형을 잡습니다." },
+          { color: "Mustard Yellow (#FFDB58)", role: "레트로 베이스", desc: "90년대 포스터와 빈티지 인테리어에서 영감을 받은 따뜻하고 친근한 색상입니다." },
+          { color: "Coral Pink (#FF7F50)", role: "액센트", desc: "전통적인 레트로에 현대적인 활력을 불어넣어 사용자 클릭을 유도하는 핵심 컬러입니다." }
+        ]
+      }
+    },
+    {
+      id: 10,
+      name: "Cozy Morning",
+      description: "카페나 베이커리 등 따뜻하고 감성적인 분위기",
+      colors: { primary: "#6F4E37", secondary: "#EAE0C8", accent: "#FFDAB9", text: "#4B3621", cardBg: "#FDFBF7" },
+      font: "serif",
+      icon: <Coffee size={18} />
+    }
+  ];
+
+  const current = themes[activeTheme];
 
   return (
-    <div className="min-h-screen p-4 md:p-12" style={{ backgroundColor: theme.bg, color: theme.textMain, fontFamily: '"Pretendard Variable", "Pretendard", -apple-system, sans-serif' }}>
-      <div className="max-w-5xl mx-auto">
-        
-        {/* Header: 명확하고 큰 제목 */}
-        <header className="mb-12">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-2 h-8 bg-blue-500 rounded-full"></div>
-            <span className="text-sm font-bold text-blue-600 tracking-wider">PREMIUM DESIGN v3.0</span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black leading-tight mb-4">
-            직관적인 것이 <br />가장 아름답습니다.
-          </h1>
-          <p className="text-xl text-slate-500 font-medium">
-            작은 글씨와 모호한 레이아웃을 버리고, <br />
-            누구나 한눈에 이해할 수 있는 큼직한 UI를 지향합니다.
-          </p>
-        </header>
+    <div className="flex flex-col min-h-screen bg-slate-100 font-sans">
+      {/* 마스터 테마 선택 바 */}
+      <div className="p-4 bg-white border-b border-slate-200 sticky top-0 z-50 overflow-x-auto shadow-sm">
+        <div className="flex gap-2 min-w-max">
+          {themes.map((theme, index) => (
+            <button
+              key={theme.id}
+              onClick={() => setActiveTheme(index)}
+              className={`px-4 py-2 rounded-lg transition-all flex items-center gap-2 border ${
+                activeTheme === index
+                  ? 'bg-slate-800 text-white border-slate-800 shadow-lg scale-105'
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-slate-400 hover:bg-slate-50'
+              }`}
+            >
+              <span className="shrink-0">{theme.icon}</span>
+              <span className="font-bold text-xs whitespace-nowrap">{theme.id}. {theme.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* 주요 컬러 섹션: 시원시원한 카드 */}
-          <section className="lg:col-span-1 space-y-6">
-            <h2 className="text-lg font-bold mb-4 opacity-40 uppercase tracking-widest">Core Concept</h2>
-            <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-200/50">
-              <div className="space-y-8">
-                <div>
-                  <div className="text-5xl font-black text-blue-600 mb-2">A+</div>
-                  <p className="text-sm font-bold opacity-60">최상의 가독성 점수</p>
-                </div>
-                <div className="flex flex-col gap-3">
-                  <div className="h-4 w-full bg-blue-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500 w-[90%]"></div>
-                  </div>
-                  <p className="text-xs font-medium text-slate-400">시각적 위계 질서 확립</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-slate-900 rounded-[32px] p-8 text-white">
-              <h3 className="text-xl font-bold mb-4">왜 직관적일까요?</h3>
-              <ul className="space-y-4 text-sm opacity-80">
-                <li className="flex gap-2">✅ <p>본문 폰트 크기 최소 16px 유지</p></li>
-                <li className="flex gap-2">✅ <p>중요 버튼 크기 최소 56px 확보</p></li>
-                <li className="flex gap-2">✅ <p>고대비(High Contrast) 배색 적용</p></li>
-              </ul>
-            </div>
-          </section>
-
-          {/* 컴포넌트 예시: 큼직하고 명확한 카드 */}
-          <section className="lg:col-span-2 space-y-8">
-            <h2 className="text-lg font-bold mb-4 opacity-40 uppercase tracking-widest">Intuitive Components</h2>
+      <div className="flex-1 p-4 md:p-8 flex flex-col lg:flex-row gap-8">
+        {/* 사이드 정보 패널 */}
+        <div className="w-full lg:w-80 shrink-0 space-y-4">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+            <h2 className="text-xl font-black mb-1 text-slate-800">{current.name}</h2>
+            <p className="text-slate-400 text-xs mb-6 leading-relaxed uppercase tracking-wider font-bold">Theme Overview</p>
             
-            {/* 채용 공고 카드 */}
-            <div className="bg-white rounded-[40px] p-8 md:p-10 shadow-xl shadow-slate-200/40 transition-transform hover:scale-[1.01] cursor-pointer border border-white">
-              <div className="flex justify-between items-center mb-8">
-                <span className="px-4 py-2 bg-emerald-100 text-emerald-600 text-xs font-black rounded-xl">매칭 진행 중</span>
-                <span className="text-sm font-bold text-slate-400">방금 전</span>
-              </div>
-
-              <h3 className="text-3xl font-black mb-6 leading-tight">
-                2학기 늘봄학교 <br />드론 교육 강사 초빙
-              </h3>
-
-              <div className="grid grid-cols-2 gap-4 mb-10">
-                <div className="bg-slate-50 p-6 rounded-3xl">
-                  <p className="text-[11px] font-bold text-slate-400 mb-2">예상 비용</p>
-                  <p className="text-2xl font-black text-slate-900">₩ 2,400,000</p>
-                </div>
-                <div className="bg-slate-50 p-6 rounded-3xl">
-                  <p className="text-[11px] font-bold text-slate-400 mb-2">지역</p>
-                  <p className="text-2xl font-black text-slate-900">경기 용인</p>
-                </div>
-              </div>
-
-              <div className="flex gap-4">
-                <button className="flex-[2] h-16 bg-blue-600 text-white rounded-2xl text-lg font-bold shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all active:scale-95">
-                  상세 정보 확인
-                </button>
-                <button className="flex-1 h-16 bg-slate-100 text-slate-600 rounded-2xl text-lg font-bold hover:bg-slate-200 transition-all active:scale-95">
-                  관심
-                </button>
-              </div>
+            <div className="space-y-4 mb-8">
+              <ColorInfoItem label="Main" hex={current.colors.primary} />
+              <ColorInfoItem label="Base" hex={current.colors.secondary} />
+              <ColorInfoItem label="Accent" hex={current.colors.accent} />
             </div>
 
-            {/* 입력창 및 소형 UI */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm">
-                <label className="block text-sm font-black mb-4">학교/기관 검색</label>
-                <div className="relative">
-                  <input 
-                    type="text" 
-                    placeholder="학교명을 입력하세요"
-                    className="w-full h-14 pl-12 pr-4 bg-slate-100 rounded-2xl font-bold text-base focus:ring-4 focus:ring-blue-500/10 outline-none border-none transition-all"
-                  />
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+            {/* Retro Pop 특화 분석 섹션 */}
+            {current.id === 9 && (
+              <div className="mt-6 p-5 rounded-2xl bg-teal-50 border border-teal-100 animate-in fade-in duration-500">
+                <div className="flex items-center gap-2 mb-3">
+                  <Info size={16} className="text-teal-700" />
+                  <h3 className="text-xs font-black text-teal-700 uppercase">Retro Pop Vibe Analysis</h3>
+                </div>
+                <div className="space-y-4">
+                  {current.details.analysis.map((item, idx) => (
+                    <div key={idx}>
+                      <p className="text-[11px] font-bold text-teal-800 mb-1">{item.color} - {item.role}</p>
+                      <p className="text-[12px] text-teal-600 leading-snug">{item.desc}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
+            )}
 
-              <div className="bg-white rounded-[32px] p-8 border border-slate-100 shadow-sm flex flex-col justify-between">
-                <div className="flex justify-between items-center mb-4">
-                  <span className="text-sm font-black">실시간 알림</span>
-                  <div className="w-14 h-8 bg-blue-600 rounded-full flex items-center justify-end px-1">
-                    <div className="w-6 h-6 bg-white rounded-full shadow-md"></div>
-                  </div>
-                </div>
-                <p className="text-xs text-slate-400 leading-relaxed font-medium">
-                  채용 제안이나 메시지가 오면 <br />푸시 알림을 보내드립니다.
+            {!current.details && (
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                <h3 className="text-xs font-black text-slate-400 mb-3 uppercase">Design Strategy</h3>
+                <p className="text-sm text-slate-600 leading-relaxed italic">
+                  "{current.description}"
                 </p>
               </div>
-            </div>
-          </section>
+            )}
+          </div>
         </div>
 
-        {/* Footer: 가이드 핵심 수치 */}
-        <footer className="mt-24 pt-12 border-t border-slate-200 flex flex-wrap gap-12 justify-center md:justify-start">
-          <div>
-            <div className="text-xs font-black text-slate-300 uppercase mb-2 tracking-widest">Min. Font Size</div>
-            <div className="text-3xl font-black">16px</div>
+        {/* 메인 브라우저 프리뷰 */}
+        <div className="flex-1">
+          <div 
+            className="rounded-[40px] shadow-2xl overflow-hidden border border-slate-200 transition-all duration-700 min-h-[600px] flex flex-col relative"
+            style={{ 
+              backgroundColor: current.colors.secondary,
+              fontFamily: current.font,
+              backgroundImage: activeTheme === 5 ? `linear-gradient(135deg, ${current.colors.primary} 0%, ${current.colors.secondary} 100%)` : 'none'
+            }}
+          >
+            {/* Retro Pop 전용 데코레이션 레이어 */}
+            {current.id === 9 && (
+              <div className="absolute inset-0 pointer-events-none">
+                 <div className="absolute top-20 right-20 w-32 h-32 rounded-full border-8 border-dashed opacity-10 animate-spin-slow" style={{ borderColor: current.colors.primary }}></div>
+                 <div className="absolute bottom-40 left-10 w-48 h-12 opacity-10 rotate-12" style={{ backgroundColor: current.colors.accent }}></div>
+              </div>
+            )}
+
+            {/* 웹사이트 헤더 */}
+            <header className="px-8 py-6 flex justify-between items-center bg-transparent z-10">
+              <div className="font-black text-2xl flex items-center gap-2" style={{ color: (activeTheme === 5 || activeTheme === 2 || activeTheme === 8) ? current.colors.text : current.colors.primary }}>
+                {current.icon}
+                <span className="tracking-tighter uppercase">RETRO SHOP</span>
+              </div>
+              <div className="hidden md:flex gap-8 text-[11px] font-bold tracking-[0.2em] uppercase" style={{ color: current.colors.text }}>
+                <span className="cursor-pointer opacity-60 hover:opacity-100">Index</span>
+                <span className="cursor-pointer opacity-60 hover:opacity-100">Archives</span>
+                <span className="cursor-pointer opacity-60 hover:opacity-100">Lab</span>
+              </div>
+              <div className="w-10 h-10 rounded-full flex items-center justify-center border" style={{ borderColor: `${current.colors.text}20` }}>
+                <Menu size={18} style={{ color: current.colors.text }} />
+              </div>
+            </header>
+
+            {/* 히어로 콘텐츠 */}
+            <main className="flex-1 flex flex-col justify-center px-8 md:px-16 py-12 z-10">
+               <div className="max-w-2xl">
+                  <h1 
+                    className="text-5xl md:text-8xl font-black mb-8 leading-[0.95] tracking-tight transition-all"
+                    style={{ color: current.colors.text }}
+                  >
+                    {current.id === 9 ? "Old Soul," : "Digital"} <br /> 
+                    <span style={{ color: current.colors.accent }}>{current.id === 9 ? "New Vibe." : "Experience."}</span>
+                  </h1>
+                  <p className="text-lg md:text-xl mb-12 opacity-80 leading-relaxed font-medium" style={{ color: current.colors.text }}>
+                    {current.id === 9 
+                      ? "Deep Teal과 Mustard Yellow의 조화는 당신의 브랜드에 '시간이 흘러도 변하지 않는 힙함'을 부여합니다."
+                      : `선택하신 ${current.name} 테마는 브랜드의 아이덴티티를 가장 현대적인 방식으로 정의합니다.`
+                    }
+                  </p>
+                  
+                  <div className="flex flex-wrap gap-4">
+                    <button 
+                      className="px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest transition-all hover:-translate-y-1 hover:shadow-2xl"
+                      style={{ 
+                        backgroundColor: current.colors.primary,
+                        color: "#FFFFFF"
+                      }}
+                    >
+                      Shop Collection
+                    </button>
+                    <button 
+                      className="px-10 py-5 rounded-2xl font-black text-sm uppercase tracking-widest border-4 transition-all hover:bg-white/10"
+                      style={{ 
+                        borderColor: current.colors.text,
+                        color: current.colors.text
+                      }}
+                    >
+                      View Lookbook
+                    </button>
+                  </div>
+               </div>
+            </main>
+
+            {/* 하단 푸터바 (컬러 칩) */}
+            <footer className="px-8 py-8 border-t bg-black/5 backdrop-blur-md flex flex-wrap justify-between items-center gap-4 z-10">
+                <div className="flex gap-4">
+                   <div className="flex flex-col">
+                      <span className="text-[10px] font-black uppercase opacity-40">Style ID</span>
+                      <span className="font-mono text-sm font-bold" style={{ color: current.colors.text }}>0{current.id}-THEME</span>
+                   </div>
+                   <div className="w-[1px] h-8 bg-current opacity-10 mx-2"></div>
+                   <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: current.colors.primary }}></div>
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: current.colors.secondary }}></div>
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: current.colors.accent }}></div>
+                   </div>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-bold" style={{ color: current.colors.text }}>
+                   EXPLORE VINTAGE VIBE <MoveRight size={16} />
+                </div>
+            </footer>
           </div>
-          <div>
-            <div className="text-xs font-black text-slate-300 uppercase mb-2 tracking-widest">Button Height</div>
-            <div className="text-3xl font-black">56px</div>
-          </div>
-          <div>
-            <div className="text-xs font-black text-slate-300 uppercase mb-2 tracking-widest">Corner Radius</div>
-            <div className="text-3xl font-black">24px+</div>
-          </div>
-          <div>
-            <div className="text-xs font-black text-slate-300 uppercase mb-2 tracking-widest">Hierarchy</div>
-            <div className="text-3xl font-black">Bold</div>
-          </div>
-        </footer>
+        </div>
+      </div>
+      
+      {/* 바이브코딩 복사용 설명 주석 (코드 하단) */}
+      <div className="hidden">
+        {/* RETRO POP DESIGN LOGIC:
+          - Mustard Yellow (#FFDB58): 캔버스 전체의 따스함을 담당 (배경색)
+          - Deep Teal (#008080): 텍스트와 주요 버튼에 사용하여 시각적 안정감 부여
+          - Coral Pink (#FF7F50): 클릭률이 중요한 요소(CTA)에 배치하여 시선을 강탈
+          - Typography: 굵고 투박한 Sans-serif가 이 테마의 'Pop'한 느낌을 살려줌
+        */}
       </div>
     </div>
   );
 };
 
-export default PremiumDesignGuide;
+const ColorInfoItem = ({ label, hex }) => (
+  <div className="flex items-center justify-between p-3 rounded-2xl border border-slate-50 hover:bg-slate-50 transition-colors group">
+    <div className="flex items-center gap-3">
+      <div 
+        className="w-10 h-10 rounded-xl shadow-md border border-white group-hover:scale-110 transition-transform"
+        style={{ backgroundColor: hex }}
+      />
+      <div>
+        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
+        <p className="text-sm font-mono font-bold text-slate-700">{hex}</p>
+      </div>
+    </div>
+    <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+       <CheckCircle2 size={12} className="text-slate-400" />
+    </div>
+  </div>
+);
+
+export default App;

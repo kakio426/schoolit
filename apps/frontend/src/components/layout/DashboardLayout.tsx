@@ -9,6 +9,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
 import FeedbackButton from '../ui/FeedbackButton';
 import ComplianceModal from '../ui/ComplianceModal';
+import VerificationPendingView from '../auth/VerificationPendingView';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
@@ -239,7 +240,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                 </header>
                 <main className="p-4 md:p-8 max-w-[1200px] w-full mx-auto">
-                    {children}
+                    {user?.role === 'SCHOOL' && user?.schoolProfile && !user.schoolProfile.isVerified ? (
+                        <VerificationPendingView />
+                    ) : (
+                        children
+                    )}
                 </main>
                 <FooterDisclaimer />
                 <FeedbackButton />

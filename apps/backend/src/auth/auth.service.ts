@@ -5,12 +5,15 @@ import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { Provider } from '@prisma/client';
 
+import { EmailService } from '../email/email.service';
+
 @Injectable()
 export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-  ) {}
+    private emailService: EmailService,
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
@@ -59,5 +62,30 @@ export class AuthService {
       email: user.email,
       role: user.role,
     };
+  }
+  async requestEmailVerification(userId: number, email: string) {
+    // 1. Generate OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    // 2. Save code with email
+    await this.userService.saveVerificationCode(userId, code, email);
+    // 3. Send Email
+    await this.emailService.sendVerificationCode(email, code);
+    return { sent: true, email };
+  }
+
+  async verifyEmail(userId: number, code: string, schoolData?: { schoolName: string; phoneNumber: string }) {
+    const { valid, email } = await this.userService.validateVerificationCode(userId, code);
+    if (!valid) return { success: false };
+
+    // Update School Profile if data provided
+    if (schoolData) {
+      await this.userService.updateSchoolProfile(userId, {
+        schoolName: schoolData.schoolName,
+        phoneNumber: schoolData.phoneNumber,
+        description: email ? `[Verified Email: ${email}]` : undefined,
+      });
+    }
+
+    return { success: true };
   }
 }

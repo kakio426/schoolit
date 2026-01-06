@@ -154,7 +154,7 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
     };
 
     return (
-        <div className="bg-slate-50 dark:bg-slate-900/50 p-6 md:p-8 rounded-[32px] border border-slate-200 dark:border-slate-800 space-y-8">
+        <div className="bg-background p-6 md:p-8 rounded-[32px] border border-border space-y-8">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
@@ -165,22 +165,22 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
                             }`}>
                             {type === 'TEACHER' ? 'TEACHER ADMIN' : 'BUSINESS ADMIN'}
                         </span>
-                        <span className="text-sm font-bold text-slate-400">행정 서류 매니저</span>
+                        <span className="text-sm font-bold text-foreground-muted">행정 서류 매니저</span>
                     </div>
-                    <h2 className="text-2xl font-black tracking-tight text-slate-900 dark:text-white">
+                    <h2 className="text-2xl font-black tracking-tight text-foreground">
                         {type === 'TEACHER' ? '강사 필수 서류' : '업체 필수 증빙'}
                     </h2>
-                    <p className="mt-1 text-slate-500 text-sm font-medium">
+                    <p className="mt-1 text-foreground-muted text-sm font-medium">
                         {type === 'TEACHER'
                             ? '서류를 별도로 준비하여 학교 행정실에 직접 제출해주세요.'
                             : '계약 시 필요한 사업자 증빙 서류 준비 상태를 관리하세요.'}
                     </p>
                 </div>
 
-                <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 min-w-[120px]">
+                <div className="bg-surface p-4 rounded-2xl shadow-sm border border-border min-w-[120px]">
                     <div className="text-right">
                         <p className="text-xs font-bold opacity-40 mb-1">서류 준비도</p>
-                        <p className={`text-3xl font-black ${progress === 100 ? 'text-green-500' : 'text-blue-500'}`}>
+                        <p className={`text-3xl font-black ${progress === 100 ? 'text-success' : 'text-primary'}`}>
                             {progress}%
                         </p>
                     </div>
@@ -202,14 +202,14 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
                                 key={item.id}
                                 onClick={() => onCheck(item.id, !item.checked)}
                                 className={`p-4 rounded-2xl border flex items-center justify-between transition-all cursor-pointer group ${item.checked
-                                    ? 'bg-white dark:bg-slate-800 border-green-200 dark:border-green-900/30 shadow-sm'
-                                    : 'bg-white dark:bg-slate-800/80 border-slate-100 dark:border-slate-700/50 hover:border-blue-200 dark:hover:border-blue-800 hover:shadow-md'
+                                    ? 'bg-surface border-success/30 shadow-sm'
+                                    : 'bg-surface/80 border-border hover:border-primary/50 hover:shadow-md'
                                     }`}
                             >
                                 <div className="flex items-center gap-4">
                                     <div className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${item.checked
-                                        ? 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400'
-                                        : 'bg-slate-50 text-slate-300 dark:bg-slate-900 dark:text-slate-600 group-hover:bg-blue-50 group-hover:text-blue-500'
+                                        ? 'bg-success/10 text-success'
+                                        : 'bg-background text-foreground-muted group-hover:bg-primary/10 group-hover:text-primary'
                                         }`}>
                                         {item.checked ? <CheckCircle2 className="w-6 h-6" /> : <Square className="w-6 h-6" />}
                                     </div>
@@ -234,11 +234,11 @@ export default function AdminManager({ type, items, onCheck, quickData }: AdminM
                 <div className="lg:col-span-5 space-y-6">
                     <h3 className="text-xs font-black opacity-30 uppercase tracking-widest mb-2">Quick Integration</h3>
 
-                    <div className="bg-white dark:bg-slate-800 rounded-[24px] p-6 shadow-sm border border-slate-200 dark:border-slate-700 h-fit">
+                    <div className="bg-surface rounded-[24px] p-6 shadow-sm border border-border h-fit">
                         {quickData && quickData.length > 0 ? (
                             <div className="space-y-4">
                                 {quickData.map((data, idx) => (
-                                    <div key={idx} className="p-4 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                    <div key={idx} className="p-4 bg-background rounded-2xl border border-border">
                                         <p className="text-[10px] font-bold opacity-40 mb-2 uppercase tracking-wider">{data.label}</p>
                                         <div className="flex justify-between items-center">
                                             <span className={`font-mono font-bold text-sm truncate mr-2 ${!data.value ? 'text-slate-300 italic' : 'text-slate-700 dark:text-slate-200'}`}>

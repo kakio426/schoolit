@@ -231,6 +231,27 @@ export class UserService {
   }
 
   async updateRole(userId: number, role: Role) {
+    // Upsert the corresponding profile
+    if (role === Role.SCHOOL) {
+      await this.prisma.schoolProfile.upsert({
+        where: { userId },
+        create: { userId, isVerified: false },
+        update: {},
+      });
+    } else if (role === Role.TEACHER) {
+      await this.prisma.teacherProfile.upsert({
+        where: { userId },
+        create: { userId, isVerified: false },
+        update: {},
+      });
+    } else if (role === Role.BUSINESS) {
+      await this.prisma.businessProfile.upsert({
+        where: { userId },
+        create: { userId, companyName: 'New Company', isVerified: false, categories: [] },
+        update: {},
+      });
+    }
+
     return this.prisma.user.update({
       where: { id: userId },
       data: { role },
@@ -240,6 +261,7 @@ export class UserService {
         name: true,
         role: true,
       },
+      // Note: We don't include profile here because frontend will fetch it separately via /profile
     });
   }
 
@@ -353,5 +375,47 @@ export class UserService {
     if (!item) throw new NotFoundException('License not found');
     if (item.teacherProfile.userId !== userId) throw new ForbiddenException('Not authorized');
     return this.prisma.teacherLicense.delete({ where: { id } });
+  }
+
+  // --- Email Verification Code Management ---
+  async saveVerificationCode(userId: number, code: string, email?: string) {
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 5); // 5 minutes validity
+
+    // Store as "123456|email@addr.com" if email provided, else just code
+    const valueToStore = email ? `${code}|${email}` : code;
+
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        verificationCode: valueToStore,
+        verificationExpires: expires,
+      },
+    });
+  }
+
+  async validateVerificationCode(userId: number, code: string): Promise<{ valid: boolean; email?: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { verificationCode: true, verificationExpires: true },
+    });
+
+    if (!user || !user.verificationCode) return { valid: false };
+
+    const [storedCode, storedEmail] = user.verificationCode.split('|');
+
+    if (storedCode !== code) return { valid: false };
+    if (!user.verificationExpires || new Date() > user.verificationExpires) return { valid: false };
+
+    // Clear code after successful validation
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        verificationCode: null,
+        verificationExpires: null,
+      },
+    });
+
+    return { valid: true, email: storedEmail };
   }
 }

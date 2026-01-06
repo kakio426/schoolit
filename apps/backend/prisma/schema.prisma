@@ -35,6 +35,10 @@ model User {
   notifications Notification[]
   feedbacks     Feedback[]
   notificationSettings Json?  @map("notification_settings") // { newMatch: boolean, messages: boolean, marketing: boolean }
+  
+  // Email Verification Fields -> for School/Business Step 1
+  verificationCode    String?  @map("verification_code")
+  verificationExpires DateTime? @map("verification_expires")
 
   @@unique([provider, snsId])
   @@map("users")
@@ -50,7 +54,7 @@ model Notification {
   isRead    Boolean  @default(false) @map("is_read")
   link      String?
   createdAt DateTime @default(now()) @map("created_at")
-
+  
   @@map("notifications")
 }
 
@@ -73,6 +77,7 @@ model SchoolProfile {
   logoImage   String?      @map("logo_image")
   
   tags        String[]     @default([])
+  isVerified  Boolean      @default(false) @map("is_verified") // <--- ADDED: Phase 1 Security Gate
   
   jobListings JobListing[]
   

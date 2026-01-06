@@ -128,11 +128,11 @@ export default function NewJobPage() {
                         <h1 className="text-2xl font-bold text-foreground">새 공고 등록</h1>
                     </div>
 
-                    <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm p-8">
+                    <div className="bg-surface rounded-3xl border border-border shadow-sm p-8">
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Internal Approval Check Section */}
-                            <div className="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
-                                <h3 className="font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                            <div className="p-6 bg-background rounded-2xl border-2 border-dashed border-border">
+                                <h3 className="font-bold text-foreground mb-4 flex items-center gap-2">
                                     <span className="text-lg">⚖️</span> 1단계: 내부 채용 계획 확인
                                 </h3>
                                 <div className="space-y-3">
@@ -165,7 +165,7 @@ export default function NewJobPage() {
                                     name="title"
                                     value={formData.title}
                                     onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                     placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제, 늘봄 강사 등" : "예: 2024 진로체험의 날 행사 업체 모집"}
                                     required
                                 />
@@ -178,7 +178,7 @@ export default function NewJobPage() {
 
                                 <div className="space-y-3">
                                     {jobType === JobType.TEACHER_HIRING && (
-                                        <label className="flex items-center gap-2 cursor-pointer p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800">
+                                        <label className="flex items-center gap-2 cursor-pointer p-3 bg-background rounded-xl border border-border">
                                             <input
                                                 type="checkbox"
                                                 checked={isStandardSalary}
@@ -188,7 +188,7 @@ export default function NewJobPage() {
                                                 }}
                                                 className="w-4 h-4 rounded border-slate-300 text-primary focus:ring-primary"
                                             />
-                                            <span className="text-xs font-bold text-slate-700 dark:text-slate-300">공무원 보수 규정 / 교육청 지침에 따름</span>
+                                            <span className="text-xs font-bold text-foreground">공무원 보수 규정 / 교육청 지침에 따름</span>
                                         </label>
                                     )}
 
@@ -198,7 +198,7 @@ export default function NewJobPage() {
                                         value={formData.budget}
                                         onChange={handleChange}
                                         disabled={jobType === JobType.TEACHER_HIRING && isStandardSalary}
-                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground disabled:opacity-50"
+                                        className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary disabled:opacity-50"
                                         placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2500000 (월 급여 또는 총액)" : "숫자만 입력 (예: 15000000)"}
                                     />
                                 </div>
@@ -216,7 +216,7 @@ export default function NewJobPage() {
                                     value={formData.description}
                                     onChange={handleChange}
                                     rows={6}
-                                    className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary resize-none text-foreground"
+                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary resize-none"
                                     placeholder="모집 요강, 자격 요건 등을 상세히 적어주세요."
                                     required
                                 />
@@ -229,7 +229,7 @@ export default function NewJobPage() {
                                         name="subjects"
                                         value={formData.subjects}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                         placeholder="수학, 과학"
                                         required
                                     />
@@ -240,7 +240,7 @@ export default function NewJobPage() {
                                         name="regions"
                                         value={formData.regions}
                                         onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                        className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                         placeholder="서울 강남구, 경기 분당"
                                         required
                                     />
@@ -249,7 +249,7 @@ export default function NewJobPage() {
 
                             {/* Teacher/Instructor-specific fields */}
                             {jobType === JobType.TEACHER_HIRING && (
-                                <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+                                <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-800">
                                     <h3 className="font-bold text-foreground">채용 상세 정보</h3>
 
                                     <div>
@@ -258,7 +258,7 @@ export default function NewJobPage() {
                                             name="contractPeriod"
                                             value={formData.contractPeriod}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                            className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                             placeholder="예: 2024.03.01 ~ 2024.08.31"
                                         />
                                     </div>
@@ -278,7 +278,7 @@ export default function NewJobPage() {
                                                     }}
                                                     className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${formData.gradeLevel.includes(level)
                                                         ? 'bg-primary text-white'
-                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                        : 'bg-surface border border-border text-foreground hover:bg-surface-hover'
                                                         }`}
                                                 >
                                                     {level}
@@ -294,7 +294,7 @@ export default function NewJobPage() {
                                             name="teachingHours"
                                             value={formData.teachingHours}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                            className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                             placeholder="예: 20"
                                         />
                                     </div>
@@ -303,7 +303,7 @@ export default function NewJobPage() {
 
                             {/* Event-specific fields */}
                             {jobType === JobType.EVENT_VENDOR && (
-                                <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-200 dark:border-purple-800">
+                                <div className="space-y-4 p-4 bg-purple-50 dark:bg-purple-900/10 rounded-xl border border-purple-100 dark:border-purple-800">
                                     <h3 className="font-bold text-foreground">행사 상세 정보</h3>
 
                                     <div>
@@ -312,7 +312,7 @@ export default function NewJobPage() {
                                             name="eventType"
                                             value={formData.eventType}
                                             onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                                            className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                            className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                         >
                                             <option value="">선택하세요</option>
                                             {EVENT_TYPES.map(et => (
@@ -327,7 +327,7 @@ export default function NewJobPage() {
                                             name="eventDuration"
                                             value={formData.eventDuration}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                            className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                             placeholder="예: 4교시, 1일, 2일"
                                         />
                                     </div>
@@ -338,7 +338,7 @@ export default function NewJobPage() {
                                             name="participantCount"
                                             value={formData.participantCount}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:border-primary text-foreground"
+                                            className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                             placeholder="예: 30-50명, 100명 이상"
                                         />
                                     </div>
@@ -371,7 +371,7 @@ export default function NewJobPage() {
                                                     }}
                                                     className={`px-3 py-2 rounded-lg font-bold text-xs transition-all ${formData.certifications.includes(cert)
                                                         ? 'bg-primary text-white'
-                                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground'
+                                                        : 'bg-surface border border-border text-foreground hover:bg-surface-hover'
                                                         }`}
                                                 >
                                                     {cert}
@@ -429,9 +429,9 @@ export default function NewJobPage() {
                         </div>
                     </div>
 
-                    <div className="p-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl">
+                    <div className="p-6 bg-surface border border-border rounded-3xl">
                         <h4 className="font-bold text-sm text-foreground mb-3 flex items-center gap-2">
-                            <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                            <span className="w-1.5 h-1.5 bg-error rounded-full animate-pulse"></span>
                             필수 행정 알림
                         </h4>
                         <ul className="text-[11px] text-foreground-muted space-y-2 list-disc pl-4">

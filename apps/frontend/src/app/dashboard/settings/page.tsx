@@ -3,13 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTheme } from '@/contexts/ThemeContext';
-
 import { api } from '@/lib/api';
 
 export default function SettingsPage() {
     const { user, refreshProfile } = useAuth();
-    const { theme, setTheme } = useTheme();
     const [notifications, setNotifications] = useState({
         newMatch: true,
         messages: true,
@@ -48,7 +45,7 @@ export default function SettingsPage() {
 
                 <div className="grid gap-6">
                     {/* Account Section */}
-                    <section className="bg-surface p-8 rounded-[32px] border border-slate-200/50 dark:border-slate-700 shadow-sm">
+                    <section className="bg-surface p-8 rounded-[32px] border border-border shadow-sm">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                             <span className="text-2xl">👤</span> 계정 정보
                         </h2>
@@ -62,7 +59,7 @@ export default function SettingsPage() {
                                 </div>
                                 <div className="space-y-1.5">
                                     <label className="text-foreground-muted font-medium ml-1">이름</label>
-                                    <div className="px-4 py-3 bg-background/50 rounded-xl border border-slate-200/30 dark:border-slate-800 text-foreground font-medium">
+                                    <div className="px-4 py-3 bg-background/50 rounded-xl border border-border text-foreground font-medium">
                                         {user?.name}
                                     </div>
                                 </div>
@@ -73,34 +70,8 @@ export default function SettingsPage() {
                         </div>
                     </section>
 
-                    {/* Theme Section */}
-                    <section className="bg-surface p-8 rounded-[32px] border border-slate-200/50 dark:border-slate-700 shadow-sm">
-                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
-                            <span className="text-2xl">🎨</span> 테마 설정
-                        </h2>
-                        <div className="grid grid-cols-3 gap-4">
-                            {[
-                                { id: 'light', label: '라이트 모드', icon: '☀️' },
-                                { id: 'dark', label: '다크 모드', icon: '🌙' },
-                                { id: 'system', label: '시스템 설정', icon: '🖥️' }
-                            ].map((t) => (
-                                <button
-                                    key={t.id}
-                                    onClick={() => setTheme(t.id as any)}
-                                    className={`flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === t.id
-                                        ? 'border-primary bg-primary/5 text-primary'
-                                        : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 text-foreground-muted'
-                                        }`}
-                                >
-                                    <span className="text-2xl">{t.icon}</span>
-                                    <span className="text-xs font-bold">{t.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </section>
-
                     {/* Notification Section */}
-                    <section className="bg-surface p-8 rounded-[32px] border border-slate-200/50 dark:border-slate-700 shadow-sm">
+                    <section className="bg-surface p-8 rounded-[32px] border border-border shadow-sm">
                         <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
                             <span className="text-2xl">🔔</span> 알림 설정
                         </h2>

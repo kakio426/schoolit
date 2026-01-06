@@ -255,17 +255,17 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             {/* 1. Basic Info & Photo */}
-            <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-8">
+            <div className="bg-surface p-8 rounded-3xl border border-border shadow-sm flex flex-col md:flex-row gap-8">
                 {/* Photo Upload */}
                 <div className="flex-shrink-0 flex flex-col items-center gap-3">
                     <div
-                        className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-700 relative group cursor-pointer border-4 border-white dark:border-slate-600 shadow-lg"
+                        className="w-32 h-32 rounded-full overflow-hidden bg-background relative group cursor-pointer border-4 border-surface shadow-lg"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {basicInfo.profileImage ? (
                             <img src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${basicInfo.profileImage}`} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
-                            <div className="w-full h-full flex items-center justify-center text-slate-400">
+                            <div className="w-full h-full flex items-center justify-center text-foreground-muted">
                                 <User className="w-12 h-12" />
                             </div>
                         )}
@@ -274,7 +274,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         </div>
                     </div>
                     <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-                    <span className="text-xs font-bold text-slate-500">프로필 사진 변경</span>
+                    <span className="text-xs font-bold text-foreground-muted">프로필 사진 변경</span>
                 </div>
 
                 {/* Info Fields */}
@@ -288,34 +288,34 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             type="text"
                             value={basicInfo.phone}
                             onChange={(e) => setBasicInfo(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-4 py-3 bg-white dark:bg-slate-950 rounded-xl border-2 border-primary/30 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-lg"
+                            className="w-full px-4 py-3 bg-surface rounded-xl border-2 border-primary/30 outline-none focus:ring-4 focus:ring-primary/10 transition-all font-bold text-lg text-foreground"
                             placeholder="예: 010-1234-5678"
                             id="phone-input"
                         />
-                        <p className="text-[11px] text-slate-500 mt-2 font-medium">* 학교 담당자가 강사님께 성범죄 조회 동의 요청이나 면접 안내를 드릴 때 사용됩니다.</p>
+                        <p className="text-[11px] text-foreground-muted mt-2 font-medium">* 학교 담당자가 강사님께 성범죄 조회 동의 요청이나 면접 안내를 드릴 때 사용됩니다.</p>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* bankAccount Input Field */}
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">정산용 계좌 정보 (정보 입력)</label>
+                            <label className="block text-sm font-bold text-foreground mb-2">정산용 계좌 정보 (정보 입력)</label>
                             <input
                                 type="text"
                                 value={basicInfo.bankAccount}
                                 onChange={(e) => setBasicInfo(prev => ({ ...prev, bankAccount: e.target.value }))}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full px-4 py-3 bg-input-bg border border-input-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
                                 placeholder="예: 농협 302-1234-5678 (본인 명의)"
                             />
-                            <p className="text-[10px] text-slate-400 mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
+                            <p className="text-[10px] text-foreground-muted mt-2">*실제 서류(통장사본)은 행정실에 직접 제출하셔야 합니다.</p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">자기소개 (한 줄 요약)</label>
+                            <label className="block text-sm font-bold text-foreground mb-2">자기소개 (한 줄 요약)</label>
                             <input
                                 type="text"
                                 value={basicInfo.bio}
                                 onChange={(e) => setBasicInfo(prev => ({ ...prev, bio: e.target.value }))}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                                className="w-full px-4 py-3 bg-input-bg border border-input-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
                                 placeholder="예: 10년 경력의 코딩 전문 강사입니다."
                             />
                         </div>
@@ -323,16 +323,16 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">가능 과목</label>
+                            <label className="block text-sm font-bold text-foreground mb-2">가능 과목</label>
                             <div className="flex gap-2 mb-2">
                                 <input
                                     value={inputs.subject}
                                     onChange={e => setInputs(p => ({ ...p, subject: e.target.value }))}
                                     onKeyPress={e => e.key === 'Enter' && addSubject()}
-                                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm"
+                                    className="flex-1 px-3 py-2 bg-input-bg border border-input-border rounded-lg text-sm text-foreground"
                                     placeholder="예: 코딩, 드론"
                                 />
-                                <button type="button" onClick={addSubject} className="bg-slate-200 dark:bg-slate-700 px-3 rounded-lg font-bold text-sm">+</button>
+                                <button type="button" onClick={addSubject} className="bg-surface-hover px-3 rounded-lg font-bold text-sm text-foreground">+</button>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {basicInfo.subjects.map((s, i) => (
@@ -344,16 +344,16 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         </div>
 
                         <div>
-                            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">활동 지역</label>
+                            <label className="block text-sm font-bold text-foreground mb-2">활동 지역</label>
                             <div className="flex gap-2 mb-2">
                                 <input
                                     value={inputs.region}
                                     onChange={e => setInputs(p => ({ ...p, region: e.target.value }))}
                                     onKeyPress={e => e.key === 'Enter' && addRegion()}
-                                    className="flex-1 px-3 py-2 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-700 text-sm"
+                                    className="flex-1 px-3 py-2 bg-input-bg border border-input-border rounded-lg text-sm text-foreground"
                                     placeholder="예: 서울 강남구"
                                 />
-                                <button type="button" onClick={addRegion} className="bg-slate-200 dark:bg-slate-700 px-3 rounded-lg font-bold text-sm">+</button>
+                                <button type="button" onClick={addRegion} className="bg-surface-hover px-3 rounded-lg font-bold text-sm text-foreground">+</button>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {basicInfo.regions.map((s, i) => (
@@ -366,7 +366,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                     </div>
 
                     <div>
-                        <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-3">선호 학년 (중복 선택 가능)</label>
+                        <label className="block text-sm font-bold text-foreground mb-3">선호 학년 (중복 선택 가능)</label>
                         <div className="flex flex-wrap gap-3">
                             {TARGET_GRADES.map(grade => (
                                 <button
@@ -375,7 +375,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                                     onClick={() => toggleGrade(grade.value)}
                                     className={`px-4 py-2 rounded-xl text-sm font-bold border transition-all ${basicInfo.targetGrades.includes(grade.value)
                                         ? 'bg-primary text-white border-primary shadow-lg shadow-primary/20'
-                                        : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                                        : 'bg-surface text-foreground-muted border-border hover:bg-surface-hover'
                                         }`}
                                 >
                                     {grade.label}
@@ -403,31 +403,30 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 {showAddExp && (
                     <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="직위/역할 (예: 수학 강사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newExp.title} onChange={e => setNewExp({ ...newExp, title: e.target.value })} />
-                            <input placeholder="소속 (학교/학원명)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newExp.organization} onChange={e => setNewExp({ ...newExp, organization: e.target.value })} />
+                            <input placeholder="직위/역할 (예: 수학 강사)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newExp.title} onChange={e => setNewExp({ ...newExp, title: e.target.value })} />
+                            <input placeholder="소속 (학교/학원명)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newExp.organization} onChange={e => setNewExp({ ...newExp, organization: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
-                            <label className="flex items-center gap-2 text-sm font-bold cursor-pointer">
+                            <input type="date" className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all has-[value]:text-foreground" value={newExp.startDate} onChange={e => setNewExp({ ...newExp, startDate: e.target.value })} />
+                            <input type="date" className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all disabled:opacity-50" disabled={newExp.isCurrent} value={newExp.endDate} onChange={e => setNewExp({ ...newExp, endDate: e.target.value })} />
+                            <label className="flex items-center gap-2 text-sm font-bold cursor-pointer text-foreground">
                                 <input type="checkbox" checked={newExp.isCurrent} onChange={e => setNewExp({ ...newExp, isCurrent: e.target.checked })} className="w-5 h-5 accent-primary" />
                                 현재 재직 중
                             </label>
                         </div>
                         <textarea
                             placeholder="상세 업무 내용"
-                            style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }}
-                            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400"
+                            className="w-full px-4 py-3 rounded-xl outline-none text-sm resize-none bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                             rows={4}
                             value={newExp.description}
                             onChange={e => setNewExp({ ...newExp, description: e.target.value })}
                         />
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setShowAddExp(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
+                            <button onClick={() => setShowAddExp(false)} className="px-4 py-2 text-sm text-foreground-muted font-bold hover:bg-surface-hover rounded-lg transition-colors">취소</button>
                             <button
                                 onClick={submitExp}
                                 disabled={!newExp.title || !newExp.organization || !newExp.startDate}
-                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 등록
                             </button>
@@ -464,33 +463,33 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 </div>
 
                 {showAddEdu && (
-                    <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="mb-6 p-6 bg-surface rounded-2xl border border-border space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="학교명" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newEdu.schoolName} onChange={e => setNewEdu({ ...newEdu, schoolName: e.target.value })} />
-                            <input placeholder="전공" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newEdu.major} onChange={e => setNewEdu({ ...newEdu, major: e.target.value })} />
+                            <input placeholder="학교명" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.schoolName} onChange={e => setNewEdu({ ...newEdu, schoolName: e.target.value })} />
+                            <input placeholder="전공" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.major} onChange={e => setNewEdu({ ...newEdu, major: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })}>
+                            <select className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.degree} onChange={e => setNewEdu({ ...newEdu, degree: e.target.value })}>
                                 <option value="HighSchool">고등학교</option>
                                 <option value="Bachelor">학사 (대학교)</option>
                                 <option value="Master">석사 (대학원)</option>
                                 <option value="Doctor">박사</option>
                             </select>
-                            <select style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white" value={newEdu.graduationStatus} onChange={e => setNewEdu({ ...newEdu, graduationStatus: e.target.value })}>
+                            <select className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.graduationStatus} onChange={e => setNewEdu({ ...newEdu, graduationStatus: e.target.value })}>
                                 <option value="GRADUATED">졸업</option>
                                 <option value="ATTENDING">재학 중</option>
                                 <option value="LEAVE">휴학/중퇴</option>
                             </select>
 
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
-                            <input type="date" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newEdu.endDate || ''} onChange={e => setNewEdu({ ...newEdu, endDate: e.target.value })} placeholder="졸업일 (선택)" />
+                            <input type="date" className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] bg-input-bg border border-input-border text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.startDate} onChange={e => setNewEdu({ ...newEdu, startDate: e.target.value })} />
+                            <input type="date" className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] bg-input-bg border border-input-border text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newEdu.endDate || ''} onChange={e => setNewEdu({ ...newEdu, endDate: e.target.value })} placeholder="졸업일 (선택)" />
                         </div>
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setShowAddEdu(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
+                            <button onClick={() => setShowAddEdu(false)} className="px-4 py-2 text-sm text-foreground-muted font-bold hover:bg-surface-hover rounded-lg transition-colors">취소</button>
                             <button
                                 onClick={submitEdu}
                                 disabled={!newEdu.schoolName || !newEdu.startDate}
-                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                             >
                                 등록
                             </button>
@@ -531,14 +530,14 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 </div>
 
                 {showAddLink && (
-                    <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="mb-6 p-6 bg-surface rounded-2xl border border-border space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="제목 (예: 수업 시연 영상)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLink.title} onChange={e => setNewLink({ ...newLink, title: e.target.value })} />
-                            <input placeholder="URL (https://...)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} />
+                            <input placeholder="제목 (예: 수업 시연 영상)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newLink.title} onChange={e => setNewLink({ ...newLink, title: e.target.value })} />
+                            <input placeholder="URL (https://...)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newLink.url} onChange={e => setNewLink({ ...newLink, url: e.target.value })} />
                         </div>
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setShowAddLink(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
-                            <button onClick={submitLink} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-all">등록</button>
+                            <button onClick={() => setShowAddLink(false)} className="px-4 py-2 text-sm text-foreground-muted font-bold hover:bg-surface-hover rounded-lg transition-colors">취소</button>
+                            <button onClick={submitLink} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover transition-all">등록</button>
                         </div>
                     </div>
                 )}
@@ -567,17 +566,17 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 </div>
 
                 {showAddLicense && (
-                    <div className="mb-6 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in zoom-in-95">
+                    <div className="mb-6 p-6 bg-surface rounded-2xl border border-border space-y-4 animate-in fade-in zoom-in-95">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input placeholder="자격증 명칭 (예: 정보처리기사)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLicense.name} onChange={e => setNewLicense({ ...newLicense, name: e.target.value })} />
-                            <input placeholder="발급 기관 (예: 한국산업인력공단)" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white placeholder:text-slate-500 dark:placeholder:text-slate-400" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
+                            <input placeholder="자격증 명칭 (예: 정보처리기사)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newLicense.name} onChange={e => setNewLicense({ ...newLicense, name: e.target.value })} />
+                            <input placeholder="발급 기관 (예: 한국산업인력공단)" className="w-full px-4 py-3 rounded-xl outline-none text-sm bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newLicense.issuer} onChange={e => setNewLicense({ ...newLicense, issuer: e.target.value })} />
                         </div>
                         <div className="grid grid-cols-1 gap-4">
-                            <input type="month" style={{ backgroundColor: '#f1f5f9', border: '2px solid #94a3b8', color: '#1e293b' }} className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] dark:!bg-slate-800 dark:!border-slate-600 dark:!text-white dark:[color-scheme:dark]" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
+                            <input type="month" className="w-full px-4 py-3 rounded-xl outline-none text-sm max-w-[200px] bg-input-bg border border-input-border text-foreground focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" value={newLicense.date} onChange={e => setNewLicense({ ...newLicense, date: e.target.value })} />
                         </div>
                         <div className="flex justify-end gap-2">
-                            <button onClick={() => setShowAddLicense(false)} className="px-4 py-2 text-sm text-slate-500 font-bold hover:bg-slate-200 dark:hover:bg-slate-800 rounded-lg transition-colors">취소</button>
-                            <button onClick={submitLicense} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary/90 transition-all">등록</button>
+                            <button onClick={() => setShowAddLicense(false)} className="px-4 py-2 text-sm text-foreground-muted font-bold hover:bg-surface-hover rounded-lg transition-colors">취소</button>
+                            <button onClick={submitLicense} className="px-4 py-2 bg-primary text-white rounded-lg text-sm font-bold hover:bg-primary-hover transition-all">등록</button>
                         </div>
                     </div>
                 )}
@@ -612,21 +611,12 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             </div>
 
             <style jsx>{`
-                .input-std {
-                    @apply w-full px-4 py-3 rounded-xl outline-none transition-all text-sm text-foreground font-medium placeholder:text-slate-400;
-                    background-color: rgb(241, 245, 249) !important;
-                    border: 2px solid rgb(148, 163, 184) !important;
-                }
-                .dark .input-std {
-                    background-color: rgb(15, 23, 42) !important;
-                    border: 2px solid rgb(71, 85, 105) !important;
-                }
                 .input-std:focus {
                     @apply ring-2 ring-primary/20 border-primary;
                 }
                 /* Higher contrast for section cards */
                 .section-card {
-                    @apply bg-white dark:bg-slate-800 p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm transition-all hover:shadow-md border-l-4;
+                    @apply bg-surface p-8 rounded-3xl border border-border shadow-sm transition-all hover:shadow-md border-l-4;
                 }
                 @keyframes pulse-subtle {
                     0%, 100% { opacity: 1; }

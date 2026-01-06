@@ -78,8 +78,8 @@ export default function JobDetailPage() {
                     <span className="group-hover:-translate-x-1 transition-transform">←</span> 뒤로 가기
                 </button>
 
-                <div className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden border-b-4 border-b-primary/20">
-                    <div className="p-8 md:p-12 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/20">
+                <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden border-b-4 border-b-primary/20">
+                    <div className="p-8 md:p-12 border-b border-border bg-background/30 dark:bg-background/10">
                         <div className="flex flex-wrap gap-2 mb-6">
                             {job.subjects?.map((s: string) => (
                                 <span key={s} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full border border-blue-200 dark:border-blue-800">
@@ -94,7 +94,7 @@ export default function JobDetailPage() {
                         </div>
                         <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">{job.title}</h1>
                         <div className="flex flex-wrap items-center gap-4 md:gap-6 text-foreground-muted">
-                            <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                            <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border border-border shadow-sm">
                                 <span className="text-xl">🏫</span>
                                 <span className="font-bold text-foreground">{job.schoolProfile?.schoolName}</span>
                             </div>
@@ -103,7 +103,7 @@ export default function JobDetailPage() {
                                 <span>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'} 등록</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${job.active ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></span>
+                                <span className={`w-2 h-2 rounded-full ${job.active ? 'bg-success' : 'bg-error'} animate-pulse`}></span>
                                 <span className="font-bold">{job.active ? '모집 중' : '모집 마감'}</span>
                             </div>
                         </div>
@@ -115,17 +115,17 @@ export default function JobDetailPage() {
                                 <span className="w-1.5 h-6 bg-primary rounded-full"></span>
                                 공고 상세 내용
                             </h2>
-                            <div className="text-foreground-muted leading-relaxed whitespace-pre-wrap text-lg bg-slate-50/30 dark:bg-slate-800/10 p-8 rounded-3xl border border-slate-100 dark:border-slate-800">
+                            <div className="text-foreground leading-relaxed whitespace-pre-wrap text-lg bg-background p-8 rounded-3xl border border-border">
                                 {job.description}
                             </div>
                         </div>
 
-                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-3xl p-8 border border-slate-100 dark:border-slate-800">
+                        <div className="bg-surface-hover dark:bg-surface/50 rounded-3xl p-8 border border-border">
                             <h2 className="text-xl font-bold text-foreground mb-6">📍 상세 요건</h2>
 
                             {/* Teacher Hiring Details */}
                             {(job as any).jobType === 'TEACHER_HIRING' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-border">
                                     <div>
                                         <div className="text-foreground-muted mb-2 font-medium">계약 기간</div>
                                         <div className="text-foreground font-bold text-base">{(job as any).contractPeriod || '협의'}</div>
@@ -139,7 +139,7 @@ export default function JobDetailPage() {
                                         <div className="flex flex-wrap gap-2">
                                             {(job as any).gradeLevel?.length > 0
                                                 ? (job as any).gradeLevel.map((lvl: string) => (
-                                                    <span key={lvl} className="px-2 py-1 bg-white dark:bg-slate-700 rounded border border-slate-200 dark:border-slate-600 font-bold">
+                                                    <span key={lvl} className="px-2 py-1 bg-surface dark:bg-slate-700/50 rounded border border-border font-bold text-foreground">
                                                         {lvl}
                                                     </span>
                                                 ))
@@ -152,7 +152,7 @@ export default function JobDetailPage() {
 
                             {/* Event Vendor Details */}
                             {(job as any).jobType === 'EVENT_VENDOR' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-slate-200 dark:border-slate-700">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-border">
                                     <div>
                                         <div className="text-foreground-muted mb-2 font-medium">행사 종류</div>
                                         <div className="text-foreground font-bold text-base">{(job as any).eventType || '기타'}</div>
@@ -207,7 +207,7 @@ export default function JobDetailPage() {
 
                         {/* Application Section */}
                         {(user?.role === Role.TEACHER || user?.role === 'BUSINESS') && (
-                            <div className="mt-12 border-t border-slate-100 dark:border-slate-800 pt-12">
+                            <div className="mt-12 border-t border-border pt-12">
                                 {hasApplied ? (
                                     <div className="bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30 text-green-700 dark:text-green-400 p-8 rounded-3xl text-center shadow-inner">
                                         <div className="text-4xl mb-4">✅</div>
@@ -241,7 +241,7 @@ export default function JobDetailPage() {
                                                             <input
                                                                 type="text"
                                                                 id="proposalCost"
-                                                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
+                                                                className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                                                 placeholder="예: 1,500,000"
                                                             />
                                                         </div>
@@ -250,7 +250,7 @@ export default function JobDetailPage() {
                                                             <input
                                                                 type="text"
                                                                 id="contactInfo"
-                                                                className="w-full px-4 py-3 bg-surface rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
+                                                                className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
                                                                 placeholder="예: 010-1234-5678 (김철수 매니저)"
                                                             />
                                                         </div>
@@ -267,7 +267,7 @@ export default function JobDetailPage() {
                                                         placeholder={(job as any).jobType === 'EVENT_VENDOR'
                                                             ? "행사 프로그램 구성, 강점 등 상세 제안 내용을 입력해주세요.\n포트폴리오 링크를 포함하면 좋습니다."
                                                             : "학교 담당자에게 보낼 자기소개나 메시지를 간단히 입력해주세요."}
-                                                        className="w-full h-40 p-6 bg-surface border border-slate-200 dark:border-slate-700 rounded-3xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground shadow-sm"
+                                                        className="w-full h-40 p-6 rounded-3xl outline-none focus:border-primary resize-none shadow-sm"
                                                     />
                                                 </div>
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function RoleSelectionPage() {
-    const [selectedRole, setSelectedRole] = useState<'TEACHER' | 'SCHOOL' | null>(null);
+    const [selectedRole, setSelectedRole] = useState<'TEACHER' | 'SCHOOL' | 'BUSINESS' | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { refreshProfile, token } = useAuth();
     const router = useRouter();
@@ -26,7 +26,11 @@ export default function RoleSelectionPage() {
 
             if (response.ok) {
                 await refreshProfile();
-                router.push('/dashboard');
+                if (selectedRole === 'SCHOOL') {
+                    router.push('/onboarding/email-verify');
+                } else {
+                    router.push('/dashboard');
+                }
             } else {
                 alert('역할 설정 중 오류가 발생했습니다.');
             }
@@ -50,23 +54,23 @@ export default function RoleSelectionPage() {
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Teacher Card */}
                     <button
                         onClick={() => setSelectedRole('TEACHER')}
-                        className={`group relative p-8 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'TEACHER'
-                                ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                                : 'border-background-muted bg-white hover:border-primary/50'
+                        className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'TEACHER'
+                            ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
+                            : 'border-background-muted bg-white hover:border-primary/50'
                             }`}
                     >
-                        <div className="space-y-6">
-                            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        <div className="space-y-4">
+                            <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                 👨‍🏫
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-foreground mb-2">프리랜서 강사</h3>
-                                <p className="text-foreground-muted">
-                                    방과후 학교, 돌봄 교실 등<br />나의 재능을 펼칠 학교를 찾습니다.
+                                <h3 className="text-xl font-bold text-foreground mb-1">프리랜서 강사</h3>
+                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                    방과후 학교, 돌봄 교실 등<br />나의 재능을 펼칠 곳을 찾습니다.
                                 </p>
                             </div>
                         </div>
@@ -75,19 +79,40 @@ export default function RoleSelectionPage() {
                     {/* School Card */}
                     <button
                         onClick={() => setSelectedRole('SCHOOL')}
-                        className={`group relative p-8 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'SCHOOL'
-                                ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
-                                : 'border-background-muted bg-white hover:border-primary/50'
+                        className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'SCHOOL'
+                            ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
+                            : 'border-background-muted bg-white hover:border-primary/50'
                             }`}
                     >
-                        <div className="space-y-6">
-                            <div className="w-16 h-16 bg-blue-500/10 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 transition-transform">
+                        <div className="space-y-4">
+                            <div className="w-14 h-14 bg-blue-500/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
                                 🏫
                             </div>
                             <div>
-                                <h3 className="text-2xl font-bold text-foreground mb-2">학교/기관 담당자</h3>
-                                <p className="text-foreground-muted">
-                                    우리 학교에 꼭 필요한<br />최고의 강사님을 매칭받습니다.
+                                <h3 className="text-xl font-bold text-foreground mb-1">학교/기관 담당자</h3>
+                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                    위변조 방지 2단계 인증을 거쳐<br />검증된 강사를 채용합니다.
+                                </p>
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* Business Card */}
+                    <button
+                        onClick={() => setSelectedRole('BUSINESS' as any)}
+                        className={`group relative p-6 rounded-3xl border-2 transition-all duration-300 text-left hover:shadow-xl ${selectedRole === 'BUSINESS'
+                            ? 'border-primary bg-primary/5 ring-4 ring-primary/10'
+                            : 'border-background-muted bg-white hover:border-primary/50'
+                            }`}
+                    >
+                        <div className="space-y-4">
+                            <div className="w-14 h-14 bg-purple-500/10 rounded-2xl flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                🏢
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-bold text-foreground mb-1">교육 위탁 업체</h3>
+                                <p className="text-sm text-foreground-muted leading-relaxed">
+                                    방과후/돌봄 위탁 운영 및<br />교육 행사 전문 기업입니다.
                                 </p>
                             </div>
                         </div>
@@ -100,7 +125,7 @@ export default function RoleSelectionPage() {
                         disabled={!selectedRole || isSubmitting}
                         className="w-full max-w-xs h-16 bg-primary text-white rounded-2xl font-bold text-xl shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:scale-100 transition-all"
                     >
-                        {isSubmitting ? '처리 중...' : '시작하기'}
+                        {isSubmitting ? '처리 중...' : (selectedRole === 'SCHOOL' ? '인증하고 시작하기' : '시작하기')}
                     </button>
                     <p className="text-sm text-foreground-muted">
                         역할은 나중에 프로필 설정에서 추가할 수 있습니다.

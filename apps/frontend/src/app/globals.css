@@ -1,33 +1,5 @@
 @import "tailwindcss";
 
-:root {
-  /* Premium Primary Colors - Royal Blue & Vibrant Purple */
-  --primary: #4F46E5;
-  /* Indigo 600 */
-  --primary-hover: #4338CA;
-  /* Indigo 700 */
-  --secondary: #8B5CF6;
-  /* Violet 500 */
-
-  /* Background & Surfaces */
-  --background: #F9FAFB;
-  /* Gray 50 (Light, clean) */
-  --surface: #FFFFFF;
-  --surface-hover: #F3F4F6;
-  /* Gray 100 */
-
-  /* Text Colors */
-  --foreground: #111827;
-  /* Gray 900 (Sharp black) */
-  --foreground-muted: #6B7280;
-  /* Gray 500 */
-
-  /* Status Colors */
-  --success: #10B981;
-  --warning: #F59E0B;
-  --error: #EF4444;
-}
-
 @theme inline {
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -41,46 +13,77 @@
   --color-warning: var(--warning);
   --color-error: var(--error);
 
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-border: var(--border);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-.dark {
-  /* Dark Mode - Deep & Sleek */
-  --background: #0F172A;
-  /* Slate 900 */
-  --surface: #1E293B;
-  /* Slate 800 */
-  --surface-hover: #334155;
-  /* Slate 700 */
+:root {
+  /* Smart Edu-Tech Dark-Only Palette (Deep & Premium) */
 
-  --foreground: #F8FAFC;
-  /* Slate 50 */
-  --foreground-muted: #94A3B8;
-  /* Slate 400 */
+  /* Primary Actions (Brand Blue) */
+  --primary: #3182F6;
+  --primary-hover: #5C9DFF;
+  --secondary: #1E293B;
+  /* Deep Slate for secondary */
 
-  --primary: #6366F1;
-  /* Indigo 500 (Brighter in dark) */
-  --primary-hover: #818CF8;
-  /* Indigo 400 */
+  /* Deep Background & Surfaces */
+  --background: #0A0A0A;
+  /* Deepest Matte Black */
+  --surface: #161616;
+  /* Dark Gray Surface for Cards */
+  --surface-hover: #1F1F1F;
+
+  /* Typography (High Contrast White) */
+  --foreground: #FFFFFF;
+  --foreground-muted: #888888;
+  /* Soft Gray for secondary text */
+
+  /* Form Elements (Dark Variants) */
+  --input-bg: #1F1F1F;
+  --input-border: #2D2D2D;
+  --border: #262626;
+
+  /* Status Colors (Vivid on Dark) */
+  --success: #00D082;
+  --warning: #F59E0B;
+  --error: #FF4D4F;
 }
 
+/* Global Typography & Reset */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), sans-serif;
-  @apply antialiased transition-colors duration-300;
+  font-family: var(--font-sans), "Pretendard Variable", "Pretendard", -apple-system, sans-serif;
+  @apply antialiased;
 }
 
-/* Glassmorphism Utilities */
+/* Strict Readability Rule */
+* {
+  word-break: keep-all;
+  /* Prevent Korean mid-word splitting */
+}
+
+/* Utility Classes */
 .glass {
-  @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 shadow-lg;
+  @apply bg-white/80 dark:bg-black/50 backdrop-blur-md border border-white/20 shadow-sm;
 }
 
 .card-hover {
-  @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl;
+  @apply transition-transform duration-300 hover:-translate-y-1 hover:shadow-lg;
 }
 
+/* Input Consistency */
+input,
+textarea,
+select {
+  @apply bg-[var(--input-bg)] border border-[var(--input-border)] text-[var(--foreground)] placeholder-[var(--foreground-muted)];
+}
+
+/* Animation */
 @keyframes shimmer {
   0% {
     transform: translateX(-100%);
