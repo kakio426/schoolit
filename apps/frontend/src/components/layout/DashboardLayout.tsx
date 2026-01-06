@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import UnauthorizedView from '../auth/UnauthorizedView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
+import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
 import FeedbackButton from '../ui/FeedbackButton';
@@ -12,6 +13,7 @@ import ComplianceModal from '../ui/ComplianceModal';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout } = useAuth();
     const { unreadCount, unreadNotificationCount, notifications, markNotificationAsRead } = useSocket();
+    const { theme, setTheme } = useTheme();
     const router = useRouter();
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -158,6 +160,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </h2>
                     </div>
                     <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                            className="p-2 rounded-full hover:bg-surface-hover transition-colors text-xl"
+                            title={theme === 'dark' ? '라이트 모드로 변경' : '다크 모드로 변경'}
+                        >
+                            {theme === 'dark' ? '☀️' : '🌙'}
+                        </button>
                         <div className="relative">
                             <button
                                 onClick={() => setShowNotifications(!showNotifications)}

@@ -43,7 +43,7 @@ const InternalMemo: React.FC<InternalMemoProps> = ({ applicationId, initialMemo 
                 onChange={(e) => setMemo(e.target.value)}
                 onBlur={handleSave}
                 placeholder="지원자에 대한 간단한 평가나 메모를 입력하세요..."
-                className="w-full h-20 bg-transparent border-none focus:ring-0 text-sm text-foreground placeholder:text-amber-700/30 resize-none p-0"
+                className="w-full h-24 bg-transparent border-none focus:ring-0 text-sm text-foreground placeholder:text-slate-400 dark:placeholder:text-slate-500 resize-none p-0 leading-relaxed"
                 disabled={isSaving}
             />
             <div className="flex justify-end mt-1">

@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 import { api } from '@/lib/api';
 
 export default function SettingsPage() {
     const { user, refreshProfile } = useAuth();
+    const { theme, setTheme } = useTheme();
     const [notifications, setNotifications] = useState({
         newMatch: true,
         messages: true,
@@ -68,6 +70,32 @@ export default function SettingsPage() {
                             <button className="px-6 py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary/20 transition-all text-xs">
                                 비밀번호 변경하기
                             </button>
+                        </div>
+                    </section>
+
+                    {/* Theme Section */}
+                    <section className="bg-surface p-8 rounded-[32px] border border-slate-200/50 dark:border-slate-700 shadow-sm">
+                        <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+                            <span className="text-2xl">🎨</span> 모양 설정
+                        </h2>
+                        <div className="grid grid-cols-3 gap-4">
+                            {[
+                                { id: 'light', label: '라이트 모드', icon: '☀️' },
+                                { id: 'dark', label: '다크 모드', icon: '🌙' },
+                                { id: 'system', label: '시스템 설정', icon: '🖥️' }
+                            ].map((t) => (
+                                <button
+                                    key={t.id}
+                                    onClick={() => setTheme(t.id as any)}
+                                    className={`flex flex-col items-center gap-3 p-4 rounded-2xl border-2 transition-all ${theme === t.id
+                                        ? 'border-primary bg-primary/5 text-primary'
+                                        : 'border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 text-foreground-muted'
+                                        }`}
+                                >
+                                    <span className="text-2xl">{t.icon}</span>
+                                    <span className="text-xs font-bold">{t.label}</span>
+                                </button>
+                            ))}
                         </div>
                     </section>
 

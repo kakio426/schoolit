@@ -19,6 +19,7 @@ export const metadata: Metadata = {
 
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 export default function RootLayout({
   children,
@@ -26,15 +27,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <AuthProvider>
-          <SocketProvider>
-            {children}
-          </SocketProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <SocketProvider>
+              {children}
+            </SocketProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
