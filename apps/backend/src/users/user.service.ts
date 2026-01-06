@@ -12,7 +12,7 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -237,8 +237,18 @@ export class UserService {
       create: { userId, isVerified: false },
       update: {},
     });
+
+    // Robust Date Parsing
+    const startDate = new Date(dto.startDate);
+    const endDate = dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null;
+
     return this.prisma.teacherExperience.create({
-      data: { teacherProfileId: profile.id, ...dto },
+      data: {
+        teacherProfileId: profile.id,
+        ...dto,
+        startDate,
+        endDate,
+      },
     });
   }
 
@@ -258,8 +268,18 @@ export class UserService {
       create: { userId, isVerified: false },
       update: {},
     });
+
+    // Robust Date Parsing
+    const startDate = new Date(dto.startDate);
+    const endDate = dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null;
+
     return this.prisma.teacherEducation.create({
-      data: { teacherProfileId: profile.id, ...dto },
+      data: {
+        teacherProfileId: profile.id,
+        ...dto,
+        startDate,
+        endDate,
+      },
     });
   }
 
