@@ -143,7 +143,7 @@ export class UserService {
     });
   }
 
-  async getProfileWithStats(userId: number) {
+  async getProfileWithStats(userId: number, viewerId?: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       include: {
@@ -170,6 +170,20 @@ export class UserService {
     });
 
     if (!user) return null;
+
+    // Security Scrubbing
+    const isOwner = viewerId === userId;
+    if (!isOwner) {
+      user.phone = null;
+      user.email = null; // Hide email from public
+      if (user.teacherProfile) {
+        user.teacherProfile.bankAccount = null;
+      }
+      if (user.businessProfile) {
+        user.businessProfile.bankAccount = null;
+        user.businessProfile.registrationNum = null; // Hide reg number
+      }
+    }
 
     const reviews = user.reviewsReceived || [];
     const totalReviews = reviews.length;

@@ -105,15 +105,27 @@ export class ApplicationsService {
         data: { viewedAt: new Date() },
       });
 
+      const REVEALED_STATUSES = [
+        'INTERVIEWING',
+        'VERIFICATION',
+        'HIRED',
+        'CONTRACTING',
+        'EXECUTING',
+        'PAYMENT_COMPLETED',
+      ];
+
       return applications.map((app) => {
-        const isRevealed = ['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(
-          app.status,
-        );
-        if (!isRevealed) {
-          app.user.phone = null;
-        }
+        const isRevealed = REVEALED_STATUSES.includes(app.status);
+
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { password, ...safeUser } = app.user;
+
+        if (!isRevealed) {
+          safeUser.phone = null;
+          if (safeUser.teacherProfile) safeUser.teacherProfile.bankAccount = null;
+          if (safeUser.businessProfile) safeUser.businessProfile.bankAccount = null;
+        }
+
         return { ...app, user: safeUser };
       });
     }
@@ -169,16 +181,28 @@ export class ApplicationsService {
       orderBy: { createdAt: 'desc' },
     });
 
+    const REVEALED_STATUSES = [
+      'INTERVIEWING',
+      'VERIFICATION',
+      'HIRED',
+      'CONTRACTING',
+      'EXECUTING',
+      'PAYMENT_COMPLETED',
+    ];
+
     // Filter sensitive info (phone) if not in active stages
     return applications.map((app) => {
-      const isRevealed = ['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(
-        app.status,
-      );
-      if (!isRevealed) {
-        app.user.phone = null; // Hide phone
-      }
+      const isRevealed = REVEALED_STATUSES.includes(app.status);
+
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password, ...safeUser } = app.user;
+
+      if (!isRevealed) {
+        safeUser.phone = null; // Hide phone
+        if (safeUser.teacherProfile) safeUser.teacherProfile.bankAccount = null;
+        if (safeUser.businessProfile) safeUser.businessProfile.bankAccount = null;
+      }
+
       return { ...app, user: safeUser };
     });
   }
@@ -253,7 +277,7 @@ export class ApplicationsService {
       where: { id: applicationId },
       data: { status },
       include: {
-        user: true,
+        user: { include: { teacherProfile: true, businessProfile: true } },
         jobListing: { include: { schoolProfile: true } },
       },
     });
@@ -311,9 +335,20 @@ export class ApplicationsService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...safeUser } = updated.user;
 
-    const isRevealed = ['ACCEPTED', 'INTERVIEWING', 'HIRED'].includes(updated.status);
+    const REVEALED_STATUSES = [
+      'INTERVIEWING',
+      'VERIFICATION',
+      'HIRED',
+      'CONTRACTING',
+      'EXECUTING',
+      'PAYMENT_COMPLETED',
+    ];
+
+    const isRevealed = REVEALED_STATUSES.includes(updated.status);
     if (!isRevealed) {
       safeUser.phone = null;
+      if (safeUser.teacherProfile) safeUser.teacherProfile.bankAccount = null;
+      if (safeUser.businessProfile) safeUser.businessProfile.bankAccount = null;
     }
 
     return { ...updated, user: safeUser };

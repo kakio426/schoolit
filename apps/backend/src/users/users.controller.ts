@@ -34,18 +34,18 @@ import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(private userService: UserService) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Request() req) {
-    return this.userService.getProfileWithStats(req.user.userId);
+    return this.userService.getProfileWithStats(req.user.userId, req.user.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Get(':id/profile')
-  async getPublicProfile(@Param('id', ParseIntPipe) userId: number) {
-    return this.userService.getProfileWithStats(userId);
+  async getPublicProfile(@Param('id', ParseIntPipe) userId: number, @Request() req) {
+    return this.userService.getProfileWithStats(userId, req.user.userId);
   }
 
   @UseGuards(AuthGuard('jwt'))
