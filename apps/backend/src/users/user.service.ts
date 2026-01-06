@@ -420,6 +420,20 @@ export class UserService {
     return { valid: true, email: storedEmail };
   }
 
+  async getAllUsers() {
+    return this.prisma.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        provider: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async resetTestUser(userId: number) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
 

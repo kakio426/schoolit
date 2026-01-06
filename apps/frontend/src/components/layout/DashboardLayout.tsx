@@ -54,6 +54,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         // Admin-specific menu
         navItems.push(
             { label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' },
+            { label: '사용자 관리', href: '/dashboard/admin/users', icon: '👥' },
             { label: '리뷰 관리', href: '/dashboard/admin/reviews', icon: '⭐' },
             { label: '공지 발송', href: '/dashboard/admin/notifications', icon: '📣' },
             { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' },

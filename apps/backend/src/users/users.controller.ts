@@ -176,4 +176,20 @@ export class UserController {
   async resetTestUser(@Request() req) {
     return this.userService.resetTestUser(req.user.userId);
   }
+
+  // Admin-only: List all users
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('admin/all-users')
+  async getAllUsers() {
+    return this.userService.getAllUsers();
+  }
+
+  // Admin-only: Reset any user by ID
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Post('admin/reset-user/:id')
+  async resetUserById(@Param('id', ParseIntPipe) userId: number) {
+    return this.userService.resetTestUser(userId);
+  }
 }
