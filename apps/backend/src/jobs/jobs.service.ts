@@ -8,7 +8,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   async createJob(userId: number, data: CreateJobDto) {
     // Try finding School Profile
@@ -136,6 +136,46 @@ export class JobsService {
         },
       },
       orderBy: { createdAt: 'desc' },
+    });
+  }
+  async findMyJobs(userId: number) {
+    const where: any = {
+      OR: [
+        { schoolProfile: { userId } },
+        { teacherProfile: { userId } },
+      ],
+    };
+
+    return this.prisma.jobListing.findMany({
+      where,
+      include: {
+        schoolProfile: true,
+        teacherProfile: { include: { user: { select: { name: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async deleteJob(userId: number, jobId: number) {
+    const job = await this.prisma.jobListing.findUnique({
+      where: { id: jobId },
+      include: { schoolProfile: true, teacherProfile: true },
+    });
+
+    if (!job) {
+      throw new NotFoundException('Job not found');
+    }
+
+    const isOwner =
+      (job.schoolProfile && job.schoolProfile.userId === userId) ||
+      (job.teacherProfile && job.teacherProfile.userId === userId);
+
+    if (!isOwner) {
+      throw new ForbiddenException('You can only delete your own jobs');
+    }
+
+    return this.prisma.jobListing.delete({
+      where: { id: jobId },
     });
   }
 }

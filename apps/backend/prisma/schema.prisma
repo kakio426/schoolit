@@ -164,6 +164,8 @@ model TeacherProfile {
   isVerified     Boolean         @default(false) @map("is_verified")
   
   // New Fields
+  teacherType    String?         @map("teacher_type") // REGULAR, FIXED_TERM, INSTRUCTOR, etc.
+  isSearchable   Boolean         @default(false) @map("is_searchable")
   targetGrades   String[]        @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
   bankAccount    String?         @map("bank_account")
   

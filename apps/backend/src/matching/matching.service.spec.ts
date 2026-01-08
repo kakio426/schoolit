@@ -97,4 +97,30 @@ describe('MatchingService', () => {
       expect(score).toBe(80); // Subject (50%) + Region (30%)
     });
   });
+
+  describe('searchTeachers', () => {
+    it('should filter out non-searchable teachers', async () => {
+      const mockTeachers = [
+        { id: 1, isSearchable: true, user: { name: 'Visible' } },
+        { id: 2, isSearchable: false, user: { name: 'Hidden' } },
+      ];
+
+      // We expect the service to call findMany with isSearchable: true
+      // So the mock result primarily matters if the service does post-filtering,
+      // but ideally the service does DB filtering.
+      // Let's mock the DB returning ONLY searchable ones if the query is correct,
+      // OR we mock returning all and expect service to just ask for searchable.
+      (prisma.teacherProfile.findMany as jest.Mock).mockResolvedValue([mockTeachers[0]]);
+
+      await service.searchTeachers({});
+
+      expect(prisma.teacherProfile.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            isSearchable: true,
+          }),
+        }),
+      );
+    });
+  });
 });

@@ -19,11 +19,24 @@ import { Role } from '@prisma/client';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) {}
+  constructor(private jobsService: JobsService) { }
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {
     return this.jobsService.findAll({ jobType });
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get('my')
+  async findMyJobs(@Request() req) {
+    return this.jobsService.findMyJobs(req.user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.SCHOOL, Role.TEACHER)
+  @Delete(':id')
+  async delete(@Request() req, @Param('id', ParseIntPipe) id: number) {
+    return this.jobsService.deleteJob(req.user.userId, id);
   }
 
   @Get(':id')

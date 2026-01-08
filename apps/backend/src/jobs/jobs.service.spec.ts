@@ -10,6 +10,8 @@ describe('JobsService', () => {
   const mockPrismaService = {
     jobListing: {
       create: jest.fn(),
+      delete: jest.fn(),
+      findUnique: jest.fn(),
     },
     schoolProfile: {
       findUnique: jest.fn(),
@@ -60,5 +62,35 @@ describe('JobsService', () => {
         }),
       }),
     );
+  });
+
+  it('should delete a job if owner', async () => {
+    const userId = 1;
+    const jobId = 100;
+
+    // Mock existing job owned by user's school profile
+    mockPrismaService.jobListing.findUnique.mockResolvedValue({
+      id: jobId,
+      schoolProfile: { userId: 1 },
+      teacherProfile: null,
+    });
+    mockPrismaService.jobListing.delete.mockResolvedValue({ id: jobId });
+
+    await service.deleteJob(userId, jobId);
+
+    expect(prisma.jobListing.delete).toHaveBeenCalledWith({ where: { id: jobId } });
+  });
+
+  it('should throw forbidden if not owner', async () => {
+    const userId = 1;
+    const jobId = 100;
+
+    mockPrismaService.jobListing.findUnique.mockResolvedValue({
+      id: jobId,
+      schoolProfile: { userId: 999 }, // Different owner
+      teacherProfile: null,
+    });
+
+    await expect(service.deleteJob(userId, jobId)).rejects.toThrow();
   });
 });

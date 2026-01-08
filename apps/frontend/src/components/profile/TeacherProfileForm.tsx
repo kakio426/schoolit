@@ -23,6 +23,13 @@ const TARGET_GRADES = [
     { value: 'HIGH', label: '고등학교' },
 ];
 
+const TEACHER_TYPES = [
+    { value: 'REGULAR', label: '정규 교사 (현직)' },
+    { value: 'FIXED_TERM', label: '기간제 교사' },
+    { value: 'INSTRUCTOR', label: '강사 (방과후/돌봄/기타)' },
+    { value: 'OTHER', label: '기타' }
+];
+
 const INITIAL_CHECKLIST = [
     { id: 'bankAccount', label: '통장 사본 (본인 명의)', description: '급여 지급을 검토하기 위해 확인합니다.', checked: false },
     { id: 'degree', label: '최종 학력 증명서', description: '강사 자격 요건 확인용.', checked: false },
@@ -53,7 +60,9 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
         targetGrades: [] as string[],
         profileImage: '',
         bankAccount: '',
-        phone: ''
+        phone: '',
+        teacherType: '',
+        isSearchable: false
     });
 
     // Checklist & Documents
@@ -91,7 +100,9 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                 targetGrades: user.teacherProfile.targetGrades || [],
                 profileImage: user.teacherProfile.profileImage || '',
                 bankAccount: user.teacherProfile.bankAccount || '',
-                phone: user.phone || ''
+                phone: user.phone || '',
+                teacherType: user.teacherProfile.teacherType || '',
+                isSearchable: user.teacherProfile.isSearchable || false
             });
 
             // Restore Checklist
@@ -139,6 +150,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
             targetGrades: basicInfo.targetGrades,
             bankAccount: basicInfo.bankAccount,
             phone: basicInfo.phone,
+            teacherType: basicInfo.teacherType,
+            isSearchable: basicInfo.isSearchable,
             checklist: checklistObj
         });
 
@@ -293,6 +306,45 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                             id="phone-input"
                         />
                         <p className="text-[11px] text-foreground-muted mt-2 font-medium">* 학교 담당자가 강사님께 성범죄 조회 동의 요청이나 면접 안내를 드릴 때 사용됩니다.</p>
+                    </div>
+
+                    {/* Teacher Type & Privacy Settings */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700">
+                        <div>
+                            <label className="block text-sm font-bold text-foreground mb-2">교사 유형</label>
+                            <select
+                                value={basicInfo.teacherType}
+                                onChange={(e) => setBasicInfo(prev => ({ ...prev, teacherType: e.target.value }))}
+                                className="w-full px-4 py-3 bg-surface border border-input-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20 transition-all text-foreground appearance-none cursor-pointer"
+                            >
+                                <option value="" disabled>선택해주세요</option>
+                                {TEACHER_TYPES.map(t => (
+                                    <option key={t.value} value={t.value}>{t.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-bold text-foreground mb-2">인재찾기 공개 설정</label>
+                            <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${basicInfo.isSearchable
+                                    ? 'bg-primary/5 border-primary shadow-sm'
+                                    : 'bg-surface border-input-border hover:bg-slate-50 dark:hover:bg-slate-800'
+                                }`}>
+                                <input
+                                    type="checkbox"
+                                    checked={basicInfo.isSearchable}
+                                    onChange={(e) => setBasicInfo(prev => ({ ...prev, isSearchable: e.target.checked }))}
+                                    className="mt-1 w-5 h-5 accent-primary"
+                                />
+                                <div className="flex-1">
+                                    <span className={`block font-bold text-sm ${basicInfo.isSearchable ? 'text-primary' : 'text-foreground'}`}>
+                                        {basicInfo.isSearchable ? '공개 (학교에서 검색 가능)' : '비공개 (검색 불가)'}
+                                    </span>
+                                    <span className="text-xs text-foreground-muted block mt-1">
+                                        체크시 '인재 찾기' 목록에 노출되며, 학교로부터 스카웃 제안을 받을 수 있습니다.
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsArray, IsObject } from 'class-validator';
+import { IsString, IsOptional, IsArray, IsObject, IsBoolean } from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -34,6 +34,14 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  teacherType?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  isSearchable?: boolean;
 
   @IsOptional()
   checklist?: any;

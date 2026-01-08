@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class MatchingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async searchJobs(filters: { subject?: string; region?: string; keyword?: string }) {
     const where: any = { active: true };
@@ -38,7 +38,7 @@ export class MatchingService {
   }
 
   async searchTeachers(filters: { subject?: string; region?: string; keyword?: string }) {
-    const where: any = {};
+    const where: any = { isSearchable: true };
 
     if (filters.subject) {
       where.subjects = { has: filters.subject };
