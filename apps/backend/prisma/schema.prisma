@@ -412,7 +412,7 @@ model Board {
   id          Int      @id @default(autoincrement())
   title       String
   description String?
-  category    String   // NOTICE, FREE, QNA, REVIEW_BOARD
+  category    String   @unique // NOTICE, FREE, QNA, REVIEW_BOARD
   isPublic    Boolean  @default(true) @map("is_public")
   
   posts       Post[]

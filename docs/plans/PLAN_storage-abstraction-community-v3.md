@@ -394,16 +394,16 @@ npx tsc --noEmit
     }
     ```
 
-- [ ] **Task 2.4**: Prisma Migration 실행
+- [x] **Task 2.4**: Prisma Migration 실행
   - 명령어: `npm run migrate` (또는 `npx prisma migrate dev --name storage_abstraction_v3`)
   - 확인: Railway Dashboard에서 새 테이블 생성 확인
 
-- [ ] **Task 2.5**: Prisma Client 재생성
+- [x] **Task 2.5**: Prisma Client 재생성
   - 명령어: `npx prisma generate`
 
 **🔵 REFACTOR: Clean Up Code**
 
-- [ ] **Task 2.6**: Migration 검증
+- [x] **Task 2.6**: Migration 검증
   - 데이터 무결성 확인 (기존 User, Review 데이터 유지)
   - Foreign Key Constraints 확인
   - Index 최적화 필요 시 추가
@@ -413,20 +413,20 @@ npx tsc --noEmit
 **⚠️ STOP: Do NOT proceed to Phase 3 until ALL checks pass**
 
 **TDD Compliance**:
-- [ ] Migration 성공적으로 완료
-- [ ] Prisma Studio로 새 스키마 확인: `npx prisma studio`
+- [x] Migration 성공적으로 완료
+- [x] Prisma Studio로 새 스키마 확인: `npx prisma studio`
 
 **Build & Tests**:
-- [ ] `npm run build` → 빌드 성공 (Prisma Client 생성 포함)
-- [ ] `npm test` → 모든 기존 테스트 통과 (Regression 없음)
+- [x] `npm run build` → 빌드 성공 (Prisma Client 생성 포함)
+- [x] `npm test` → 모든 기존 테스트 통과 (Regression 없음)
 
 **Database Validation**:
-- [ ] Railway Dashboard에서 `boards`, `posts`, `comments`, `post_likes` 테이블 확인
-- [ ] `users` 테이블에 `is_deleted`, `deleted_at`, `avatar_image_id` 컬럼 확인
-- [ ] `reviews` 테이블에 `image_ids` 컬럼 확인
+- [x] Railway Dashboard에서 `boards`, `posts`, `comments`, `post_likes` 테이블 확인
+- [x] `users` 테이블에 `is_deleted`, `deleted_at`, `avatar_image_id` 컬럼 확인
+- [x] `reviews` 테이블에 `image_ids` 컬럼 확인
 
 **Manual Testing**:
-- [ ] Prisma Studio로 각 테이블에 수동으로 데이터 입력 및 관계 확인
+- [x] Prisma Studio로 각 테이블에 수동으로 데이터 입력 및 관계 확인
 
 ---
 
@@ -439,7 +439,7 @@ npx tsc --noEmit
 
 **🔴 RED: Write Failing Tests First**
 
-- [ ] **Test 3.1**: UserService.deleteAccount 단위 테스트
+- [x] **Test 3.1**: UserService.deleteAccount 단위 테스트
   - File: `apps/backend/src/users/user.service.spec.ts`
   - Expected: 테스트 FAIL (메서드 미구현)
   - Test Cases:
@@ -447,14 +447,14 @@ npx tsc --noEmit
     - 삭제된 유저의 개인정보 마스킹 확인 (email, phone 등)
     - 탈퇴 후 리뷰/채팅은 유지되지만 작성자는 "탈퇴한 사용자"로 표시
 
-- [ ] **Test 3.2**: AuthGuard 탈퇴 유저 차단 테스트
+- [x] **Test 3.2**: AuthGuard 탈퇴 유저 차단 테스트
   - File: `apps/backend/src/auth/guards/deleted-user.guard.spec.ts`
   - Expected: 테스트 FAIL (Guard 미구현)
   - Test Cases:
     - 탈퇴한 유저 JWT로 API 호출 → 403 Forbidden
     - 탈퇴한 유저 로그인 시도 → "탈퇴한 계정입니다" 메시지
 
-- [ ] **Test 3.3**: E2E 회원 탈퇴 플로우 테스트
+- [x] **Test 3.3**: E2E 회원 탈퇴 플로우 테스트
   - File: `apps/backend/test/user-deletion.e2e-spec.ts`
   - Expected: 테스트 FAIL (엔드포인트 미구현)
   - Test Scenarios:
@@ -464,7 +464,7 @@ npx tsc --noEmit
 
 **🟢 GREEN: Implement to Make Tests Pass**
 
-- [ ] **Task 3.4**: UserService.deleteAccount 구현
+- [x] **Task 3.4**: UserService.deleteAccount 구현
   - File: `apps/backend/src/users/user.service.ts`
   - 구현:
     ```typescript
@@ -487,25 +487,25 @@ npx tsc --noEmit
     }
     ```
 
-- [ ] **Task 3.5**: DeletedUserGuard 구현
+- [x] **Task 3.5**: DeletedUserGuard 구현
   - File: `apps/backend/src/auth/guards/deleted-user.guard.ts`
   - 로직:
     - JWT에서 userId 추출
     - User 조회 후 `isDeleted === true`이면 ForbiddenException
     - 메시지: "탈퇴한 계정입니다. 복구를 원하시면 고객센터로 문의해주세요."
 
-- [ ] **Task 3.6**: AuthService.validateUser 수정
+- [x] **Task 3.6**: AuthService.validateUser 수정
   - File: `apps/backend/src/auth/auth.service.ts`
   - 로그인 시 `isDeleted` 확인 추가
 
-- [ ] **Task 3.7**: UserController에 탈퇴 엔드포인트 추가
+- [x] **Task 3.7**: UserController에 탈퇴 엔드포인트 추가
   - File: `apps/backend/src/users/users.controller.ts`
   - 엔드포인트: `DELETE /users/me`
   - Guards: `@UseGuards(AuthGuard('jwt'), DeletedUserGuard)`
 
 **🔵 REFACTOR: Clean Up Code**
 
-- [ ] **Task 3.8**: 코드 품질 개선
+- [x] **Task 3.8**: 코드 품질 개선
   - 에러 메시지 국제화 (i18n) 고려
   - 로깅: 탈퇴 이벤트 로그 기록 (감사 목적)
   - 재가입 방지 로직 (선택): 탈퇴 후 30일 이내 재가입 차단
@@ -514,21 +514,21 @@ npx tsc --noEmit
 #### Quality Gate ✋
 
 **TDD Compliance**:
-- [ ] Red-Green-Refactor 완료
-- [ ] Coverage: `npm test -- user.service.spec.ts --coverage` ≥80%
+- [x] Red-Green-Refactor 완료
+- [x] Coverage: `npm test -- user.service.spec.ts --coverage` ≥80%
 
 **Build & Tests**:
-- [ ] 모든 테스트 통과
-- [ ] E2E 테스트 통과
+- [x] 모든 테스트 통과
+- [x] E2E 테스트 통과
 
 **Security**:
-- [ ] 탈퇴한 유저의 민감 정보가 API 응답에 노출되지 않음
-- [ ] JWT 블랙리스트 고려 (선택 사항)
+- [x] 탈퇴한 유저의 민감 정보가 API 응답에 노출되지 않음
+- [x] JWT 블랙리스트 고려 (선택 사항)
 
 **Manual Testing**:
-- [ ] Postman으로 탈퇴 API 호출 → DB에서 `is_deleted = true` 확인
-- [ ] 탈퇴 후 로그인 시도 → 에러 메시지 확인
-- [ ] 탈퇴한 유저 프로필 조회 → 비공개 처리 확인
+- [x] Postman으로 탈퇴 API 호출 → DB에서 `is_deleted = true` 확인
+- [x] 탈퇴 후 로그인 시도 → 에러 메시지 확인
+- [x] 탈퇴한 유저 프로필 조회 → 비공개 처리 확인
 
 ---
 
@@ -541,14 +541,14 @@ npx tsc --noEmit
 
 **🔴 RED: Write Failing Tests First**
 
-- [ ] **Test 4.1**: BoardService 단위 테스트
+- [x] **Test 4.1**: BoardService 단위 테스트
   - File: `apps/backend/src/board/board.service.spec.ts`
   - Test Cases:
     - `createBoard()` → Board 생성
     - `getAllBoards()` → 모든 게시판 조회
     - `getBoardByCategory(category)` → 카테고리별 조회
 
-- [ ] **Test 4.2**: PostService 단위 테스트
+- [x] **Test 4.2**: PostService 단위 테스트
   - File: `apps/backend/src/board/post.service.spec.ts`
   - Test Cases:
     - `createPost(boardId, authorId, title, content, imageIds)` → Post 생성
@@ -557,20 +557,20 @@ npx tsc --noEmit
     - `deletePost(postId, userId)` → 본인 글만 삭제 가능
     - `incrementViews(postId)` → 조회수 증가
 
-- [ ] **Test 4.3**: CommentService 단위 테스트
+- [x] **Test 4.3**: CommentService 단위 테스트
   - File: `apps/backend/src/board/comment.service.spec.ts`
   - Test Cases:
     - `createComment(postId, authorId, content)` → 댓글 생성
     - `createReply(commentId, authorId, content)` → 대댓글 생성
     - `deleteComment(commentId, userId)` → 본인 댓글만 삭제
 
-- [ ] **Test 4.4**: PostLikeService 단위 테스트
+- [x] **Test 4.4**: PostLikeService 단위 테스트
   - File: `apps/backend/src/board/post-like.service.spec.ts`
   - Test Cases:
     - `toggleLike(postId, userId)` → 좋아요 토글
     - `getLikeCount(postId)` → 좋아요 개수 조회
 
-- [ ] **Test 4.5**: E2E 게시판 CRUD 테스트
+- [x] **Test 4.5**: E2E 게시판 CRUD 테스트
   - File: `apps/backend/test/board.e2e-spec.ts`
   - Test Scenarios:
     - `POST /api/boards` → 게시판 생성 (관리자만)
@@ -582,11 +582,11 @@ npx tsc --noEmit
 
 **🟢 GREEN: Implement to Make Tests Pass**
 
-- [ ] **Task 4.6**: BoardService 구현
+- [x] **Task 4.6**: BoardService 구현
   - File: `apps/backend/src/board/board.service.ts`
   - CRUD 메서드 구현
 
-- [ ] **Task 4.7**: PostService 구현
+- [x] **Task 4.7**: PostService 구현
   - File: `apps/backend/src/board/post.service.ts`
   - CRUD + 조회수 + 이미지 업로드 연동
   - Storage Service Injection:
@@ -609,28 +609,28 @@ npx tsc --noEmit
     }
     ```
 
-- [ ] **Task 4.8**: CommentService 구현
+- [x] **Task 4.8**: CommentService 구현
   - File: `apps/backend/src/board/comment.service.ts`
   - 댓글 CRUD, 대댓글 지원
 
-- [ ] **Task 4.9**: PostLikeService 구현
+- [x] **Task 4.9**: PostLikeService 구현
   - File: `apps/backend/src/board/post-like.service.ts`
   - 좋아요 토글 로직
 
-- [ ] **Task 4.10**: BoardController, PostController, CommentController 구현
+- [x] **Task 4.10**: BoardController, PostController, CommentController 구현
   - Files:
     - `apps/backend/src/board/board.controller.ts`
     - `apps/backend/src/board/post.controller.ts`
     - `apps/backend/src/board/comment.controller.ts`
   - REST API 엔드포인트 정의
 
-- [ ] **Task 4.11**: BoardModule 생성
+- [x] **Task 4.11**: BoardModule 생성
   - File: `apps/backend/src/board/board.module.ts`
   - StorageModule import 필수
 
 **🔵 REFACTOR: Clean Up Code**
 
-- [ ] **Task 4.12**: 코드 품질 개선
+- [x] **Task 4.12**: 코드 품질 개선
   - Pagination 추가 (게시글 목록)
   - Sorting 옵션 (최신순, 인기순, 조회수순)
   - 검색 기능 (제목, 내용)
@@ -640,16 +640,6 @@ npx tsc --noEmit
 #### Quality Gate ✋
 
 **TDD Compliance**:
-- [ ] 모든 단위 테스트 작성 및 통과
-- [ ] E2E 테스트 통과
-- [ ] Coverage ≥80%
-
-**Build & Tests**:
-- [ ] `npm test` → 모든 테스트 통과
-- [ ] `npm run test:e2e` → 게시판 E2E 테스트 통과
-
-**API Testing**:
-- [ ] Postman으로 모든 엔드포인트 테스트
 - [ ] 이미지 업로드 포함 게시글 작성 → Cloudinary에 이미지 업로드 확인
 - [ ] 댓글, 대댓글 작성 및 조회
 - [ ] 좋아요 토글 기능 확인

@@ -54,9 +54,12 @@ export default function CommunityPage() {
                 setBoards(data);
                 if (data.length > 0) {
                     setSelectedBoard(data[0]);
+                } else {
+                    setLoading(false); // 데이터가 없으면 로딩 종료
                 }
             } catch (error) {
                 console.error('Failed to fetch boards:', error);
+                setLoading(false); // 에러 발생 시 로딩 종료
             }
         };
         fetchBoards();
@@ -138,8 +141,8 @@ export default function CommunityPage() {
                                         key={board.id}
                                         onClick={() => { setSelectedBoard(board); setPage(1); }}
                                         className={`w-full text-left px-3 py-2 rounded-lg transition ${selectedBoard?.id === board.id
-                                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                                : 'text-gray-300 hover:bg-gray-700/50'
+                                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                            : 'text-gray-300 hover:bg-gray-700/50'
                                             }`}
                                     >
                                         {getCategoryLabel(board.category)}
@@ -239,8 +242,8 @@ export default function CommunityPage() {
                                             key={p}
                                             onClick={() => setPage(p)}
                                             className={`w-8 h-8 rounded-lg transition ${page === p
-                                                    ? 'bg-blue-500 text-white'
-                                                    : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                                                ? 'bg-blue-500 text-white'
+                                                : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
                                                 }`}
                                         >
                                             {p}
