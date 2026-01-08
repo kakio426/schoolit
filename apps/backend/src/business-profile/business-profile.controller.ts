@@ -20,10 +20,20 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 
 import { UpdateBusinessProfileDto } from '../users/dtos/update-business-profile.dto';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('business-profiles')
 export class BusinessProfileController {
   constructor(private readonly service: BusinessProfileService) {}
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.SCHOOL, Role.TEACHER)
+  @Get()
+  async findAll() {
+    return this.service.findAll();
+  }
 
   @UseGuards(AuthGuard('jwt'))
   @Post()

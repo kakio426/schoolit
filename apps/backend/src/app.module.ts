@@ -53,4 +53,4 @@ import { SchedulerModule } from './scheduler/scheduler.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}

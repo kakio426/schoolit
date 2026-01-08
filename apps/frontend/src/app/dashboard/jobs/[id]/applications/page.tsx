@@ -198,7 +198,7 @@ export default function JobApplicantsPage() {
     const [activeTab, setActiveTab] = useState<ApplicationStatus>(ApplicationStatus.PENDING);
     const filteredApplicants = applicants.filter(a => a.status === activeTab || (activeTab === ApplicationStatus.PENDING && !a.status));
 
-    if (user?.role !== Role.SCHOOL) {
+    if (user?.role !== Role.SCHOOL && user?.role !== Role.TEACHER) {
         return <DashboardLayout><div>권한이 없습니다.</div></DashboardLayout>;
     }
 

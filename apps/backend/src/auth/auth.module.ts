@@ -25,4 +25,4 @@ import { SmsModule } from '../sms/sms.module';
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -11,15 +11,15 @@ import { StorageController } from './storage.controller';
  * 예: CloudinaryService → S3Service
  */
 @Module({
-    imports: [ConfigModule],
-    controllers: [StorageController],
-    providers: [
-        {
-            provide: STORAGE_SERVICE,
-            useClass: CloudinaryService, // 이 줄만 바꾸면 S3, GCS 등으로 교체 가능
-        },
-        CloudinaryService, // 직접 주입도 가능하도록
-    ],
-    exports: [STORAGE_SERVICE, CloudinaryService],
+  imports: [ConfigModule],
+  controllers: [StorageController],
+  providers: [
+    {
+      provide: STORAGE_SERVICE,
+      useClass: CloudinaryService, // 이 줄만 바꾸면 S3, GCS 등으로 교체 가능
+    },
+    CloudinaryService, // 직접 주입도 가능하도록
+  ],
+  exports: [STORAGE_SERVICE, CloudinaryService],
 })
-export class StorageModule { }
+export class StorageModule {}

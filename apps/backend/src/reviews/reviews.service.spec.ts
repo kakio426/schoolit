@@ -169,4 +169,3 @@ describe('ReviewsService', () => {
     expect(result.imageUrls).toHaveLength(2);
   });
 });
-

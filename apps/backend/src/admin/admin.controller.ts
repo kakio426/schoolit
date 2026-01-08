@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Roles(Role.ADMIN)
 export class AdminController {
-  constructor(private adminService: AdminService) { }
+  constructor(private adminService: AdminService) {}
 
   @Get('stats')
   async getStats() {

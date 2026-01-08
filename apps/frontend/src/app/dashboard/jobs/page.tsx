@@ -150,8 +150,8 @@ export default function JobsPage() {
                     <button
                         onClick={() => setJobTypeFilter(null)}
                         className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${!jobTypeFilter
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                            : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
                             }`}
                     >
                         전체
@@ -159,8 +159,8 @@ export default function JobsPage() {
                     <button
                         onClick={() => setJobTypeFilter('TEACHER_HIRING')}
                         className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'TEACHER_HIRING'
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                            : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
                             }`}
                     >
                         <span>👨‍🏫</span> 기간제 교사
@@ -168,8 +168,8 @@ export default function JobsPage() {
                     <button
                         onClick={() => setJobTypeFilter('EVENT_VENDOR')}
                         className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'EVENT_VENDOR'
-                                ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                            ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                            : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
                             }`}
                     >
                         <span>🎪</span> 행사 업체
@@ -196,13 +196,13 @@ export default function JobsPage() {
                                         <div className="flex items-center gap-2 mb-2">
                                             {/* Job Type Badge */}
                                             <span className={`px-2 py-1 text-xs font-bold rounded-lg ${(job as any).jobType === 'EVENT_VENDOR'
-                                                    ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
-                                                    : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                                ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+                                                : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
                                                 }`}>
                                                 {(job as any).jobType === 'EVENT_VENDOR' ? '🎪 행사 업체' : '👨‍🏫 기간제 교사'}
                                             </span>
                                             <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-bold rounded-lg border border-slate-200 dark:border-slate-700">
-                                                {job.schoolProfile?.schoolName}
+                                                {job.schoolProfile?.schoolName || (job as any).teacherProfile?.user?.name || '작성자 미상'}
                                             </span>
                                             <span className="text-foreground-muted text-xs">•</span>
                                             <span className="text-foreground-muted text-xs">{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'}</span>

@@ -11,9 +11,16 @@ describe('JobsService', () => {
     jobListing: {
       create: jest.fn(),
     },
+    schoolProfile: {
+      findUnique: jest.fn(),
+    },
+    teacherProfile: {
+      findUnique: jest.fn(),
+    },
   };
 
   const mockUserService = {
+    findById: jest.fn().mockResolvedValue({ id: 1 }),
     getSchoolProfile: jest.fn().mockResolvedValue({ id: 99, userId: 1 }),
   };
 
@@ -40,6 +47,7 @@ describe('JobsService', () => {
       jobType: 'TEACHER_HIRING' as any,
     };
 
+    mockPrismaService.schoolProfile.findUnique.mockResolvedValue({ id: 99, userId: 1 });
     mockPrismaService.jobListing.create.mockResolvedValue({ id: 1, ...createDto });
 
     const result = await service.createJob(1, createDto);

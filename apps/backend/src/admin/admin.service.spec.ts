@@ -21,9 +21,11 @@ describe('AdminService', () => {
             jobListing: { count: jest.fn() },
             schoolProfile: {
               count: jest.fn(),
-              findMany: jest.fn().mockResolvedValue([
-                { id: 1, user: { name: 'Test School', email: 'school@test.com' } }
-              ]),
+              findMany: jest
+                .fn()
+                .mockResolvedValue([
+                  { id: 1, user: { name: 'Test School', email: 'school@test.com' } },
+                ]),
               update: jest.fn().mockResolvedValue({ id: 1, isVerified: true }),
             },
             teacherProfile: { count: jest.fn() },

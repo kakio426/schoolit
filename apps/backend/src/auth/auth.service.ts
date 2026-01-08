@@ -15,7 +15,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private smsService: SmsService,
-  ) { }
+  ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
@@ -81,7 +81,11 @@ export class AuthService {
     return { sent: true, email };
   }
 
-  async verifyEmail(userId: number, code: string, schoolData?: { schoolName: string; phoneNumber: string }) {
+  async verifyEmail(
+    userId: number,
+    code: string,
+    schoolData?: { schoolName: string; phoneNumber: string },
+  ) {
     const { valid, email } = await this.userService.validateVerificationCode(userId, code);
     if (!valid) return { success: false };
 
@@ -107,7 +111,10 @@ export class AuthService {
   }
 
   async verifyPhone(userId: number, code: string) {
-    const { valid, email: phone } = await this.userService.validateVerificationCode(userId, `PHONE|${code}`);
+    const { valid, email: phone } = await this.userService.validateVerificationCode(
+      userId,
+      `PHONE|${code}`,
+    );
     if (!valid) return { success: false };
 
     // Update user phone number
@@ -116,7 +123,10 @@ export class AuthService {
     return { success: true };
   }
 
-  async finishSignup(userId: number, data: { role: Role; name: string; phone: string; profileData?: any }) {
+  async finishSignup(
+    userId: number,
+    data: { role: Role; name: string; phone: string; profileData?: any },
+  ) {
     console.log(`[FinishSignup] Starting for user ${userId} with role ${data.role}`);
     try {
       // 1. Update Name and Phone

@@ -18,7 +18,7 @@ import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
@@ -86,7 +86,7 @@ export class AuthController {
     // Simple domain check for prototype
     const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
     const domain = email.split('@')[1];
-    const isAllowed = allowedDomains.some(d => domain?.endsWith(d));
+    const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
 
     if (!isAllowed) {
       // Allow for testing if needed, but strictly enforce for "School" logic
@@ -98,7 +98,10 @@ export class AuthController {
 
   @UseGuards(AuthGuard('jwt'))
   @Post('email/verify')
-  async verifyEmail(@Request() req, @Body() body: { code: string; schoolName?: string; phoneNumber?: string }) {
+  async verifyEmail(
+    @Request() req,
+    @Body() body: { code: string; schoolName?: string; phoneNumber?: string },
+  ) {
     if (!body.code) throw new BadRequestException('Code is required');
 
     let schoolData;

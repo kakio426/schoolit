@@ -181,24 +181,29 @@ export default function MyApplicationsPage() {
                                             <Link href={user.role === 'SCHOOL' ? `/dashboard/jobs/${app.jobId}/applications` : `/dashboard/jobs/${app.jobId}`} className="hover:underline">
                                                 <h3 className="text-xl font-bold text-foreground">{app.jobListing?.title}</h3>
                                             </Link>
-                                            {(user.role === 'TEACHER' || user.role === 'BUSINESS') && app.viewedAt && (
-                                                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">학교가 읽음 ✅</span>
+                                            {(user.role === 'TEACHER' || user.role === 'BUSINESS') && app.viewedAt && !app.isSuggestion && app.userId === user.id && (
+                                                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-lg font-bold">읽음 ✅</span>
                                             )}
                                         </div>
-                                        {user.role === 'SCHOOL' ? (
+                                        {(user.role === 'SCHOOL' || app.userId !== user.id) ? (
                                             <p className="text-foreground-muted text-sm mt-1 mb-3">
                                                 지원자: <span className="font-bold text-primary">{app.user?.role === 'BUSINESS' ? (app.user?.businessProfile?.companyName || app.user?.name) : `${app.user?.name} 선생님`}</span>
                                             </p>
                                         ) : (
                                             <p className="text-foreground-muted text-sm mt-1 mb-3">
-                                                {app.jobListing?.schoolProfile?.schoolName || '학교 정보 없음'}
+                                                {app.jobListing?.schoolProfile?.schoolName || (app.jobListing as any).teacherProfile?.user?.name || '정보 없음'}
                                             </p>
                                         )}
                                         <div className="text-sm text-foreground-muted bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700/50">
                                             {app.isSuggestion ? (
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-lg">📩</span>
-                                                    <span>{user.role === 'SCHOOL' ? '학교에서 제안을 보냈습니다.' : (user.role === 'BUSINESS' ? '학교에서 귀사의 프로필을 보고 제안을 보냈습니다.' : '학교에서 선생님의 프로필을 보고 제안을 보냈습니다.')}</span>
+                                                    <span>
+                                                        {(user.role === 'SCHOOL' || app.userId !== user.id)
+                                                            ? '제안을 보냈습니다.' // I (Owner) sent suggestion 
+                                                            : '학교/요청자가 제안을 보냈습니다.' // I (Candidate) received suggestion
+                                                        }
+                                                    </span>
                                                 </div>
                                             ) : (
                                                 <div className="flex items-start gap-2">

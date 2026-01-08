@@ -114,7 +114,14 @@ export default function NewJobPage() {
     // Dynamic Guide Steps (from constants)
     const guideSteps = getGuideSteps(jobType);
 
-    if (user?.role !== 'SCHOOL') {
+    // Set default jobType for Teachers
+    React.useEffect(() => {
+        if (user?.role === 'TEACHER') {
+            setJobType(JobType.EVENT_VENDOR);
+        }
+    }, [user]);
+
+    if (user?.role !== 'SCHOOL' && user?.role !== 'TEACHER') {
         return <DashboardLayout><div>접근 권한 없음</div></DashboardLayout>
     }
 

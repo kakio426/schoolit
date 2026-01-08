@@ -7,13 +7,9 @@ export class ReviewsService {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-  ) { }
+  ) {}
 
-  async createReview(
-    dto: any,
-    userId: number,
-    files?: Express.Multer.File[],
-  ) {
+  async createReview(dto: any, userId: number, files?: Express.Multer.File[]) {
     const { jobId, receiverId, content, rating, keywords, reMatchIntent } = dto;
 
     // 1. Verify Application Status
@@ -73,11 +69,11 @@ export class ReviewsService {
         imageIds,
         keywords: keywords
           ? {
-            connectOrCreate: keywords.map((k: string) => ({
-              where: { keyword: k },
-              create: { keyword: k },
-            })),
-          }
+              connectOrCreate: keywords.map((k: string) => ({
+                where: { keyword: k },
+                create: { keyword: k },
+              })),
+            }
           : undefined,
       },
       include: {
@@ -88,7 +84,7 @@ export class ReviewsService {
 
     return {
       ...review,
-      imageUrls: review.imageIds.map(id => this.storageService.getFileUrl(id)),
+      imageUrls: review.imageIds.map((id) => this.storageService.getFileUrl(id)),
     };
   }
 
@@ -108,15 +104,15 @@ export class ReviewsService {
             role: true,
             isDeleted: true,
             schoolProfile: { select: { schoolName: true } },
-          }
+          },
         },
         keywords: true,
       },
     });
 
-    return reviews.map(review => ({
+    return reviews.map((review) => ({
       ...review,
-      imageUrls: review.imageIds.map(id => this.storageService.getFileUrl(id)),
+      imageUrls: review.imageIds.map((id) => this.storageService.getFileUrl(id)),
       sender: review.sender.isDeleted
         ? { ...review.sender, name: '탈퇴한 사용자', schoolProfile: null }
         : review.sender,
@@ -138,15 +134,15 @@ export class ReviewsService {
             name: true,
             role: true,
             isDeleted: true,
-          }
+          },
         },
         keywords: true,
       },
     });
 
-    return reviews.map(review => ({
+    return reviews.map((review) => ({
       ...review,
-      imageUrls: review.imageIds.map(id => this.storageService.getFileUrl(id)),
+      imageUrls: review.imageIds.map((id) => this.storageService.getFileUrl(id)),
       receiver: review.receiver.isDeleted
         ? { ...review.receiver, name: '탈퇴한 사용자' }
         : review.receiver,
@@ -166,17 +162,16 @@ export class ReviewsService {
     const totalReviews = reviews.length;
 
     // Average Rating (for businesses only)
-    const validRatings = reviews
-      .filter(r => r.rating !== null)
-      .map(r => r.rating as number);
-    const averageRating = validRatings.length > 0
-      ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
-      : 0;
+    const validRatings = reviews.filter((r) => r.rating !== null).map((r) => r.rating as number);
+    const averageRating =
+      validRatings.length > 0
+        ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
+        : 0;
 
     // Top Keywords
     const keywordCounts: Record<string, number> = {};
-    reviews.forEach(review => {
-      review.keywords.forEach(kw => {
+    reviews.forEach((review) => {
+      review.keywords.forEach((kw) => {
         keywordCounts[kw.keyword] = (keywordCounts[kw.keyword] || 0) + 1;
       });
     });
@@ -187,7 +182,7 @@ export class ReviewsService {
       .slice(0, 5);
 
     // Re-match Rate
-    const reMatchCount = reviews.filter(r => r.reMatchIntent === true).length;
+    const reMatchCount = reviews.filter((r) => r.reMatchIntent === true).length;
     const reMatchRate = totalReviews > 0 ? (reMatchCount / totalReviews) * 100 : 100;
 
     // Total Images
@@ -203,4 +198,3 @@ export class ReviewsService {
     };
   }
 }
-

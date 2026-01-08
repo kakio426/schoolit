@@ -34,7 +34,7 @@ import { Role } from '@prisma/client';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) { }
+  constructor(private userService: UserService) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')

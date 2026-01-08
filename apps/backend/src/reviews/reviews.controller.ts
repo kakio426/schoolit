@@ -18,7 +18,7 @@ import { ReviewsService } from './reviews.service';
 @Controller('reviews')
 @UseGuards(AuthGuard('jwt'))
 export class ReviewsController {
-  constructor(private reviewsService: ReviewsService) { }
+  constructor(private reviewsService: ReviewsService) {}
 
   /**
    * 리뷰 작성 (이미지 첨부 가능)
@@ -37,11 +37,7 @@ export class ReviewsController {
       },
     }),
   )
-  async create(
-    @Request() req,
-    @Body() body: any,
-    @UploadedFiles() files?: Express.Multer.File[],
-  ) {
+  async create(@Request() req, @Body() body: any, @UploadedFiles() files?: Express.Multer.File[]) {
     return this.reviewsService.createReview(body, req.user.userId, files);
   }
 
@@ -90,4 +86,3 @@ export class ReviewsController {
     return this.reviewsService.getReviewStats(req.user.userId);
   }
 }
-

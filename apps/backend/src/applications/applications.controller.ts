@@ -36,21 +36,21 @@ export class ApplicationsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL)
+  @Roles(Role.SCHOOL, Role.TEACHER)
   @Get('jobs/:id')
   async getJobApplications(@Request() req, @Param('id', ParseIntPipe) jobId: number) {
     return this.applicationsService.getJobApplications(req.user.userId, jobId);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL)
+  @Roles(Role.SCHOOL, Role.TEACHER)
   @Post(':id/suggest')
   async suggest(
     @Request() req,
     @Param('id', ParseIntPipe) jobId: number,
-    @Body('teacherUserId', ParseIntPipe) teacherUserId: number,
+    @Body('teacherUserId', ParseIntPipe) candidateUserId: number, // Use generic name internally
   ) {
-    return this.applicationsService.suggestJob(req.user.userId, jobId, teacherUserId);
+    return this.applicationsService.suggestJob(req.user.userId, jobId, candidateUserId);
   }
 
   @UseGuards(AuthGuard('jwt'))

@@ -8,21 +8,34 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) { }
+  ) {}
 
   async createJob(userId: number, data: CreateJobDto) {
-    const schoolProfile = await this.userService.getSchoolProfile(userId);
-    if (!schoolProfile) {
-      // Should effectively not happen if guard checks role, but extra safety
-      throw new ForbiddenException('Only schools with a profile can post jobs');
+    // Try finding School Profile
+    const schoolProfile = await this.prisma.schoolProfile.findUnique({ where: { userId } });
+    if (schoolProfile) {
+      return this.prisma.jobListing.create({
+        data: {
+          schoolProfileId: schoolProfile.id,
+          ...data,
+        },
+      });
     }
 
-    return this.prisma.jobListing.create({
-      data: {
-        schoolProfileId: schoolProfile.id,
-        ...data,
-      },
-    });
+    // Try finding Teacher Profile
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    if (teacherProfile) {
+      // Validate that jobType is EVENT_VENDOR? Or allow any?
+      // The UI sets EVENT_VENDOR. Backend can enforce if needed.
+      return this.prisma.jobListing.create({
+        data: {
+          teacherProfileId: teacherProfile.id,
+          ...data,
+        },
+      });
+    }
+
+    throw new ForbiddenException('Only schools or teachers with a profile can post jobs');
   }
 
   async findAll(filters?: { jobType?: string; subjects?: string[]; regions?: string[] }) {
@@ -44,6 +57,7 @@ export class JobsService {
       where,
       include: {
         schoolProfile: true,
+        teacherProfile: { include: { user: { select: { name: true } } } },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -54,6 +68,7 @@ export class JobsService {
       where: { id },
       include: {
         schoolProfile: true,
+        teacherProfile: { include: { user: { select: { name: true } } } },
       },
     });
 
@@ -67,14 +82,19 @@ export class JobsService {
   async updateJob(userId: number, jobId: number, data: UpdateJobDto) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id: jobId },
-      include: { schoolProfile: true },
+      include: { schoolProfile: true, teacherProfile: true },
     });
 
     if (!job) {
       throw new NotFoundException('Job not found');
     }
 
-    if (job.schoolProfile.userId !== userId) {
+    // Check ownership
+    const isOwner =
+      (job.schoolProfile && job.schoolProfile.userId === userId) ||
+      (job.teacherProfile && job.teacherProfile.userId === userId);
+
+    if (!isOwner) {
       throw new ForbiddenException('You can only update your own jobs');
     }
 
@@ -110,6 +130,9 @@ export class JobsService {
             schoolName: true,
             address: true,
           },
+        },
+        teacherProfile: {
+          include: { user: { select: { name: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },

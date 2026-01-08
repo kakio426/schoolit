@@ -12,7 +12,7 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -49,7 +49,13 @@ export class UserService {
     });
   }
 
-  async findOrCreateSocialUser(email: string, name: string, provider: Provider, snsId: string, phone?: string) {
+  async findOrCreateSocialUser(
+    email: string,
+    name: string,
+    provider: Provider,
+    snsId: string,
+    phone?: string,
+  ) {
     // 1. snsId와 provider로 기존 유저 검색
     let user = await this.findUserBySnsId(provider, snsId);
 
@@ -404,7 +410,10 @@ export class UserService {
     });
   }
 
-  async validateVerificationCode(userId: number, code: string): Promise<{ valid: boolean; email?: string }> {
+  async validateVerificationCode(
+    userId: number,
+    code: string,
+  ): Promise<{ valid: boolean; email?: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { verificationCode: true, verificationExpires: true },
@@ -458,7 +467,7 @@ export class UserService {
       'admin@schoolit.com',
       'school@test.com',
       'teacher@test.com',
-      'business@test.com'
+      'business@test.com',
     ];
 
     if (user && protectedEmails.includes(user.email)) {
@@ -543,7 +552,7 @@ export class UserService {
 
     return {
       success: true,
-      message: '회원 탈퇴가 완료되었습니다. 개인정보는 6개월 후 완전히 삭제됩니다.'
+      message: '회원 탈퇴가 완료되었습니다. 개인정보는 6개월 후 완전히 삭제됩니다.',
     };
   }
 
@@ -572,4 +581,3 @@ export class UserService {
     return user?.isDeleted ?? false;
   }
 }
-

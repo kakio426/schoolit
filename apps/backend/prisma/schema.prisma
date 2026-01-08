@@ -111,8 +111,11 @@ enum JobStatus {
 
 model JobListing {
   id              Int              @id @default(autoincrement())
-  schoolProfileId Int              @map("school_profile_id")
-  schoolProfile   SchoolProfile    @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
+  schoolProfileId Int?             @map("school_profile_id")
+  schoolProfile   SchoolProfile?   @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
+  
+  teacherProfileId Int?            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile? @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
   
   jobType         JobType          @default(TEACHER_HIRING) @map("job_type")
   title           String
@@ -172,6 +175,7 @@ model TeacherProfile {
   educations     TeacherEducation[]
   links          TeacherLink[]
   licenses       TeacherLicense[]
+  jobListings    JobListing[]
   
   createdAt      DateTime        @default(now()) @map("created_at")
   updatedAt      DateTime        @updatedAt @map("updated_at")

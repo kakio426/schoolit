@@ -38,6 +38,16 @@ export class BusinessProfileService {
     });
   }
 
+  async findAll() {
+    return this.prisma.businessProfile.findMany({
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        portfolios: { take: 1 }, // Preview image?
+      },
+      orderBy: { isVerified: 'desc' }, // Verified first
+    });
+  }
+
   // Portfolio Management
   async addPortfolio(userId: number, data: any) {
     const profile = await this.findByUserId(userId);

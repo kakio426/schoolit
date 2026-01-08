@@ -19,7 +19,7 @@ import { Role } from '@prisma/client';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) { }
+  constructor(private jobsService: JobsService) {}
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {
@@ -32,14 +32,14 @@ export class JobsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL)
+  @Roles(Role.SCHOOL, Role.TEACHER)
   @Post()
   async create(@Request() req, @Body() createJobDto: CreateJobDto) {
     return this.jobsService.createJob(req.user.userId, createJobDto);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL)
+  @Roles(Role.SCHOOL, Role.TEACHER)
   @Patch(':id')
   async update(
     @Request() req,

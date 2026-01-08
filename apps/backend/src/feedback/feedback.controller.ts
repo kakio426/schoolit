@@ -7,7 +7,7 @@ import { Role } from '@prisma/client';
 
 @Controller('feedback')
 export class FeedbackController {
-  constructor(private readonly feedbackService: FeedbackService) { }
+  constructor(private readonly feedbackService: FeedbackService) {}
 
   @Post()
   async create(@Body() body: { category: string; content: string; userId?: number }) {

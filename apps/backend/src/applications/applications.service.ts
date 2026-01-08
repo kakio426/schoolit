@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) { }
+  ) {}
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     // Check if job exists and is OPEN
@@ -130,22 +130,62 @@ export class ApplicationsService {
       });
     }
 
-    const apps = await this.prisma.jobApplication.findMany({
+    const sentApps = await this.prisma.jobApplication.findMany({
       where: { userId },
       include: {
         jobListing: {
           include: {
             schoolProfile: true,
+            teacherProfile: { include: { user: { select: { name: true } } } },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    // Remove internalNote for teachers/businesses
-    return apps.map((app) => {
-      const { internalNote, ...rest } = app;
-      return rest;
+    const receivedApps = await this.prisma.jobApplication.findMany({
+      where: {
+        jobListing: {
+          teacherProfile: { userId },
+        },
+      },
+      include: {
+        jobListing: {
+          include: {
+            schoolProfile: true,
+            teacherProfile: true,
+          },
+        },
+        user: {
+          include: {
+            teacherProfile: true,
+            businessProfile: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const allApps = [...sentApps, ...receivedApps].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
+
+    // Remove internalNote for teachers/businesses (only for sent apps? or both?)
+    // If I am the owner (received), I should see my internalNote?
+    // Schema has `internalNote`.
+    // Logic: If I am owner, keep it. If not, remove it.
+
+    return allApps.map((app) => {
+      const isOwner =
+        (app.jobListing.schoolProfile && app.jobListing.schoolProfile.userId === userId) ||
+        (app.jobListing.teacherProfile && app.jobListing.teacherProfile.userId === userId);
+
+      if (!isOwner) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { internalNote, ...rest } = app;
+        return rest;
+      }
+      return app;
     });
   }
 
@@ -153,11 +193,16 @@ export class ApplicationsService {
     // Check ownership
     const job = await this.prisma.jobListing.findUnique({
       where: { id: jobId },
-      include: { schoolProfile: true },
+      include: { schoolProfile: true, teacherProfile: true },
     });
 
     if (!job) throw new NotFoundException('Job not found');
-    if (job.schoolProfile.userId !== userId) {
+
+    const isOwner =
+      (job.schoolProfile && job.schoolProfile.userId === userId) ||
+      (job.teacherProfile && job.teacherProfile.userId === userId);
+
+    if (!isOwner) {
       throw new ForbiddenException('Not your job');
     }
 
@@ -207,41 +252,51 @@ export class ApplicationsService {
     });
   }
 
-  async suggestJob(schoolUserId: number, jobId: number, teacherUserId: number) {
+  async suggestJob(senderUserId: number, jobId: number, candidateUserId: number) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id: jobId },
-      include: { schoolProfile: true },
+      include: { schoolProfile: true, teacherProfile: true },
     });
-    if (!job || job.schoolProfile.userId !== schoolUserId) {
+
+    if (!job) throw new NotFoundException('Job not found');
+
+    const isOwner =
+      (job.schoolProfile && job.schoolProfile.userId === senderUserId) ||
+      (job.teacherProfile && job.teacherProfile.userId === senderUserId);
+
+    if (!isOwner) {
       throw new ForbiddenException('Not your job');
     }
 
-    const teacher = await this.prisma.user.findUnique({
-      where: { id: teacherUserId, role: 'TEACHER' },
-    });
-    if (!teacher) throw new NotFoundException('Teacher not found');
+    const candidate = await this.prisma.user.findUnique({
+      where: { id: candidateUserId },
+    }); // Check role manually
+
+    if (!candidate || (candidate.role !== 'TEACHER' && candidate.role !== 'BUSINESS')) {
+      throw new NotFoundException('Candidate not found or invalid role');
+    }
 
     const existing = await this.prisma.jobApplication.findUnique({
-      where: { jobId_userId: { jobId, userId: teacherUserId } },
+      where: { jobId_userId: { jobId, userId: candidateUserId } },
     });
     if (existing) throw new BadRequestException('이미 지원했거나 제안을 받았습니다.');
 
     const suggestion = await this.prisma.jobApplication.create({
       data: {
         jobId,
-        userId: teacherUserId,
+        userId: candidateUserId,
         isSuggestion: true,
         status: 'PENDING',
-        message: 'School sent a suggestion',
+        message: 'Job suggestion received',
       },
     });
 
-    // Notify Teacher
+    // Notify Candidate
     await this.notificationsService.create({
-      userId: teacherUserId,
+      userId: candidateUserId,
       type: 'SUGGESTION',
-      title: '학교로부터 제안 도착 🎁',
-      content: `${job.schoolProfile.schoolName || '학교'}에서 면접 제안을 보냈습니다.`,
+      title: '제안이 도착했습니다 🎁',
+      content: `'${job.title}' 공고에 대한 제안이 도착했습니다.`,
       link: `/dashboard/applications`,
     });
 
@@ -253,21 +308,27 @@ export class ApplicationsService {
       where: { id: applicationId },
       include: {
         jobListing: {
-          include: { schoolProfile: true },
+          include: { schoolProfile: true, teacherProfile: true },
         },
       },
     });
 
     if (!application) throw new NotFoundException('Application not found');
 
-    const isSchool = application.jobListing.schoolProfile.userId === userId;
-    const isTeacher = application.userId === userId;
+    const isJobOwner =
+      (application.jobListing.schoolProfile &&
+        application.jobListing.schoolProfile.userId === userId) ||
+      (application.jobListing.teacherProfile &&
+        application.jobListing.teacherProfile.userId === userId);
+    const isCandidate = application.userId === userId;
 
-    if (isSchool) {
-      // School can update
-    } else if (isTeacher && application.isSuggestion && application.status === 'PENDING') {
+    if (isJobOwner) {
+      // Owner can update
+    } else if (isCandidate && application.isSuggestion && application.status === 'PENDING') {
       if (status !== 'INTERVIEWING' && status !== 'REJECTED') {
-        throw new ForbiddenException('Teacher can only Accept (INTERVIEWING) or Reject suggestion');
+        throw new ForbiddenException(
+          'Candidate can only Accept (INTERVIEWING) or Reject suggestion',
+        );
       }
     } else {
       throw new ForbiddenException('You do not have permission to update this application');
@@ -278,29 +339,37 @@ export class ApplicationsService {
       data: { status },
       include: {
         user: { include: { teacherProfile: true, businessProfile: true } },
-        jobListing: { include: { schoolProfile: true } },
+        jobListing: { include: { schoolProfile: true, teacherProfile: true } },
       },
     });
 
     if (status === 'INTERVIEWING') {
-      const schoolUserId = updated.jobListing.schoolProfile.userId;
-      const teacherUserId = updated.userId;
-      await this.chatService.createRoom(schoolUserId, teacherUserId, updated.jobId);
+      const jobOwnerId =
+        updated.jobListing.schoolProfile?.userId || updated.jobListing.teacherProfile?.userId;
+      const candidateId = updated.userId;
+      if (jobOwnerId) {
+        await this.chatService.createRoom(jobOwnerId, candidateId, updated.jobId);
+      }
     }
 
     // Notify Status Change
     if (['INTERVIEWING', 'REJECTED', 'ACCEPTED', 'HIRED'].includes(status)) {
       try {
-        const isSchoolOwner = updated.jobListing.schoolProfile.userId === userId;
-        // If School updated, notify Teacher. If Teacher updated, notify School.
-        const recipientId = isSchoolOwner
+        const isOwnerAction =
+          (updated.jobListing.schoolProfile &&
+            updated.jobListing.schoolProfile.userId === userId) ||
+          (updated.jobListing.teacherProfile &&
+            updated.jobListing.teacherProfile.userId === userId);
+
+        // If Owner updated, notify Candidate. If Candidate updated, notify Owner.
+        const recipientId = isOwnerAction
           ? updated.userId
-          : updated.jobListing.schoolProfile.userId;
+          : updated.jobListing.schoolProfile?.userId || updated.jobListing.teacherProfile?.userId;
 
         let title = '';
         let content = '';
 
-        if (isSchoolOwner) {
+        if (isOwnerAction) {
           if (status === 'INTERVIEWING') {
             title = '서류 합격 / 면접 제안';
             content = `'${updated.jobListing.title}' 공고의 서류 전형에 합격하셨습니다. 채팅을 확인해주세요.`;
@@ -308,23 +377,23 @@ export class ApplicationsService {
             title = '지원 결과 안내';
             content = `'${updated.jobListing.title}' 공고 전형 결과 불합격하셨습니다.`;
           } else if (status === 'HIRED') {
-            title = '최종 합격 축하드립니다! 🎉';
-            content = `'${updated.jobListing.title}' 공고에 최종 합격하셨습니다.`;
+            title = '최종 채용/선정 확정! 🎉';
+            content = `'${updated.jobListing.title}' 공고에 최종 합격/선정되셨습니다.`;
           }
         } else {
           title = `제안에 대한 응답 도착`;
-          content = `선생님이 제안을 ${status === 'INTERVIEWING' ? '수락' : '거절'}했습니다.`;
+          content = `지원자가 제안을 ${status === 'INTERVIEWING' ? '수락' : '거절'}했습니다.`;
         }
 
-        if (title) {
+        if (title && recipientId) {
           await this.notificationsService.create({
             userId: recipientId,
             type: 'STATUS_UPDATE',
             title,
             content,
-            link: isSchoolOwner
-              ? `/dashboard/jobs/${updated.jobListing.id}`
-              : `/dashboard/applications`,
+            link: isOwnerAction
+              ? `/dashboard/applications` // Candidate views My Apps
+              : `/dashboard/jobs/${updated.jobListing.id}`, // Owner views Job
           });
         }
       } catch (e) {
@@ -359,13 +428,20 @@ export class ApplicationsService {
       where: { id: applicationId },
       include: {
         jobListing: {
-          include: { schoolProfile: true },
+          include: { schoolProfile: true, teacherProfile: true },
         },
       },
     });
 
     if (!application) throw new NotFoundException('Application not found');
-    if (application.jobListing.schoolProfile.userId !== userId) {
+
+    const isOwner =
+      (application.jobListing.schoolProfile &&
+        application.jobListing.schoolProfile.userId === userId) ||
+      (application.jobListing.teacherProfile &&
+        application.jobListing.teacherProfile.userId === userId);
+
+    if (!isOwner) {
       throw new ForbiddenException('Not your application');
     }
 
@@ -392,7 +468,9 @@ export class ApplicationsService {
     }
 
     if (!['HIRED', 'CONTRACTING', 'EXECUTING', 'PAYMENT_COMPLETED'].includes(app.status)) {
-      throw new BadRequestException('Contract is only available for HIRED or CONTRACTING applications');
+      throw new BadRequestException(
+        'Contract is only available for HIRED or CONTRACTING applications',
+      );
     }
 
     // Template Data

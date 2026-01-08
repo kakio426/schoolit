@@ -3,17 +3,18 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getSystemStats() {
-    const [totalUsers, totalJobs, totalSchools, totalTeachers, pendingSchools, pendingBusinesses] = await Promise.all([
-      this.prisma.user.count(),
-      this.prisma.jobListing.count(),
-      this.prisma.schoolProfile.count(),
-      this.prisma.teacherProfile.count(),
-      this.prisma.schoolProfile.count({ where: { isVerified: false } }),
-      this.prisma.businessProfile.count({ where: { isVerified: false } }),
-    ]);
+    const [totalUsers, totalJobs, totalSchools, totalTeachers, pendingSchools, pendingBusinesses] =
+      await Promise.all([
+        this.prisma.user.count(),
+        this.prisma.jobListing.count(),
+        this.prisma.schoolProfile.count(),
+        this.prisma.teacherProfile.count(),
+        this.prisma.schoolProfile.count({ where: { isVerified: false } }),
+        this.prisma.businessProfile.count({ where: { isVerified: false } }),
+      ]);
 
     return {
       totalUsers,
@@ -161,7 +162,6 @@ export class AdminService {
     });
   }
 
-
   async broadcastNotification(title: string, content: string, targetRoles?: string[]) {
     // Get target users
     const where: any = {};
@@ -215,5 +215,4 @@ export class AdminService {
       data: { isVerified },
     });
   }
-
 }

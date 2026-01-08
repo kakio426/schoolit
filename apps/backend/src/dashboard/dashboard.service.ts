@@ -4,7 +4,7 @@ import { Role, Prisma } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async getStats(userId: number, role: Role) {
     const stats: any = {};
@@ -51,7 +51,6 @@ export class DashboardService {
       });
       const reMatchCount = reviews.filter((r) => r.reMatchIntent).length;
       stats.reMatchRate = reviews.length > 0 ? (reMatchCount / reviews.length) * 100 : 100;
-
     } else if (role === Role.SCHOOL) {
       const user: any = await this.prisma.user.findUnique({
         where: { id: userId },
