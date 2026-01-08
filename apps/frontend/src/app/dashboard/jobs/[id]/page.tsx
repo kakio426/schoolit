@@ -258,13 +258,18 @@ export default function JobDetailPage() {
                                                     {(job as any).jobType === 'EVENT_VENDOR' && (
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                             <div>
-                                                                <label className="block text-sm font-bold text-foreground mb-2">제안 금액 (단위: 원)</label>
+                                                                <label className="block text-sm font-bold text-foreground mb-2">
+                                                                    가견적 (Estimated Cost) <span className="text-xs font-normal text-amber-600 dark:text-amber-400">* 확정가가 아닙니다</span>
+                                                                </label>
                                                                 <input
                                                                     type="text"
                                                                     id="proposalCost"
-                                                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
+                                                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary text-right font-mono"
                                                                     placeholder="예: 1,500,000"
                                                                 />
+                                                                <p className="text-xs text-foreground-muted mt-1">
+                                                                    이 금액은 시장 조사용 '참고 가격'이며, 실제 계약은 S2B/G2B 등 행정 절차에 따라 확정됩니다.
+                                                                </p>
                                                             </div>
                                                             <div>
                                                                 <label className="block text-sm font-bold text-foreground mb-2">담당자 연락처</label>

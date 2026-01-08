@@ -12,6 +12,8 @@ export function BudgetGuideline({ budget }: BudgetGuidelineProps) {
     let description = '';
     let action = '';
 
+    const [acknowledged, setAcknowledged] = React.useState(false);
+
     if (budget <= 20000000) {
         status = 'safe';
         title = '🟢 1인 견적 수의계약 가능';
@@ -24,9 +26,9 @@ export function BudgetGuideline({ budget }: BudgetGuidelineProps) {
         action = '행정실에 "소액수의 공고"를 요청하세요.';
     } else {
         status = 'danger';
-        title = '🔴 경쟁 입찰 필수';
-        description = '절차가 매우 까다롭습니다. 입찰 공고(G2B)를 통해 진행해야 하며, 규격/가격 분리 입찰 등 복잡한 심사가 필요합니다. 행정실과 사전에 긴밀히 협의해야 합니다.';
-        action = '즉시 행정실과 예산 및 입찰 방식 협의가 필요합니다.';
+        title = '🔴 경쟁 입찰 필수 (S2B/G2B 사용 의무)';
+        description = '2천만 원을 초과하는 공사는 반드시 지정정보처리장치(S2B/G2B)를 통해 진행해야 합니다. 스쿨잇에서의 견적은 "시장 조사(예산 산출)" 목적으로만 활용해 주세요.';
+        action = '이 견적서는 계약용이 아닌 "행정실 제출용 기초 견적"입니다.';
     }
 
     const colors = {
@@ -43,12 +45,26 @@ export function BudgetGuideline({ budget }: BudgetGuidelineProps) {
                     {status === 'warning' && '📢'}
                     {status === 'danger' && '🚨'}
                 </div>
-                <div>
+                <div className="flex-1">
                     <h4 className="font-bold text-sm mb-1">{title}</h4>
-                    <p className="text-xs opacity-90 leading-relaxed">{description}</p>
+                    <p className="text-xs opacity-90 leading-relaxed whitespace-pre-line">{description}</p>
                     <div className="mt-2 text-xs font-bold bg-white/50 dark:bg-black/20 px-2 py-1 rounded w-fit">
                         💡 Action: {action}
                     </div>
+
+                    {status === 'danger' && (
+                        <label className="flex items-start gap-2 mt-3 pt-3 border-t border-red-200 dark:border-red-800 cursor-pointer group">
+                            <input
+                                type="checkbox"
+                                checked={acknowledged}
+                                onChange={(e) => setAcknowledged(e.target.checked)}
+                                className="mt-0.5 rounded border-red-300 text-red-600 focus:ring-red-500 bg-white dark:bg-black/40"
+                            />
+                            <span className="text-xs font-semibold select-none group-hover:underline">
+                                네, 위 내용을 인지하였으며 시장 조사 목적으로만 진행하겠습니다.
+                            </span>
+                        </label>
+                    )}
                 </div>
             </div>
         </div>

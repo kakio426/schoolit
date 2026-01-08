@@ -9,6 +9,7 @@ import {
   Request,
   ParseIntPipe,
   Query,
+  Delete,
 } from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto, UpdateJobDto } from './dtos/create-job.dto';

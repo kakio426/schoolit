@@ -15,6 +15,7 @@ function SignupOnboardingContent() {
         name: '',
         email: '',
         phone: '',
+        legalAgreed: false,
     });
 
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -25,6 +26,7 @@ function SignupOnboardingContent() {
                 name: user.name || '',
                 email: user.email || '',
                 phone: user.phone || '',
+                legalAgreed: false,
             });
         }
     }, [user]);
@@ -108,11 +110,29 @@ function SignupOnboardingContent() {
                         </p>
                     </div>
 
+                    {/* Legal Disclaimer Checkbox */}
+                    <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <input
+                            type="checkbox"
+                            id="legal-agree"
+                            className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                            onChange={(e) => {
+                                // Logic handled in submit or state if needed, but for now just visual or simple validation
+                                // Ideally should be state driven.
+                                setFormData(prev => ({ ...prev, legalAgreed: e.target.checked }));
+                            }}
+                        />
+                        <label htmlFor="legal-agree" className="text-xs text-foreground leading-relaxed cursor-pointer select-none">
+                            <span className="font-bold text-primary">[필수]</span> 본 서비스는 <span className="font-bold">행정 절차 지원 및 시장 조사 도구</span>이며,
+                            모든 계약과 지출 행위는 학교/기관의 행정 시스템(S2B, 에듀파인 등)을 통해 적법하게 진행해야 함을 확인합니다.
+                        </label>
+                    </div>
+
                     {/* Finish Button */}
                     <button
                         onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary-hover active:scale-[0.98] disabled:opacity-30 transition-all mt-4 shadow-lg shadow-primary/20"
+                        disabled={isSubmitting || !formData.legalAgreed}
+                        className="w-full h-14 bg-primary text-white rounded-2xl font-bold text-lg hover:bg-primary-hover active:scale-[0.98] disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20"
                     >
                         {isSubmitting ? '처리 중...' : '가입 완료하기'}
                     </button>

@@ -7,7 +7,7 @@ export class ReviewsService {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-  ) {}
+  ) { }
 
   async createReview(dto: any, userId: number, files?: Express.Multer.File[]) {
     const { jobId, receiverId, content, rating, keywords, reMatchIntent } = dto;
@@ -31,8 +31,12 @@ export class ReviewsService {
       throw new ForbiddenException('Only the job owner can leave a review');
     }
 
-    if (application.status !== 'HIRED') {
-      throw new ForbiddenException('Reviews can only be written for HIRED jobs');
+    // [Legal Defense] Closed-Loop Review System
+    // Only 'HIRED' (Matched) users can write reviews to prevent false/competitor attacks.
+    // This supports the 'Transaction-Verified' trust model.
+    if (application.status !== 'HIRED' && application.status !== 'PAYMENT_COMPLETED') {
+      // Validating both for backward/forward compatibility
+      throw new ForbiddenException('Reviews are restricted to matched (verified) transactions only.');
     }
 
     // 2. Determine Receiver Type
@@ -69,11 +73,11 @@ export class ReviewsService {
         imageIds,
         keywords: keywords
           ? {
-              connectOrCreate: keywords.map((k: string) => ({
-                where: { keyword: k },
-                create: { keyword: k },
-              })),
-            }
+            connectOrCreate: keywords.map((k: string) => ({
+              where: { keyword: k },
+              create: { keyword: k },
+            })),
+          }
           : undefined,
       },
       include: {

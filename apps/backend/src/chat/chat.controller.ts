@@ -19,7 +19,7 @@ export class ChatController {
   constructor(
     private chatService: ChatService,
     private chatGateway: ChatGateway,
-  ) {}
+  ) { }
 
   @Get('rooms')
   async getMyRooms(@Request() req) {
@@ -51,6 +51,11 @@ export class ChatController {
     @Body('jobId') jobId?: number,
   ) {
     return this.chatService.createRoom(req.user.userId, targetUserId, jobId);
+  }
+
+  @Get('rooms/:id/export')
+  async exportChat(@Request() req, @Param('id', ParseIntPipe) roomId: number) {
+    return this.chatService.exportChat(roomId, req.user.userId);
   }
 
   @Post('rooms/:id/read')

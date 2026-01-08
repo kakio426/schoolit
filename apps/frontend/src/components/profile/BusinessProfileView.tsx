@@ -63,6 +63,35 @@ export default function BusinessProfileView({ user }: BusinessProfileViewProps) 
                     )}
                 </div>
             </div>
+            {/* Report Button */}
+            <div className="mt-8 pt-6 border-t border-border flex justify-end">
+                <button
+                    onClick={async () => {
+                        if (!confirm('정말로 이 사용자를 신고하시겠습니까?\n허위 신고 시 제재를 받을 수 있습니다.')) return;
+
+                        const reason = prompt('신고 사유를 상세히 입력해주세요.\n(예: 허위 정보, 부적절한 언행, 청탁금지법 위반 등)');
+                        if (!reason || reason.trim().length < 5) {
+                            if (reason !== null) alert('신고 사유를 5자 이상 입력해주세요.');
+                            return;
+                        }
+
+                        try {
+                            const { api } = await import('@/lib/api');
+                            await api.post('/feedback/report', {
+                                targetUserId: user.id,
+                                reason: 'PROFILE_REPORT',
+                                description: reason
+                            });
+                            alert('신고가 접수되었습니다. 관리자가 내용을 확인 후 조치하겠습니다.');
+                        } catch (e) {
+                            alert('신고 접수 중 오류가 발생했습니다.');
+                        }
+                    }}
+                    className="text-xs text-red-500 hover:text-red-600 font-medium flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
+                >
+                    🚨 부적절한 사용자 신고하기
+                </button>
+            </div>
         </>
     );
 }

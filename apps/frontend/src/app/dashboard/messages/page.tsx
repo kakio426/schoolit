@@ -154,7 +154,60 @@ export default function MessagesPage() {
                         <>
                             <div className="p-6 border-b border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
                                 <h2 className="font-bold text-foreground text-lg">{getOtherUserName(selectedRoom)}</h2>
-                                <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-lg">채팅 중</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs font-bold rounded-lg leading-none flex items-center h-7">채팅 중</span>
+
+                                    {/* Export Button */}
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('감사/증빙용 채팅 로그를 다운로드하시겠습니까? (S2B 제출용)')) return;
+                                            try {
+                                                const data = await api.get(`/chat/rooms/${selectedRoom.id}/export`);
+                                                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                                                const url = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = url;
+                                                a.download = `s2b_audit_log_${selectedRoom.id}_${new Date().toISOString()}.json`;
+                                                a.click();
+                                            } catch (e) {
+                                                alert('로그 다운로드 실패');
+                                            }
+                                        }}
+                                        className="p-1.5 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all"
+                                        title="S2B 증빙용 로그 내보내기"
+                                    >
+                                        💾
+                                    </button>
+
+                                    {/* Report Button */}
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm('현재 대화 상대를 신고하시겠습니까?')) return;
+                                            const reason = prompt('신고 사유를 입력해주세요 (예: 부적절한 언행, 청탁 등)');
+                                            if (!reason) return;
+
+                                            // Identify target user
+                                            const otherUser = selectedRoom.users.find(u => u.id !== user?.id);
+                                            if (!otherUser) return alert('신고 대상 식별 불가');
+
+                                            try {
+                                                await api.post('/feedback/report', {
+                                                    targetUserId: otherUser.id,
+                                                    reason: 'CHAT_REPORT',
+                                                    description: reason,
+                                                    reporterId: user?.id
+                                                });
+                                                alert('신고가 접수되었습니다.');
+                                            } catch (e) {
+                                                alert('신고 접수 실패');
+                                            }
+                                        }}
+                                        className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all"
+                                        title="신고하기"
+                                    >
+                                        🚨
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-slate-50/20 dark:bg-slate-900/10">
