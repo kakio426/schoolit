@@ -23,6 +23,8 @@ import { StorageModule } from './common/storage/storage.module';
 import { ContractsModule } from './context/contracts/contracts.module';
 import { BoardModule } from './board/board.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
+import { DocumentsModule } from './documents/documents.module';
+import { RecommendationsModule } from './recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -49,8 +51,10 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     ContractsModule,
     BoardModule,
     SchedulerModule,
+    DocumentsModule,
+    RecommendationsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

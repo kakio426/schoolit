@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import DashboardLayout from '@/components/layout/DashboardLayout';
+import ReviewListModal from '@/components/admin/ReviewListModal';
 import { api } from '@/lib/api';
 
 interface User {
@@ -19,6 +20,7 @@ interface User {
 export default function AdminUsersPage() {
     const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [reviewTarget, setReviewTarget] = useState<{ id: number; name: string } | null>(null);
 
     const loadUsers = async () => {
         try {
@@ -113,12 +115,22 @@ export default function AdminUsersPage() {
                                                 {new Date(user.createdAt).toLocaleDateString('ko-KR')}
                                             </td>
                                             <td className="px-6 py-4 text-center whitespace-nowrap">
-                                                <button
-                                                    onClick={() => handleResetUser(user.id, user.name)}
-                                                    className="px-4 py-2 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-all text-xs font-bold"
-                                                >
-                                                    초기화
-                                                </button>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    {(user.role === 'TEACHER' || user.role === 'BUSINESS') && (
+                                                        <button
+                                                            onClick={() => setReviewTarget({ id: user.id, name: user.name })}
+                                                            className="px-3 py-1.5 bg-yellow-100 text-yellow-700 rounded-xl hover:bg-yellow-200 transition-all text-xs font-bold"
+                                                        >
+                                                            ⭐ 후기
+                                                        </button>
+                                                    )}
+                                                    <button
+                                                        onClick={() => handleResetUser(user.id, user.name)}
+                                                        className="px-3 py-1.5 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition-all text-xs font-bold"
+                                                    >
+                                                        초기화
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -128,6 +140,15 @@ export default function AdminUsersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Review Modal */}
+            {reviewTarget && (
+                <ReviewListModal
+                    userId={reviewTarget.id}
+                    userName={reviewTarget.name}
+                    onClose={() => setReviewTarget(null)}
+                />
+            )}
         </DashboardLayout>
     );
 }
