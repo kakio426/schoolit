@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import Link from 'next/link';
-import { MessageSquare, ThumbsUp, Eye, Plus, Pin } from 'lucide-react';
+import { MessageSquare, ThumbsUp, Eye, Plus, Pin, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface Board {
@@ -113,18 +113,24 @@ export default function CommunityPage() {
     return (
         <div className="min-h-screen bg-gray-900 text-white p-6">
             <div className="max-w-6xl mx-auto">
+                {/* Top Navigation */}
+                <div className="mb-6">
+                    <Link
+                        href="/dashboard"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full text-sm font-medium border border-gray-700/50 transition-all shadow-lg group"
+                    >
+                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
+                        대시보드 홈으로
+                    </Link>
+                </div>
+
                 {/* Header */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
-                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
-                            <Link href="/dashboard" className="hover:text-white transition">대시보드</Link>
-                            <span>/</span>
-                            <span className="text-blue-400">커뮤니티</span>
-                        </div>
-                        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-500 bg-clip-text text-transparent tracking-tight">
                             커뮤니티
                         </h1>
-                        <p className="text-gray-400 mt-1">학교, 선생님, 업체가 함께 소통하는 공간</p>
+                        <p className="text-gray-400 mt-2 text-lg">에듀핀의 모든 파트너가 소통하는 열린 공간</p>
                     </div>
                     {selectedBoard && (selectedBoard.category !== 'NOTICE' || user?.role === 'ADMIN') && (
                         <Link
