@@ -114,6 +114,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     if (item.href === '/dashboard/jobs') {
                         // /dashboard/jobs/new는 제외하고, 정확히 /dashboard/jobs이거나 상세페이지(/dashboard/jobs/123)인 경우만
                         isActive = pathname === '/dashboard/jobs' || (pathname.startsWith('/dashboard/jobs/') && pathname !== '/dashboard/jobs/new');
+                    } else if (item.href === '/dashboard/admin') {
+                        // [Fix] Admin root (Verification) should only be active on exact match
+                        isActive = pathname === '/dashboard/admin';
                     } else {
                         isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
                     }
