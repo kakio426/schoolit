@@ -29,7 +29,7 @@ export class JobsController {
   @UseGuards(AuthGuard('jwt'))
   @Get('my')
   async findMyJobs(@Request() req) {
-    return this.jobsService.findMyJobs(req.user.userId);
+    return this.jobsService.findMyJobs(req.user.userId, req.user.role);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

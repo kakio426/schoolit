@@ -138,13 +138,20 @@ export class JobsService {
       orderBy: { createdAt: 'desc' },
     });
   }
-  async findMyJobs(userId: number) {
-    const where: any = {
-      OR: [
+  async findMyJobs(userId: number, role: string) {
+    const where: any = {};
+
+    if (role === 'SCHOOL') {
+      where.schoolProfile = { userId };
+    } else if (role === 'TEACHER') {
+      where.teacherProfile = { userId };
+    } else {
+      // For other roles, search both or return empty
+      where.OR = [
         { schoolProfile: { userId } },
         { teacherProfile: { userId } },
-      ],
-    };
+      ];
+    }
 
     return this.prisma.jobListing.findMany({
       where,
