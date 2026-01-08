@@ -192,4 +192,18 @@ export class UserController {
   async resetUserById(@Param('id', ParseIntPipe) userId: number) {
     return this.userService.resetTestUser(userId);
   }
+
+  // ============================================
+  // Account Deletion - 회원 탈퇴
+  // ============================================
+
+  /**
+   * 회원 탈퇴 (Soft Delete)
+   * DELETE /users/me
+   */
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('me')
+  async deleteAccount(@Request() req) {
+    return this.userService.deleteAccount(req.user.userId);
+  }
 }

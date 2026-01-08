@@ -3,6 +3,7 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
 import { PrismaService } from '../prisma.service';
 import { ForbiddenException } from '@nestjs/common';
+import { STORAGE_SERVICE } from '../common/storage/interfaces/storage.interface';
 
 // Mock PrismaService
 const mockPrisma = {
@@ -12,6 +13,7 @@ const mockPrisma = {
   },
   review: {
     create: jest.fn(),
+    findMany: jest.fn(),
   },
   reviewKeyword: {
     findUnique: jest.fn(),
@@ -21,20 +23,29 @@ const mockPrisma = {
   },
 };
 
+const mockStorageService = {
+  uploadFile: jest.fn().mockResolvedValue('mock-image-id'),
+  deleteFile: jest.fn().mockResolvedValue(undefined),
+  getFileUrl: jest.fn().mockImplementation((id: string) => `https://mock.url/${id}`),
+};
+
 describe('ReviewsController (TDD)', () => {
   let controller: ReviewsController;
   let service: ReviewsService;
-  let prisma: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReviewsController],
-      providers: [ReviewsService, { provide: PrismaService, useValue: mockPrisma }],
+      providers: [
+        ReviewsService,
+        { provide: PrismaService, useValue: mockPrisma },
+        { provide: STORAGE_SERVICE, useValue: mockStorageService },
+      ],
     }).compile();
 
     controller = module.get<ReviewsController>(ReviewsController);
     service = module.get<ReviewsService>(ReviewsService);
-    prisma = module.get<PrismaService>(PrismaService);
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -57,7 +68,7 @@ describe('ReviewsController (TDD)', () => {
       rating: 5,
     };
 
-    const req = { user: { userId: 1 } }; // Reviewer is School
+    const req = { user: { userId: 1 } };
 
     await expect(controller.create(req, dto)).rejects.toThrow(ForbiddenException);
   });
@@ -71,7 +82,12 @@ describe('ReviewsController (TDD)', () => {
     });
 
     mockPrisma.user.findUnique.mockResolvedValue({ id: 2, role: 'TEACHER' });
-    mockPrisma.review.create.mockResolvedValue({ id: 1 });
+    mockPrisma.review.create.mockResolvedValue({
+      id: 1,
+      imageIds: [],
+      keywords: [],
+      sender: { id: 1, name: 'Test', role: 'SCHOOL' },
+    });
 
     const dto = { jobId: 100, receiverId: 2, content: 'Good' };
     const req = { user: { userId: 1 } };
@@ -79,3 +95,4 @@ describe('ReviewsController (TDD)', () => {
     await expect(controller.create(req, dto)).resolves.toBeDefined();
   });
 });
+

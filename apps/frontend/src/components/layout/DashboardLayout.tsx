@@ -79,6 +79,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             );
         }
 
+        // 커뮤니티 - 모든 역할에서 접근 가능
+        navItems.push({ label: '커뮤니티', href: '/dashboard/community', icon: '💭' });
         navItems.push({ label: '설정', href: '/dashboard/settings', icon: '⚙️' });
     }
 

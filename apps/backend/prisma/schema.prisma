@@ -19,6 +19,13 @@ model User {
   phone          String?          // Contact info, revealed only upon acceptance
   isBanned       Boolean          @default(false) @map("is_banned")
   
+  // Soft Delete Fields
+  isDeleted      Boolean          @default(false) @map("is_deleted")
+  deletedAt      DateTime?        @map("deleted_at")
+  
+  // Storage Abstraction: imageId instead of URL
+  avatarImageId  String?          @map("avatar_image_id")
+  
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
 
@@ -39,6 +46,11 @@ model User {
   // Email Verification Fields -> for School/Business Step 1
   verificationCode    String?  @map("verification_code")
   verificationExpires DateTime? @map("verification_expires")
+  
+  // Community Board Relations
+  posts         Post[]
+  comments      Comment[]
+  postLikes     PostLike[]
 
   @@unique([provider, snsId])
   @@map("users")
@@ -318,6 +330,9 @@ model Review {
   content     String?  // Text review
   reMatchIntent Boolean @default(true) @map("re_match_intent") // "다시 일하고 싶어요"
   
+  // Storage Abstraction: imageIds instead of URLs
+  imageIds    String[] @default([]) @map("image_ids")
+  
   keywords    ReviewKeyword[] // Many-to-many via implicit table or relation
 
   createdAt   DateTime @default(now()) @map("created_at")
@@ -387,4 +402,80 @@ model BusinessPortfolio {
   updatedAt         DateTime        @updatedAt @map("updated_at")
 
   @@map("business_portfolios")
+}
+
+// ================================
+// Community Board System
+// ================================
+
+model Board {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  category    String   // NOTICE, FREE, QNA, REVIEW_BOARD
+  isPublic    Boolean  @default(true) @map("is_public")
+  
+  posts       Post[]
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@map("boards")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  boardId   Int      @map("board_id")
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  authorId  Int      @map("author_id")
+  author    User     @relation(fields: [authorId], references: [id])
+  
+  title     String
+  content   String
+  imageIds  String[] @default([]) @map("image_ids") // Storage abstraction: ID only
+  views     Int      @default(0)
+  isPinned  Boolean  @default(false) @map("is_pinned")
+  
+  comments  Comment[]
+  likes     PostLike[]
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("posts")
+  @@index([boardId])
+  @@index([authorId])
+}
+
+model Comment {
+  id        Int       @id @default(autoincrement())
+  postId    Int       @map("post_id")
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId  Int       @map("author_id")
+  author    User      @relation(fields: [authorId], references: [id])
+  
+  content   String
+  parentId  Int?      @map("parent_id") // For nested comments (replies)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  
+  @@map("comments")
+  @@index([postId])
+  @@index([authorId])
+}
+
+model PostLike {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id])
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  @@unique([postId, userId]) // One like per user per post
+  @@map("post_likes")
 }

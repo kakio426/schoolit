@@ -19,8 +19,10 @@ import { NotificationsModule } from './notifications/notifications.module';
 import { BusinessProfileModule } from './business-profile/business-profile.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { FeedbackModule } from './feedback/feedback.module';
-// StorageModule removed - using text-only approach
+import { StorageModule } from './common/storage/storage.module';
 import { ContractsModule } from './context/contracts/contracts.module';
+import { BoardModule } from './board/board.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
@@ -43,8 +45,10 @@ import { ContractsModule } from './context/contracts/contracts.module';
     ReviewsModule,
     NotificationsModule,
     FeedbackModule,
-    // StorageModule, // Removed - no file upload
+    StorageModule,
     ContractsModule,
+    BoardModule,
+    SchedulerModule,
   ],
   controllers: [],
   providers: [],

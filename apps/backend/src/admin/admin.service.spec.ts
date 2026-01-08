@@ -27,6 +27,11 @@ describe('AdminService', () => {
               update: jest.fn().mockResolvedValue({ id: 1, isVerified: true }),
             },
             teacherProfile: { count: jest.fn() },
+            businessProfile: {
+              count: jest.fn(),
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn(),
+            },
             certification: {
               update: jest.fn(),
               findMany: jest.fn(),
@@ -50,6 +55,7 @@ describe('AdminService', () => {
       (prisma.jobListing.count as jest.Mock).mockResolvedValue(50);
       (prisma.schoolProfile.count as jest.Mock).mockResolvedValue(20);
       (prisma.teacherProfile.count as jest.Mock).mockResolvedValue(80);
+      (prisma.businessProfile.count as jest.Mock).mockResolvedValue(5);
 
       const stats = await service.getSystemStats();
       expect(stats).toEqual({
@@ -57,6 +63,8 @@ describe('AdminService', () => {
         totalJobs: 50,
         totalSchools: 20,
         totalTeachers: 80,
+        pendingSchools: 20, // Uses same mock, will return same value
+        pendingBusinesses: 5,
       });
     });
   });

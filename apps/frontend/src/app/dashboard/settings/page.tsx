@@ -146,10 +146,27 @@ export default function SettingsPage() {
                                 </button>
                             </div>
 
-                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                                <p className="text-sm text-red-500/80 font-medium">계정을 삭제하면 모든 데이터가 영구적으로 삭제되며 복구할 수 없습니다.</p>
-                                <button className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all text-xs shrink-0">
-                                    계정 탈퇴하기
+                            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 bg-white/50 dark:bg-black/20 rounded-2xl border border-red-100 dark:border-red-900/20">
+                                <div>
+                                    <h4 className="font-bold text-red-600 dark:text-red-400">회원 탈퇴</h4>
+                                    <p className="text-xs text-red-500/80">탈퇴 시 개인정보는 즉시 비공개 처리되며, 6개월 후 완전히 삭제됩니다.</p>
+                                </div>
+                                <button
+                                    onClick={async () => {
+                                        if (confirm('정말로 회원 탈퇴를 진행하시겠습니까?\n\n• 탈퇴 즉시 로그인이 불가능합니다.\n• 작성한 게시글과 리뷰는 유지되지만 작성자가 비공개 처리됩니다.\n• 개인정보는 6개월 후 완전히 삭제됩니다.')) {
+                                            try {
+                                                await api.delete('/users/me');
+                                                alert('회원 탈퇴가 완료되었습니다.\n이용해주셔서 감사합니다.');
+                                                localStorage.removeItem('accessToken');
+                                                window.location.href = '/';
+                                            } catch (e: any) {
+                                                alert(e.message || '탈퇴 처리에 실패했습니다.');
+                                            }
+                                        }
+                                    }}
+                                    className="px-6 py-3 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-all text-xs shrink-0"
+                                >
+                                    회원 탈퇴하기
                                 </button>
                             </div>
                         </div>

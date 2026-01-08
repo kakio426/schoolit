@@ -19,6 +19,12 @@ export class AuthService {
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
+
+    // 탈퇴한 계정 차단
+    if (user && user.isDeleted) {
+      return { isDeleted: true, message: '탈퇴한 계정입니다.' };
+    }
+
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       const result = { ...user };
       delete result.password;

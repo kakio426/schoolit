@@ -481,4 +481,95 @@ export class UserService {
       },
     });
   }
+
+  // ============================================
+  // Account Deletion (Soft Delete) - 개인정보보호법 준수
+  // ============================================
+
+  /**
+   * 회원 탈퇴 (Soft Delete)
+   * - isDeleted = true로 설정하고 개인정보를 마스킹합니다
+   * - 6개월 뒤 스케줄러에 의해 완전 삭제됩니다
+   */
+  async deleteAccount(userId: number): Promise<{ success: boolean; message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+
+    if (!user) {
+      throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    }
+
+    if (user.isDeleted) {
+      throw new ForbiddenException('이미 탈퇴한 계정입니다.');
+    }
+
+    // Soft delete with personal data masking
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        isDeleted: true,
+        deletedAt: new Date(),
+        // 개인정보 마스킹 (복구 가능하도록 ID 유지)
+        email: `deleted_${userId}_${Date.now()}@deleted.edupin.com`,
+        phone: null,
+        name: '탈퇴한 사용자',
+        password: null,
+        snsId: null,
+        verificationCode: null,
+        verificationExpires: null,
+        notificationSettings: null,
+      },
+    });
+
+    // 프로필 비공개 처리
+    await this.prisma.teacherProfile.updateMany({
+      where: { userId },
+      data: { isVerified: false, bio: null, bankAccount: null },
+    });
+
+    await this.prisma.schoolProfile.updateMany({
+      where: { userId },
+      data: { isVerified: false, description: null, phoneNumber: null },
+    });
+
+    await this.prisma.businessProfile.updateMany({
+      where: { userId },
+      data: {
+        isVerified: false,
+        description: null,
+        bankAccount: null,
+        registrationNum: null,
+      },
+    });
+
+    return {
+      success: true,
+      message: '회원 탈퇴가 완료되었습니다. 개인정보는 6개월 후 완전히 삭제됩니다.'
+    };
+  }
+
+  /**
+   * 활성 사용자만 조회 (탈퇴하지 않은 사용자)
+   */
+  async findActiveById(id: number) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!user || user.isDeleted) {
+      return null;
+    }
+
+    return user;
+  }
+
+  /**
+   * 탈퇴한 사용자인지 확인
+   */
+  async isDeletedUser(userId: number): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { isDeleted: true },
+    });
+
+    return user?.isDeleted ?? false;
+  }
 }
+
