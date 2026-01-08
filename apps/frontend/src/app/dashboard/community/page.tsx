@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import { MessageSquare, ThumbsUp, Eye, Plus, Pin } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Board {
     id: number;
@@ -39,6 +40,7 @@ interface PostsResponse {
 }
 
 export default function CommunityPage() {
+    const { user } = useAuth();
     const [boards, setBoards] = useState<Board[]>([]);
     const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
     const [posts, setPosts] = useState<Post[]>([]);
@@ -119,7 +121,7 @@ export default function CommunityPage() {
                         </h1>
                         <p className="text-gray-400 mt-1">학교, 선생님, 업체가 함께 소통하는 공간</p>
                     </div>
-                    {selectedBoard && (
+                    {selectedBoard && (selectedBoard.category !== 'NOTICE' || user?.role === 'ADMIN') && (
                         <Link
                             href={`/dashboard/community/write?boardId=${selectedBoard.id}`}
                             className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-medium hover:opacity-90 transition"

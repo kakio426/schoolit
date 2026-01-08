@@ -105,7 +105,7 @@ export class BoardController {
         @Body() body: { title: string; content: string },
         @UploadedFiles() files?: Express.Multer.File[],
     ) {
-        return this.boardService.createPost(req.user.userId, boardId, body, files);
+        return this.boardService.createPost(req.user.userId, req.user.role, boardId, body, files);
     }
 
     /**
@@ -135,7 +135,7 @@ export class BoardController {
         @Body() body: { title?: string; content?: string },
         @UploadedFiles() files?: Express.Multer.File[],
     ) {
-        return this.boardService.updatePost(postId, req.user.userId, body, files);
+        return this.boardService.updatePost(postId, req.user.userId, req.user.role, body, files);
     }
 
     /**

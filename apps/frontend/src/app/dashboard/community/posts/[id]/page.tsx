@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import Link from 'next/link';
 import { ArrowLeft, ThumbsUp, MessageSquare, Share2, Eye, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Author {
     id: number;
@@ -41,6 +42,7 @@ interface Post {
 }
 
 export default function PostDetailPage() {
+    const { user } = useAuth();
     const params = useParams();
     const router = useRouter();
     const postId = params?.id as string;
@@ -83,6 +85,28 @@ export default function PostDetailPage() {
             setLikeCount(prev => result.liked ? prev + 1 : prev - 1);
         } catch (error) {
             console.error('Failed to toggle like:', error);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!confirm('정말로 이 게시글을 삭제하시겠습니까?')) return;
+        try {
+            await api.delete(`/api/boards/posts/${postId}`);
+            router.push('/dashboard/community');
+        } catch (error: any) {
+            alert(error.message || '게시글 삭제에 실패했습니다.');
+        }
+    };
+
+    const handleCommentDelete = async (commentId: number) => {
+        if (!confirm('정말로 이 댓글을 삭제하시겠습니까?')) return;
+        try {
+            await api.delete(`/api/boards/comments/${commentId}`);
+            // 게시글 다시 불러오기
+            const data = await api.get<Post>(`/api/boards/posts/${postId}`);
+            setPost(data);
+        } catch (error: any) {
+            alert(error.message || '댓글 삭제에 실패했습니다.');
         }
     };
 
@@ -152,14 +176,33 @@ export default function PostDetailPage() {
                 <article className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden">
                     {/* Header */}
                     <header className="px-6 py-4 border-b border-gray-700/50">
-                        <div className="text-sm text-blue-400 mb-2">{post.board.title}</div>
-                        <h1 className="text-2xl font-bold">{post.title}</h1>
-                        <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
-                            <span className="font-medium text-white">{post.author.name}</span>
-                            <span>{formatDate(post.createdAt)}</span>
-                            <span className="flex items-center gap-1">
-                                <Eye size={14} /> {post.views}
-                            </span>
+                        <div className="flex justify-between items-start">
+                            <div className="flex-1 min-w-0">
+                                <div className="text-sm text-blue-400 mb-2">{post.board.title}</div>
+                                <h1 className="text-2xl font-bold truncate">{post.title}</h1>
+                                <div className="flex items-center gap-4 mt-3 text-sm text-gray-400">
+                                    <span className="font-medium text-white">{post.author.name}</span>
+                                    <span>{formatDate(post.createdAt)}</span>
+                                    <span className="flex items-center gap-1">
+                                        <Eye size={14} /> {post.views}
+                                    </span>
+                                </div>
+                            </div>
+                            {(user?.id === post.author.id || user?.role === 'ADMIN') && (
+                                <div className="flex items-center gap-2">
+                                    {(user?.id === post.author.id || user?.role === 'ADMIN') && (
+                                        <button className="p-2 text-gray-400 hover:text-white transition rounded-lg hover:bg-gray-700">
+                                            <Edit size={18} />
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={handleDelete}
+                                        className="p-2 text-gray-400 hover:text-red-400 transition rounded-lg hover:bg-gray-700"
+                                    >
+                                        <Trash2 size={18} />
+                                    </button>
+                                </div>
+                            )}
                         </div>
                     </header>
 
@@ -190,8 +233,8 @@ export default function PostDetailPage() {
                         <button
                             onClick={handleLike}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg transition ${liked
-                                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                    : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
+                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
                                 }`}
                         >
                             <ThumbsUp size={18} fill={liked ? 'currentColor' : 'none'} />
@@ -242,9 +285,19 @@ export default function PostDetailPage() {
                                         {comment.author.name[0]}
                                     </div>
                                     <div className="flex-1">
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-medium">{comment.author.name}</span>
-                                            <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-medium">{comment.author.name}</span>
+                                                <span className="text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                                            </div>
+                                            {(user?.id === comment.author.id || user?.role === 'ADMIN') && (
+                                                <button
+                                                    onClick={() => handleCommentDelete(comment.id)}
+                                                    className="p-1 text-gray-500 hover:text-red-400 transition"
+                                                >
+                                                    <Trash2 size={14} />
+                                                </button>
+                                            )}
                                         </div>
                                         <p className="mt-1 text-gray-300">{comment.content}</p>
 
@@ -253,9 +306,19 @@ export default function PostDetailPage() {
                                             <ul className="mt-3 space-y-3 pl-4 border-l-2 border-gray-700">
                                                 {comment.replies.map((reply) => (
                                                     <li key={reply.id}>
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="font-medium text-sm">{reply.author.name}</span>
-                                                            <span className="text-xs text-gray-500">{formatDate(reply.createdAt)}</span>
+                                                        <div className="flex items-center justify-between">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="font-medium text-sm">{reply.author.name}</span>
+                                                                <span className="text-xs text-gray-500">{formatDate(reply.createdAt)}</span>
+                                                            </div>
+                                                            {(user?.id === reply.author.id || user?.role === 'ADMIN') && (
+                                                                <button
+                                                                    onClick={() => handleCommentDelete(reply.id)}
+                                                                    className="p-1 text-gray-500 hover:text-red-400 transition"
+                                                                >
+                                                                    <Trash2 size={12} />
+                                                                </button>
+                                                            )}
                                                         </div>
                                                         <p className="mt-1 text-sm text-gray-400">{reply.content}</p>
                                                     </li>

@@ -65,11 +65,23 @@ export class BoardService {
 
     async createPost(
         userId: number,
+        userRole: string,
         boardId: number,
         data: { title: string; content: string },
         files?: Express.Multer.File[],
     ) {
-        // 1. Upload images if provided
+        // 1. Verify board and category
+        const board = await this.prisma.board.findUnique({ where: { id: boardId } });
+        if (!board) {
+            throw new NotFoundException('게시판을 찾을 수 없습니다.');
+        }
+
+        // 공지사항(NOTICE) 게시판은 관리자(ADMIN)만 작성 가능
+        if (board.category === 'NOTICE' && userRole !== 'ADMIN') {
+            throw new ForbiddenException('공지사항은 관리지만 작성할 수 있습니다.');
+        }
+
+        // 2. Upload images if provided
         const imageIds: string[] = [];
         if (files && files.length > 0) {
             for (const file of files.slice(0, 5)) { // Max 5 images
@@ -78,7 +90,7 @@ export class BoardService {
             }
         }
 
-        // 2. Create post
+        // 3. Create post
         return this.prisma.post.create({
             data: {
                 boardId,
@@ -185,6 +197,7 @@ export class BoardService {
     async updatePost(
         postId: number,
         userId: number,
+        userRole: string,
         data: { title?: string; content?: string },
         files?: Express.Multer.File[],
     ) {
@@ -194,7 +207,8 @@ export class BoardService {
             throw new NotFoundException('게시글을 찾을 수 없습니다.');
         }
 
-        if (post.authorId !== userId) {
+        const isAdmin = userRole === 'ADMIN';
+        if (post.authorId !== userId && !isAdmin) {
             throw new ForbiddenException('본인의 글만 수정할 수 있습니다.');
         }
 

@@ -54,6 +54,9 @@ function WritePostContent() {
         setError('');
 
         try {
+            // 보드 정보 가져와서 카테고리 확인
+            const board = await api.get<any>(`/api/boards/${boardId}`);
+
             const formData = new FormData();
             formData.append('title', title);
             formData.append('content', content);
@@ -62,7 +65,11 @@ function WritePostContent() {
             await api.upload(`/api/boards/${boardId}/posts`, formData);
             router.push('/dashboard/community');
         } catch (err: any) {
-            setError(err.message || '게시글 작성에 실패했습니다.');
+            if (err.status === 403) {
+                setError('이 게시판에 글을 쓸 권한이 없습니다 (관리자 전용).');
+            } else {
+                setError(err.message || '게시글 작성에 실패했습니다.');
+            }
         } finally {
             setSubmitting(false);
         }
