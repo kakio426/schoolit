@@ -24,9 +24,12 @@ const TARGET_GRADES = [
 ];
 
 const TEACHER_TYPES = [
-    { value: 'REGULAR', label: '정규 교사 (현직)' },
+    { value: 'REGULAR', label: '정규교사' },
     { value: 'FIXED_TERM', label: '기간제 교사' },
-    { value: 'INSTRUCTOR', label: '강사 (방과후/돌봄/기타)' },
+    { value: 'PART_TIME', label: '시간제 교사' },
+    { value: 'AFTER_SCHOOL', label: '방과후 강사' },
+    { value: 'CARE', label: '돌봄 강사' },
+    { value: 'NEULBOM', label: '늘봄 강사' },
     { value: 'OTHER', label: '기타' }
 ];
 
@@ -326,8 +329,8 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         <div>
                             <label className="block text-sm font-bold text-foreground mb-2">인재찾기 공개 설정</label>
                             <label className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${basicInfo.isSearchable
-                                    ? 'bg-primary/5 border-primary shadow-sm'
-                                    : 'bg-surface border-input-border hover:bg-slate-50 dark:hover:bg-slate-800'
+                                ? 'bg-primary/5 border-primary shadow-sm'
+                                : 'bg-surface border-input-border hover:bg-slate-50 dark:hover:bg-slate-800'
                                 }`}>
                                 <input
                                     type="checkbox"
@@ -337,10 +340,13 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                                 />
                                 <div className="flex-1">
                                     <span className={`block font-bold text-sm ${basicInfo.isSearchable ? 'text-primary' : 'text-foreground'}`}>
-                                        {basicInfo.isSearchable ? '공개 (학교에서 검색 가능)' : '비공개 (검색 불가)'}
+                                        {basicInfo.isSearchable ? '내 프로필 공개 중' : '내 프로필 공개하기'}
                                     </span>
-                                    <span className="text-xs text-foreground-muted block mt-1">
-                                        체크시 '인재 찾기' 목록에 노출되며, 학교로부터 스카웃 제안을 받을 수 있습니다.
+                                    <span className="text-xs text-foreground-muted block mt-1 leading-relaxed">
+                                        체크하면 학교 담당자가 '인재 찾기' 목록에서 선생님을 검색하고 스카웃 제안을 보낼 수 있습니다. <br />
+                                        <strong className={basicInfo.isSearchable ? 'text-primary' : 'text-foreground-muted'}>
+                                            {basicInfo.isSearchable ? '현재 학교에 노출되고 있습니다.' : '현재 비공개 상태입니다 (기본).'}
+                                        </strong>
                                     </span>
                                 </div>
                             </label>
