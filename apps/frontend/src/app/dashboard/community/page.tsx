@@ -114,8 +114,13 @@ export default function CommunityPage() {
         <div className="min-h-screen bg-gray-900 text-white p-6">
             <div className="max-w-6xl mx-auto">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
                     <div>
+                        <div className="flex items-center gap-2 text-sm text-gray-400 mb-2">
+                            <Link href="/dashboard" className="hover:text-white transition">대시보드</Link>
+                            <span>/</span>
+                            <span className="text-blue-400">커뮤니티</span>
+                        </div>
                         <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                             커뮤니티
                         </h1>
