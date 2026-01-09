@@ -1,16 +1,15 @@
 import { Font, StyleSheet } from '@react-pdf/renderer';
 
-// Register Korean Font from Google Fonts (CDN)
-// Using Noto Sans KR which has stable availability
+// Register Korean Font from Google Fonts (Local Files)
 Font.register({
-    family: 'NotoSansKR',
+    family: 'NanumGothic',
     fonts: [
         {
-            src: '/fonts/NotoSansKR-Regular.ttf',
+            src: '/fonts/NanumGothic-Regular.ttf',
             fontWeight: 'normal',
         },
         {
-            src: '/fonts/NotoSansKR-Bold.ttf',
+            src: '/fonts/NanumGothic-Bold.ttf',
             fontWeight: 'bold',
         },
     ],
@@ -19,7 +18,7 @@ Font.register({
 // Common Document Styles
 export const documentStyles = StyleSheet.create({
     page: {
-        fontFamily: 'NotoSansKR',
+        fontFamily: 'NanumGothic',
         fontSize: 11,
         padding: 50,
         lineHeight: 1.6,
