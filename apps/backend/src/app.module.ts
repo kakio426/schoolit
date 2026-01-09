@@ -25,6 +25,7 @@ import { BoardModule } from './board/board.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { DocumentsModule } from './documents/documents.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
+import { ComplianceModule } from './compliance/compliance.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { RecommendationsModule } from './recommendations/recommendations.module'
     SchedulerModule,
     DocumentsModule,
     RecommendationsModule,
+    ComplianceModule,
   ],
   controllers: [],
   providers: [],
