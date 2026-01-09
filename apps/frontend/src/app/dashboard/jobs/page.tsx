@@ -14,11 +14,17 @@ export default function JobsPage() {
     const [jobs, setJobs] = useState<JobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
-    const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(
-        user?.role === 'TEACHER' ? 'TEACHER_HIRING' :
-            user?.role === 'BUSINESS' ? 'EVENT_VENDOR' : null
-    );
+    const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'SEARCH' | 'MY'>('SEARCH');
+
+    // Sync filter when user loads
+    useEffect(() => {
+        if (user?.role === 'TEACHER') {
+            setJobTypeFilter('TEACHER_HIRING');
+        } else if (user?.role === 'BUSINESS') {
+            setJobTypeFilter('EVENT_VENDOR');
+        }
+    }, [user?.role]);
 
     useEffect(() => {
         if (user) {
@@ -79,6 +85,14 @@ export default function JobsPage() {
     const handleSearch = (filters: any) => {
         setSearchFilters(filters);
     };
+
+    if (!user) {
+        return (
+            <DashboardLayout>
+                <div className="text-center py-20 text-foreground-muted animate-pulse">사용자 확인 중...</div>
+            </DashboardLayout>
+        );
+    }
 
     if (user?.role === 'SCHOOL') {
         return (
