@@ -19,9 +19,7 @@ export class EmailService implements OnModuleInit {
     }
 
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // Use STARTTLS
+      service: 'gmail',
       auth: {
         user: user,
         pass: pass,
@@ -30,9 +28,9 @@ export class EmailService implements OnModuleInit {
         rejectUnauthorized: false,
         minVersion: 'TLSv1.2'
       },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000,
+      connectionTimeout: 15000,
+      greetingTimeout: 15000,
+      socketTimeout: 20000,
     });
   }
 
