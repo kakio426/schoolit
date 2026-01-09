@@ -164,6 +164,10 @@ export interface JobApplication {
     internalNote?: string;
     jobListing?: JobListing;
     user?: User;
+    cost?: number;
+    contactEmail?: string;
+    contactPhone?: string;
+    attachmentUrl?: string;
 }
 
 /**

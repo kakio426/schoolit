@@ -1,0 +1,177 @@
+"use client";
+
+import React, { useState, useRef } from 'react';
+import { X, Send, FileUp, CheckCircle, Paperclip } from 'lucide-react';
+
+interface QuickApplyModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    onSubmit: (data: any) => Promise<void>;
+    jobType: 'TEACHER_HIRING' | 'EVENT_VENDOR';
+    jobTitle: string;
+}
+
+export default function QuickApplyModal({
+    isOpen,
+    onClose,
+    onSubmit,
+    jobType,
+    jobTitle,
+}: QuickApplyModalProps) {
+    const [message, setMessage] = useState('');
+    const [cost, setCost] = useState('');
+    const [contact, setContact] = useState('');
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    if (!isOpen) return null;
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setSelectedFile(file);
+        }
+    };
+
+    const handleSubmit = async () => {
+        if (!message.trim()) {
+            alert('메시지를 입력해주세요.');
+            return;
+        }
+
+        if (jobType === 'EVENT_VENDOR' && (!cost || !contact)) {
+            alert('가견적과 담당자 연락처를 모두 입력해주세요.');
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await onSubmit({
+                message,
+                cost: jobType === 'EVENT_VENDOR' ? Number(cost.replace(/[^0-9]/g, '')) : undefined,
+                contactPhone: jobType === 'EVENT_VENDOR' ? contact : undefined,
+                // In a real app, you would upload the file to S3 and send the URL
+                attachmentUrl: selectedFile ? `temp_storage/${selectedFile.name}` : undefined,
+            });
+            onClose();
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 border border-white/10 relative">
+                {/* Header */}
+                <div className="p-8 pb-4">
+                    <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-primary bg-primary/10 px-2 py-1 rounded-lg">Quick Application</span>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+                    <h3 className="text-2xl font-black text-foreground leading-tight">{jobTitle}</h3>
+                    <p className="text-sm text-foreground-muted mt-2 font-medium">지원에 필요한 정보만 간결하게 입력해 주세요.</p>
+                </div>
+
+                {/* Body */}
+                <div className="p-8 pt-4 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    {jobType === 'EVENT_VENDOR' && (
+                        <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-foreground-muted uppercase ml-1">가견적 (KRW)</label>
+                                    <input
+                                        type="text"
+                                        value={cost}
+                                        onChange={(e) => setCost(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-black text-primary text-lg"
+                                        placeholder="예: 1,500,000"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-xs font-black text-foreground-muted uppercase ml-1">담당자 연락처</label>
+                                    <input
+                                        type="text"
+                                        value={contact}
+                                        onChange={(e) => setContact(e.target.value)}
+                                        className="w-full px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-2xl outline-none focus:ring-2 focus:ring-primary/20 transition-all font-bold"
+                                        placeholder="010-XXXX-XXXX"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <label className="text-xs font-black text-foreground-muted uppercase ml-1">제안/견적서 파일</label>
+                                <input
+                                    type="file"
+                                    ref={fileInputRef}
+                                    className="hidden"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.jpg,.png"
+                                />
+                                <button
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`w-full h-20 border-2 border-dashed rounded-3xl flex flex-col items-center justify-center gap-1 transition-all ${selectedFile ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-border bg-slate-50/50 hover:bg-slate-100 hover:border-primary/50'}`}
+                                >
+                                    {selectedFile ? (
+                                        <>
+                                            <div className="flex items-center gap-2 text-emerald-600 font-bold">
+                                                <CheckCircle className="w-4 h-4" /> {selectedFile.name}
+                                            </div>
+                                            <div className="text-[10px] text-emerald-500/70">파일이 정상적으로 선택되었습니다.</div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FileUp className="w-6 h-6 text-foreground-muted" />
+                                            <div className="text-sm font-bold text-foreground-muted">PDF 또는 이미지 업로드</div>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="space-y-2">
+                        <label className="text-xs font-black text-foreground-muted uppercase ml-1">
+                            {jobType === 'EVENT_VENDOR' ? '상세 제안 내용' : '간단한 인사말'}
+                        </label>
+                        <textarea
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder={
+                                jobType === 'EVENT_VENDOR'
+                                    ? "행사 구성 요약 및 업체의 강점을 입력해 주세요."
+                                    : "안녕하세요! 해당 공고에 지원하고자 합니다. 프로필 확인 부탁드립니다."
+                            }
+                            className="w-full h-40 px-5 py-4 bg-slate-50 dark:bg-slate-800/50 border border-border rounded-[28px] outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-all leading-relaxed font-medium"
+                        />
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="p-8 pt-0 flex gap-4">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="flex-1 py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-2xl shadow-primary/30 hover:bg-primary-hover active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-70"
+                    >
+                        {isSubmitting ? (
+                            <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                        ) : (
+                            <>
+                                <Send className="w-5 h-5" /> 지원/입찰서 제출하기
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

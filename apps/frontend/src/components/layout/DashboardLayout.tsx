@@ -77,11 +77,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
                 { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
             );
+        } else if (user?.role === 'BUSINESS') {
+            navItems.push(
+                { label: '행사 공고/입찰', href: '/dashboard/jobs', icon: '🏢' },
+                { label: '견적/계약 관리', href: '/dashboard/applications', icon: '📄' },
+                { label: '업체 정보 수정', href: '/dashboard/profile', icon: '🛠️' },
+            );
         } else {
             navItems.push(
-                { label: '채용 공고 찾기', href: '/dashboard/jobs', icon: '📋' },
-                { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
-                { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
+                { label: '대시보드', href: '/dashboard', icon: '🏠' },
+                { label: '지원 내역', href: '/dashboard/applications', icon: '📨' },
             );
         }
 

@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) {}
+  ) { }
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     // Check if job exists and is OPEN
@@ -58,6 +58,10 @@ export class ApplicationsService {
         jobId,
         userId,
         message: dto.message,
+        cost: dto.cost,
+        contactEmail: dto.contactEmail,
+        contactPhone: dto.contactPhone,
+        attachmentUrl: dto.attachmentUrl,
         status: 'PENDING',
       },
     });
@@ -158,7 +162,7 @@ export class ApplicationsService {
         },
         user: {
           include: {
-            teacherProfile: true,
+            teacherProfile: { include: { experiences: true } },
             businessProfile: true,
           },
         },
@@ -218,7 +222,7 @@ export class ApplicationsService {
       include: {
         user: {
           include: {
-            teacherProfile: true,
+            teacherProfile: { include: { experiences: true } },
             businessProfile: true,
           },
         },

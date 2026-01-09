@@ -6,10 +6,12 @@ import { ChatModule } from '../chat/chat.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PdfModule } from '../common/pdf/pdf.module';
 
+import { SchedulerModule } from '../scheduler/scheduler.module';
+
 @Module({
-  imports: [PrismaModule, ChatModule, NotificationsModule, PdfModule],
+  imports: [PrismaModule, ChatModule, NotificationsModule, PdfModule, SchedulerModule],
   providers: [ApplicationsService],
   controllers: [ApplicationsController],
   exports: [ApplicationsService],
 })
-export class ApplicationsModule {}
+export class ApplicationsModule { }

@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api } from '@/lib/api';
 import { API_BASE_URL } from '@/lib/constants';
 import AdminManager from './AdminManager';
+import { Upload, FileText, X, Check, Building } from 'lucide-react';
 
 const INITIAL_BUSINESS_CHECKLIST = [
     { id: 'bizRegistration', label: '사업자등록증 사본', description: '계약 시 사본 제출 필수.', checked: false },
@@ -28,13 +29,14 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
         address: '',
         canIssueTaxInvoice: false,
         categories: [] as string[],
-        bankAccount: ''
+        bankAccount: '',
+        registrationFile: '' // Added back
     });
     const [categoryInput, setCategoryInput] = useState('');
-    // registrationFile state removed
     const [checklist, setChecklist] = useState(INITIAL_BUSINESS_CHECKLIST);
     const [isSaving, setIsSaving] = useState(false);
     const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (user?.businessProfile) {
@@ -47,7 +49,8 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                 address: user.businessProfile.address || '',
                 canIssueTaxInvoice: user.businessProfile.canIssueTaxInvoice || false,
                 categories: user.businessProfile.categories || [],
-                bankAccount: user.businessProfile.bankAccount || ''
+                bankAccount: user.businessProfile.bankAccount || '',
+                registrationFile: user.businessProfile.registrationFile || ''
             });
 
             if (user.businessProfile.checklist) {
@@ -59,13 +62,26 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
         }
     }, [user]);
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Mock upload for now - In real implementation, upload to S3/Storage and get URL
+        // const formData = new FormData();
+        // formData.append('file', file);
+        // const res = await api.upload('/upload', formData);
+
+        // Simulating upload success
+        setFormData(prev => ({ ...prev, registrationFile: `uploads/${file.name}` }));
+        alert(`${file.name} 파일이 선택되었습니다. (실제 업로드 연동 필요)`);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSaving(true);
         setMessage(null);
 
         try {
-            // Convert checklist array to object
             const checklistObj = checklist.reduce((acc, item) => ({ ...acc, [item.id]: item.checked }), {});
 
             await api.post('/business-profiles', { ...formData, checklist: checklistObj });
@@ -108,9 +124,17 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-surface p-8 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-6">
+                <div className="flex items-center gap-3 pb-4 border-b border-border">
+                    <div className="p-3 bg-primary/10 rounded-xl text-primary"><Building className="w-6 h-6" /></div>
+                    <div>
+                        <h2 className="text-lg font-bold text-foreground">기본 정보</h2>
+                        <p className="text-sm text-foreground-muted">업체의 기본 정보를 정확히 입력해주세요.</p>
+                    </div>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-sm font-semibold text-foreground mb-2">업체명 (상호)</label>
+                        <label className="block text-sm font-semibold text-foreground mb-2">업체명 (상호) <span className="text-red-500">*</span></label>
                         <input
                             type="text"
                             name="companyName"
@@ -134,6 +158,39 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                     </div>
                 </div>
 
+                {/* File Upload Section */}
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2" htmlFor="registrationFile">사업자등록증 사본</label>
+                    <div className="relative group">
+                        <input
+                            id="registrationFile"
+                            data-testid="registration-file-input"
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleFileChange}
+                            className="hidden"
+                            accept=".pdf,.jpg,.png,.jpeg"
+                        />
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="w-full h-24 border-2 border-dashed border-border rounded-2xl flex items-center justify-center gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-all group-hover:border-primary/50"
+                        >
+                            {formData.registrationFile ? (
+                                <>
+                                    <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg"><Check className="w-5 h-5" /></div>
+                                    <span className="text-sm font-bold text-emerald-600 truncate max-w-[200px]">{formData.registrationFile}</span>
+                                    <span className="text-xs text-foreground-muted">(클릭하여 변경)</span>
+                                </>
+                            ) : (
+                                <>
+                                    <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-foreground-muted"><Upload className="w-5 h-5" /></div>
+                                    <span className="text-sm text-foreground-muted font-medium">사업자등록증 파일을 이곳에 업로드하세요 (PDF, 이미지)</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
                 {/* S2B Number Section */}
                 <div className="p-6 bg-blue-50/50 dark:bg-blue-900/10 rounded-2xl border border-blue-100 dark:border-blue-900/30">
                     <div className="flex items-center justify-between gap-2 mb-3">
@@ -142,9 +199,6 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                             <label className="block text-sm font-bold text-slate-900 dark:text-slate-100">학교장터(S2B) 업체번호 <span className="text-[10px] font-medium text-slate-400 ml-1">(선택사항)</span></label>
                         </div>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
-                        행정실의 원활한 계약 처리를 위해 S2B에 등록된 경우 번호를 입력해주세요.
-                    </p>
                     <div className="space-y-3">
                         <input
                             type="text"
@@ -153,7 +207,7 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                             onChange={handleChange}
                             disabled={formData.s2bNumber === 'S2B 미가입'}
                             className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all text-foreground disabled:bg-slate-50 disabled:text-slate-400"
-                            placeholder="예: 20240105-1234 (S2B 업체번호)"
+                            placeholder="예: 20240105-1234"
                         />
                         <label className="flex items-center gap-2 cursor-pointer">
                             <input
@@ -167,25 +221,25 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                                 }}
                                 className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                             />
-                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">S2B에 현재 등록되어 있지 않습니다.</span>
+                            <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">S2B 미가입 업체입니다.</span>
                         </label>
                     </div>
                 </div>
 
-                {/* Bank Account Section */}
-                <div className="p-6 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700">
-                    <label className="block text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">정산 계좌 정보 (정보 입력)</label>
+                {/* Bank Account */}
+                <div>
+                    <label className="block text-sm font-semibold text-foreground mb-2">정산 계좌 정보</label>
                     <input
                         type="text"
                         name="bankAccount"
                         value={formData.bankAccount}
                         onChange={handleChange}
-                        className="w-full px-4 py-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-foreground text-sm"
-                        placeholder="예: 농협 301-1234-5678-01 (법인/개인사업자 명의)"
+                        className="w-full px-4 py-3 bg-surface rounded-2xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-foreground font-mono"
+                        placeholder="예: 농협 301-1234-5678-01 (법인명)"
                     />
-                    <p className="text-[10px] text-slate-400 mt-2">*실제 통장사본은 학교 행정실 요청 시 오프라인으로 제출해 주세요.</p>
                 </div>
 
+                {/* Description */}
                 <div>
                     <label className="block text-sm font-semibold text-foreground mb-2">업체 소개</label>
                     <textarea
@@ -207,7 +261,7 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                             value={formData.website}
                             onChange={handleChange}
                             className="w-full px-4 py-3 bg-surface rounded-2xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-foreground"
-                            placeholder="https://example.com"
+                            placeholder="https://"
                         />
                     </div>
                     <div>
@@ -218,13 +272,13 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                             value={formData.address}
                             onChange={handleChange}
                             className="w-full px-4 py-3 bg-surface rounded-2xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all text-foreground"
-                            placeholder="예: 서울특별시 강남구..."
+                            placeholder="주소 입력"
                         />
                     </div>
                 </div>
 
-                {/* Tax Invoice & Categories */}
-                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                {/* Categories */}
+                <div className="pt-4 border-t border-border">
                     <div className="flex items-center gap-3 mb-6">
                         <input
                             type="checkbox"
@@ -277,20 +331,17 @@ export default function BusinessProfileForm({ user, token, onRefresh }: Business
                 quickData={[
                     { label: '사업자등록번호', value: formData.registrationNum || '(미입력)' },
                     { label: 'S2B 업체번호', value: formData.s2bNumber || '(미입력)' },
-                    { label: '사업자 계좌', value: formData.bankAccount || '(미입력)' },
-                    { label: '업체명', value: formData.companyName || '' },
+                    { label: '정산 계좌', value: formData.bankAccount || '(미입력)' },
                 ]}
             />
 
-            {
-                message && (
-                    <div className={`p-4 rounded-2xl text-sm font-medium ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-900/50' : 'bg-red-50 text-red-700 border border-red-100 dark:bg-red-900/30 dark:text-red-400 dark:border-red-900/50'}`}>
-                        {message.text}
-                    </div>
-                )
-            }
+            {message && (
+                <div className={`p-4 rounded-2xl text-sm font-medium animate-in fade-in slide-in-from-bottom-2 ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-50 text-red-700 border border-red-100 dark:bg-red-900/30 dark:text-red-400'}`}>
+                    {message.text}
+                </div>
+            )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end pb-20">
                 <button
                     type="submit"
                     disabled={isSaving}

@@ -11,9 +11,15 @@ import ComplianceCheck from '@/components/ui/ComplianceCheck';
 import UserProfileModal from '@/components/profile/UserProfileModal';
 import ChecklistPopover from '@/components/applications/ChecklistPopover';
 import InternalMemo from '@/components/applications/InternalMemo';
+import PDFDownloadButton from '@/components/documents/PDFDownloadButton';
+import Seosik1_HiringPlan from '@/lib/documents/Seosik1_HiringPlan';
+import KanbanBoard from '@/components/applications/KanbanBoard';
+import EvaluationModal from '@/components/applications/EvaluationModal';
 import { api } from '@/lib/api';
 import { JobApplication, JobListing } from '@/types';
 import { ApplicationStatus, Role, JobType } from '@/lib/constants';
+import { Calculator } from 'lucide-react';
+
 
 export default function JobApplicantsPage() {
     const { id } = useParams(); // jobId
@@ -27,6 +33,8 @@ export default function JobApplicantsPage() {
 
     // Profile Modal State
     const [viewProfileId, setViewProfileId] = useState<number | null>(null);
+    const [evalApplicant, setEvalApplicant] = useState<JobApplication | null>(null);
+
 
     // Compliance States
     const [showTimerWarning, setShowTimerWarning] = useState(false);
@@ -144,6 +152,24 @@ export default function JobApplicantsPage() {
         }
     };
 
+    const handleSaveEvaluation = async (appId: number, scores: Record<string, number>, total: number, comment: string) => {
+        try {
+            // Note: Ensure Backend API endpoint '/evaluations' exists and accepts this payload
+            await api.post('/evaluations', {
+                jobListingId: Number(id),
+                applicationId: appId,
+                type: 'DOCUMENT', // Defaulting to DOCUMENT for now, logic can be refined to detect stage
+                totalScore: total,
+                criteriaScores: scores,
+                comment: comment
+            });
+            alert('심사 결과가 저장되었습니다.');
+        } catch (e: any) {
+            console.error(e);
+            alert(e.message || '심사 저장 실패');
+        }
+    };
+
     const getStatusText = (status: ApplicationStatus) => {
         switch (status) {
             case ApplicationStatus.PENDING: return '대기 중';
@@ -196,6 +222,7 @@ export default function JobApplicantsPage() {
     const stages = job?.jobType === JobType.EVENT_VENDOR ? eventStages : teacherStages;
 
     const [activeTab, setActiveTab] = useState<ApplicationStatus>(ApplicationStatus.PENDING);
+    const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
     const filteredApplicants = applicants.filter(a => a.status === activeTab || (activeTab === ApplicationStatus.PENDING && !a.status));
 
     if (user?.role !== Role.SCHOOL && user?.role !== Role.TEACHER) {
@@ -204,7 +231,7 @@ export default function JobApplicantsPage() {
 
     return (
         <DashboardLayout>
-            <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+            <div className={`mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20 ${viewMode === 'kanban' ? 'max-w-full px-4' : 'max-w-5xl'}`}>
                 <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
                         <div className="flex items-center gap-2 mb-2">
@@ -218,42 +245,115 @@ export default function JobApplicantsPage() {
                         </h1>
                         <p className="text-foreground-muted text-lg font-medium">지원 현황 및 전형 단계를 관리합니다.</p>
                     </div>
-                    {job && (
-                        <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <span className={`px-2 py-1 text-[10px] font-black rounded-lg ${(job as any).jobType === 'EVENT_VENDOR'
-                                ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
-                                : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
-                                }`}>
-                                {(job as any).jobType === 'EVENT_VENDOR' ? '🎪 행사 업체 공고' : '👨‍🏫 강사 채용 공고'}
-                            </span>
-                        </div>
-                    )}
-                </div>
-
-                {/* Pipeline Tabs */}
-                <div className="flex overflow-x-auto gap-2 mb-8 no-scrollbar pb-2">
-                    {stages.map((stage) => {
-                        const count = applicants.filter(a => a.status === stage.id).length;
-                        return (
+                    <div className="flex items-center gap-4">
+                        {/* View Mode Toggle */}
+                        <div className="flex items-center gap-1 bg-surface border border-border rounded-xl p-1">
                             <button
-                                key={stage.id}
-                                onClick={() => setActiveTab(stage.id)}
-                                className={`flex items-center gap-2 px-6 py-4 rounded-[24px] font-bold border-2 transition-all whitespace-nowrap ${activeTab === stage.id
-                                    ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
-                                    : 'bg-surface border-border text-foreground-muted hover:border-primary/20 dark:border-slate-700'
-                                    }`}
+                                onClick={() => setViewMode('list')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'list' ? 'bg-primary text-white shadow-sm' : 'text-foreground-muted hover:text-foreground'}`}
                             >
-                                <span className="text-xl">{stage.icon}</span>
-                                <span className="text-foreground">{stage.label}</span>
-                                <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] ${activeTab === stage.id ? 'bg-white/20' : 'bg-background dark:bg-slate-800 text-foreground-muted'}`}>
-                                    {count}
-                                </span>
+                                📋 리스트
                             </button>
-                        );
-                    })}
+                            <button
+                                onClick={() => setViewMode('kanban')}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-primary text-white shadow-sm' : 'text-foreground-muted hover:text-foreground'}`}
+                            >
+                                📊 칸반
+                            </button>
+                        </div>
+                        {job && (
+                            <div className="flex flex-col items-end gap-3">
+                                <div className="bg-white dark:bg-slate-800 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                    <span className={`px-2 py-1 text-[10px] font-black rounded-lg ${(job as any).jobType === 'EVENT_VENDOR'
+                                        ? 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400'
+                                        : 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400'
+                                        }`}>
+                                        {(job as any).jobType === 'EVENT_VENDOR' ? '🎪 행사 업체 공고' : '👨‍🏫 강사 채용 공고'}
+                                    </span>
+                                </div>
+
+                                {/* Hiring Plan Download (Seosik 1) */}
+                                {(job as any).jobType === 'TEACHER_HIRING' && (
+                                    <PDFDownloadButton
+                                        label="채용계획서(서식1) 받기"
+                                        fileName={`hiring_plan_${job.id}.pdf`}
+                                        document={
+                                            <Seosik1_HiringPlan
+                                                data={{
+                                                    schoolName: job.schoolProfile?.schoolName || '본교',
+                                                    draftNumber: (job as any).draftDocumentNumber || '미정',
+                                                    draftDate: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-',
+                                                    hiringReason: (job as any).hiringReason || '결원',
+                                                    originalTeacherName: (job as any).originalTeacherName || '미입력',
+                                                    subject: (job as any).subjects?.[0] || '전과목',
+                                                    contractStart: (job as any).contractStartDate || '2025-03-01',
+                                                    contractEnd: (job as any).contractEndDate || '2025-08-31',
+                                                }}
+                                            />
+                                        }
+                                    />
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {isLoading ? (
+                {/* Pipeline Tabs (List View Only) */}
+                {viewMode === 'list' && (
+                    <div className="flex overflow-x-auto gap-2 mb-8 no-scrollbar pb-2">
+                        {stages.map((stage) => {
+                            const count = applicants.filter(a => a.status === stage.id).length;
+                            return (
+                                <button
+                                    key={stage.id}
+                                    onClick={() => setActiveTab(stage.id)}
+                                    className={`flex items-center gap-2 px-6 py-4 rounded-[24px] font-bold border-2 transition-all whitespace-nowrap ${activeTab === stage.id
+                                        ? 'bg-primary border-primary text-white shadow-lg shadow-primary/20'
+                                        : 'bg-surface border-border text-foreground-muted hover:border-primary/20 dark:border-slate-700'
+                                        }`}
+                                >
+                                    <span className="text-xl">{stage.icon}</span>
+                                    <span className="text-foreground">{stage.label}</span>
+                                    <span className={`ml-1 px-2 py-0.5 rounded-full text-[10px] ${activeTab === stage.id ? 'bg-white/20' : 'bg-background dark:bg-slate-800 text-foreground-muted'}`}>
+                                        {count}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* KANBAN VIEW */}
+                {viewMode === 'kanban' && !isLoading && (
+                    <KanbanBoard
+                        applicants={applicants.map(a => ({
+                            id: a.id,
+                            userId: Number(a.user?.id) || 0,
+                            userName: a.user?.name || '이름 없음',
+                            userEmail: a.user?.email,
+                            userPhone: a.user?.phone || undefined,
+                            status: a.status as ApplicationStatus,
+                            message: a.message,
+                            internalNote: a.internalNote,
+                            createdAt: a.createdAt || '',
+                            profileImage: a.user?.teacherProfile?.profileImage || undefined,
+                            experience: a.user?.teacherProfile?.experiences?.[0]?.title || undefined,
+                            subjects: a.user?.teacherProfile?.subjects || undefined,
+                        }))}
+                        jobType={(job?.jobType as 'TEACHER_HIRING' | 'EVENT_VENDOR') || 'TEACHER_HIRING'}
+                        onStatusChange={(appId, newStatus) => updateStatus(appId, newStatus)}
+                        onViewProfile={(appId) => {
+                            const app = applicants.find(a => a.id === appId);
+                            if (app?.user?.id) setViewProfileId(Number(app.user.id));
+                        }}
+                        onStartChat={(userId) => startChat(userId)}
+                        onDownloadContract={(appId) => downloadContract(appId, (job?.jobType as JobType) || JobType.TEACHER_HIRING)}
+                        onSaveEvaluation={handleSaveEvaluation}
+                    />
+                )}
+
+                {/* LIST VIEW */}
+                {viewMode === 'list' && (isLoading ? (
                     <div className="text-center py-20 text-foreground-muted">로딩 중...</div>
                 ) : filteredApplicants.length === 0 ? (
                     <div className="text-center py-24 bg-surface rounded-[40px] border border-border shadow-sm">
@@ -311,7 +411,17 @@ export default function JobApplicantsPage() {
 
                                     {/* School Private Memo */}
                                     {job?.schoolId === user?.id && (
-                                        <InternalMemo applicationId={app.id} initialMemo={app.internalNote} />
+                                        <div className="space-y-4">
+                                            <InternalMemo applicationId={app.id} initialMemo={app.internalNote} />
+
+                                            {/* [EMERGENCY ACTION] Always show evaluate button for matching school owner */}
+                                            <button
+                                                onClick={() => setEvalApplicant(app)}
+                                                className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black text-base shadow-2xl shadow-indigo-600/40 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-2"
+                                            >
+                                                <Calculator className="w-5 h-5" /> 📊 이 지원자 평가표 전산 입력
+                                            </button>
+                                        </div>
                                     )}
 
                                     {/* Verification & Docs Shelf */}
@@ -386,38 +496,55 @@ export default function JobApplicantsPage() {
 
                                             {/* DOCUMENT_SCREENING -> NEXT STEP */}
                                             {app.status === ApplicationStatus.DOCUMENT_SCREENING && (
-                                                <>
+                                                <div className="flex flex-col gap-2 w-full">
                                                     <button
-                                                        onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
-                                                        className="w-full py-3 bg-success text-white rounded-xl font-black hover:bg-emerald-600 transition-all shadow-md active:scale-95 text-sm"
+                                                        onClick={() => setEvalApplicant(app)}
+                                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 active:scale-95 text-base flex items-center justify-center gap-2"
                                                     >
-                                                        면접/시연 제안
+                                                        <Calculator className="w-5 h-5" /> 서류 평가표 작성
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleStatusClick(app.id, ApplicationStatus.PENDING)}
-                                                        className="w-full py-2 bg-surface hover:bg-surface-hover border border-success text-success rounded-xl font-bold transition-all text-xs"
-                                                    >
-                                                        ↩️ 이전 단계로
-                                                    </button>
-                                                </>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.INTERVIEWING)}
+                                                            className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 text-sm shadow-sm"
+                                                        >
+                                                            면접 제안
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.PENDING)}
+                                                            className="px-4 py-3 bg-white border border-border text-foreground-muted rounded-xl hover:bg-background text-sm"
+                                                        >
+                                                            ↩️
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             )}
 
                                             {/* INTERVIEWING -> NEXT STEP */}
                                             {app.status === ApplicationStatus.INTERVIEWING && (
-                                                <>
+                                                <div className="flex flex-col gap-2 w-full">
                                                     <button
-                                                        onClick={() => handleStatusClick(app.id, ApplicationStatus.VERIFICATION)}
-                                                        className="w-full py-3 bg-success text-white rounded-xl font-black hover:bg-emerald-600 transition-all shadow-md active:scale-95 text-sm"
+                                                        onClick={() => setEvalApplicant(app)}
+                                                        className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black hover:bg-indigo-700 shadow-xl shadow-indigo-500/20 active:scale-95 text-base flex items-center justify-center gap-2"
+                                                        data-testid="btn-evaluate"
                                                     >
-                                                        결격사유 확인
+                                                        <Calculator className="w-5 h-5" /> 면접 평가표 작성
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleStatusClick(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
-                                                        className="w-full py-2 bg-surface hover:bg-surface-hover border border-success text-success rounded-xl font-bold transition-all text-xs"
-                                                    >
-                                                        ↩️ 이전 단계로 (서류)
-                                                    </button>
-                                                </>
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.VERIFICATION)}
+                                                            className="flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold hover:bg-emerald-600 text-sm shadow-sm"
+                                                        >
+                                                            결격사유 확인
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleStatusClick(app.id, ApplicationStatus.DOCUMENT_SCREENING)}
+                                                            className="px-4 py-3 bg-white border border-border text-foreground-muted rounded-xl hover:bg-background text-sm"
+                                                        >
+                                                            ↩️
+                                                        </button>
+                                                    </div>
+                                                </div>
                                             )}
 
                                             {/* VERIFICATION -> HIRED */}
@@ -510,7 +637,7 @@ export default function JobApplicantsPage() {
                             </div>
                         ))}
                     </div>
-                )}
+                ))}
 
                 <div className="mt-12 p-8 rounded-3xl bg-blue-50/50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/30 text-center">
                     <p className="text-xs text-blue-800 dark:text-blue-300 leading-relaxed font-medium">
@@ -518,7 +645,7 @@ export default function JobApplicantsPage() {
                         플랫폼은 베타 연구용(Research Prototype) 서비스로서 어떠한 법적 계약 대행 및 보증 책임도 지지 않습니다.
                     </p>
                     <p className="text-[10px] text-slate-400 mt-3 italic">
-                        「개인정보 보호법」에 따라 지원자의 개인정보는 90일 후 자동으로 파기됩니다. 지원 서류의 관리는 학교 보안 규정을 준수해 주세요.
+                        「개인정보 보호법」에 따라 지원자의 개인정보는 채용 확정 혹은 탈락 후 7일 뒤 자동으로 파기됩니다. 지원 서류의 관리는 학교 보안 규정을 준수해 주세요.
                     </p>
                 </div>
             </div>
@@ -575,6 +702,17 @@ export default function JobApplicantsPage() {
                 onConfirm={handleComplianceConfirmed}
                 candidateName={applicants.find(a => a.id === pendingApplicantId)?.user?.name || '지원자'}
             />
+
+            {evalApplicant && (
+                <EvaluationModal
+                    isOpen={!!evalApplicant}
+                    onClose={() => setEvalApplicant(null)}
+                    applicantName={evalApplicant.user?.name || '지원자'}
+                    type={evalApplicant.status === ApplicationStatus.DOCUMENT_SCREENING ? 'DOCUMENT' : 'INTERVIEW'}
+                    onSubmit={(scores, total, comment) => handleSaveEvaluation(evalApplicant.id, scores, total, comment)}
+                />
+            )}
         </DashboardLayout >
+
     );
 }

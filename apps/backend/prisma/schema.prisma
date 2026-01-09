@@ -321,6 +321,12 @@ model JobApplication {
   viewedAt     DateTime?         @map("viewed_at")
   internalNote String?           @map("internal_note")
   
+  // Business/Bidding fields
+  cost         Int?              // 견적 금액
+  contactEmail String?           @map("contact_email")
+  contactPhone String?           @map("contact_phone")
+  attachmentUrl String?          @map("attachment_url") // 견적서 파일 경로
+  
   // 2025 Compliance: Evaluations relation
   evaluations  Evaluation[]
 

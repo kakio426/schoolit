@@ -8,6 +8,9 @@ import DashboardLayout from '@/components/layout/DashboardLayout';
 import { api } from '@/lib/api';
 import { JobListing, JobApplication } from '@/types';
 import { Role } from '@/lib/constants';
+import QuickApplyModal from '@/components/applications/QuickApplyModal';
+import StandardCard, { StandardBadge } from '@/components/ui/StandardCard';
+import { Calendar, MapPin, Clock, BookOpen, User, Building, ExternalLink, ChevronLeft, Send, CheckCircle, FileText } from 'lucide-react';
 
 export default function JobDetailPage() {
     const { id } = useParams();
@@ -15,9 +18,20 @@ export default function JobDetailPage() {
     const { user } = useAuth();
     const [job, setJob] = useState<JobListing | null>(null);
     const [isLoading, setIsLoading] = useState(true);
-    const [message, setMessage] = useState('');
     const [isApplying, setIsApplying] = useState(false);
     const [hasApplied, setHasApplied] = useState(false);
+    const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+
+    const profileCompleteness = user?.role === 'TEACHER' ? 85 : 100;
+    const isProfileIncomplete = profileCompleteness < 80;
+
+    const handleApplyClick = () => {
+        if (isProfileIncomplete) {
+            alert(`프로필이 ${profileCompleteness}% 완성되었습니다. 80% 이상 작성해야 지원 가능합니다.`);
+            return;
+        }
+        setIsApplyModalOpen(true);
+    };
 
     useEffect(() => {
         if (id) {
@@ -47,14 +61,10 @@ export default function JobDetailPage() {
         }
     };
 
-    const handleApply = async () => {
-        if (!message.trim()) {
-            alert('지원 메시지를 입력해주세요.');
-            return;
-        }
+    const handleApplySubmit = async (data: any) => {
         setIsApplying(true);
         try {
-            await api.post(`/applications/${id}/apply`, { message });
+            await api.post(`/applications/${id}/apply`, data);
             alert('지원이 완료되었습니다!');
             setHasApplied(true);
             router.push('/dashboard/applications');
@@ -65,291 +75,251 @@ export default function JobDetailPage() {
         }
     };
 
-    if (isLoading) return <DashboardLayout><div className="text-center py-20 text-foreground-muted">로딩 중...</div></DashboardLayout>;
-    if (!job) return <DashboardLayout><div className="text-center py-20 text-foreground-muted">공고를 찾을 수 없습니다.</div></DashboardLayout>;
+    if (isLoading) return <DashboardLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div></DashboardLayout>;
+    if (!job) return <DashboardLayout><div className="text-center py-20">공고를 찾을 수 없습니다.</div></DashboardLayout>;
+
+    const isTeacherHiring = (job as any).jobType === 'TEACHER_HIRING';
+    const isEventVendor = (job as any).jobType === 'EVENT_VENDOR';
 
     return (
         <DashboardLayout>
-            <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
-                <button
-                    onClick={() => router.back()}
-                    className="mb-6 text-foreground-muted hover:text-foreground transition-colors flex items-center gap-2 group"
-                >
-                    <span className="group-hover:-translate-x-1 transition-transform">←</span> 뒤로 가기
-                </button>
-
-                <div className="bg-surface rounded-3xl border border-border shadow-sm overflow-hidden border-b-4 border-b-primary/20">
-                    <div className="p-8 md:p-12 border-b border-border bg-background/30 dark:bg-background/10">
-                        <div className="flex flex-wrap gap-2 mb-6">
-                            {job.subjects?.map((s: string) => (
-                                <span key={s} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 text-xs font-bold rounded-full border border-blue-200 dark:border-blue-800">
-                                    {s}
-                                </span>
-                            ))}
-                            {job.regions?.map((r: string) => (
-                                <span key={r} className="px-3 py-1 bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 text-xs font-bold rounded-full border border-orange-200 dark:border-orange-800">
-                                    {r}
-                                </span>
-                            ))}
-                        </div>
-                        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-6 leading-tight">{job.title}</h1>
-                        <div className="flex flex-wrap items-center gap-4 md:gap-6 text-foreground-muted">
-                            <div className="flex items-center gap-2 bg-surface px-4 py-2 rounded-2xl border border-border shadow-sm">
-                                <span className="text-xl">🏫</span>
-                                <span className="font-bold text-foreground">
-                                    {job.schoolProfile?.schoolName || (job as any).teacherProfile?.user?.name || '작성자 정보 없음'}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span>📅</span>
-                                <span>{job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-'} 등록</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${job.active ? 'bg-success' : 'bg-error'} animate-pulse`}></span>
-                                <span className="font-bold">{job.active ? '모집 중' : '모집 마감'}</span>
-                            </div>
-                        </div>
+            <div className="max-w-6xl mx-auto pb-24">
+                {/* Header Navigation */}
+                <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <button
+                        onClick={() => router.back()}
+                        className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors font-medium"
+                    >
+                        <ChevronLeft className="w-5 h-5" /> 뒤로 가기
+                    </button>
+                    <div className="flex gap-2">
+                        {job.active ? (
+                            <StandardBadge variant="primary" className="animate-pulse">모집 중</StandardBadge>
+                        ) : (
+                            <StandardBadge variant="error">모집 완료</StandardBadge>
+                        )}
+                        <StandardBadge variant="indigo">{(job as any).jobType === 'EVENT_VENDOR' ? '🏢 행사/입찰' : '🎓 교사 채용'}</StandardBadge>
                     </div>
+                </div>
 
-                    <div className="p-8 md:p-12">
-                        <div className="mb-12">
-                            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-                                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
-                                공고 상세 내용
-                            </h2>
-                            <div className="text-foreground leading-relaxed whitespace-pre-wrap text-lg bg-background p-8 rounded-3xl border border-border">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    {/* Left Column: Main Content */}
+                    <div className="lg:col-span-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Title Section */}
+                        <div className="space-y-4">
+                            <div className="flex flex-wrap gap-2">
+                                {job.subjects?.map(s => <StandardBadge key={s} variant="primary">{s}</StandardBadge>)}
+                                {job.regions?.map(r => <StandardBadge key={r} variant="indigo">{r}</StandardBadge>)}
+                            </div>
+                            <h1 className="text-3xl md:text-4xl font-black text-foreground leading-[1.2]">{job.title}</h1>
+                            <div className="flex items-center gap-4 text-foreground-muted text-sm">
+                                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {new Date(job.createdAt).toLocaleDateString()} 등록</span>
+                                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 조회수 124</span>
+                            </div>
+                        </div>
+
+                        {/* Description Card */}
+                        <StandardCard title="공고 상세 내용" icon={<FileText className="w-5 h-5 text-primary" />}>
+                            <div className="text-foreground leading-relaxed whitespace-pre-wrap text-[17px]">
                                 {job.description}
                             </div>
-                        </div>
+                        </StandardCard>
 
-                        <div className="bg-surface-hover dark:bg-surface/50 rounded-3xl p-8 border border-border">
-                            <h2 className="text-xl font-bold text-foreground mb-6">📍 상세 요건</h2>
-
-                            {/* Teacher Hiring Details */}
-                            {(job as any).jobType === 'TEACHER_HIRING' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-border">
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">계약 기간</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).contractPeriod || '협의'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">주당 수업 시수</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).teachingHours ? `${(job as any).teachingHours}시간` : '협의'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">담당 학년</div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {(job as any).gradeLevel?.length > 0
-                                                ? (job as any).gradeLevel.map((lvl: string) => (
-                                                    <span key={lvl} className="px-2 py-1 bg-surface dark:bg-slate-700/50 rounded border border-border font-bold text-foreground">
-                                                        {lvl}
-                                                    </span>
-                                                ))
-                                                : <span className="text-foreground font-bold text-base">무관</span>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Event Vendor Details */}
-                            {(job as any).jobType === 'EVENT_VENDOR' && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm mb-8 pb-8 border-b border-border">
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">행사 종류</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).eventType || '기타'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">행사 기간/시간</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).eventDuration || '협의'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">참가 예상 인원</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).participantCount || '미정'}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-foreground-muted mb-2 font-medium">장비/교구 제공</div>
-                                        <div className="text-foreground font-bold text-base">{(job as any).equipmentProvided ? '학교 제공 불필요 (업체 지참)' : '학교 제공 필요'}</div>
-                                    </div>
-                                    <div className="col-span-1 md:col-span-2">
-                                        <div className="text-foreground-muted mb-2 font-medium">필수 자격 요건</div>
-                                        <div className="flex flex-wrap gap-2">
-                                            {(job as any).certifications?.length > 0
-                                                ? (job as any).certifications.map((cert: string) => (
-                                                    <span key={cert} className="px-3 py-1 bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-lg border border-purple-200 dark:border-purple-800 font-bold">
-                                                        {cert}
-                                                    </span>
-                                                ))
-                                                : <span className="text-foreground-muted">-</span>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <h2 className="text-xl font-bold text-foreground mb-6">
-                                {job.schoolProfile ? '🏫 학교 정보' : '👤 요청자 정보'}
-                            </h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
-                                {job.schoolProfile ? (
+                        {/* Detailed Requirements Card */}
+                        <StandardCard title="상세 요건" icon={<BookOpen className="w-5 h-5 text-indigo-500" />}>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                                {isTeacherHiring && (
                                     <>
-                                        <div>
-                                            <div className="text-foreground-muted mb-2 font-medium">학교 위치</div>
-                                            <div className="text-foreground font-bold text-base">{job.schoolProfile.address || '정보 없음'}</div>
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">계약 기간</div>
+                                            <div className="text-lg font-black text-foreground">{(job as any).contractPeriod || '협의'}</div>
                                         </div>
-                                        <div>
-                                            <div className="text-foreground-muted mb-2 font-medium">홈페이지</div>
-                                            <div className="text-foreground font-bold text-base">
-                                                {job.schoolProfile.website ? (
-                                                    <a href={job.schoolProfile.website} target="_blank" rel="noreferrer" className="text-primary hover:underline">
-                                                        {job.schoolProfile.website} ↗
-                                                    </a>
-                                                ) : '정보 없음'}
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">주당 수업 시수</div>
+                                            <div className="text-lg font-black text-foreground">{(job as any).teachingHours ? `${(job as any).teachingHours}시간` : '협의'}</div>
+                                        </div>
+                                        <div className="md:col-span-2 space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">담당 학년</div>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {(job as any).gradeLevel?.map((lvl: string) => (
+                                                    <span key={lvl} className="px-3 py-1 bg-background border border-border rounded-lg text-sm font-bold text-foreground">{lvl}</span>
+                                                ))}
                                             </div>
                                         </div>
                                     </>
-                                ) : (
+                                )}
+                                {isEventVendor && (
                                     <>
-                                        <div>
-                                            <div className="text-foreground-muted mb-2 font-medium">요청자</div>
-                                            <div className="text-foreground font-bold text-base">{(job as any).teacherProfile?.user?.name || '정보 없음'}</div>
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">행사 종류</div>
+                                            <div className="text-lg font-black text-foreground">{(job as any).eventType || '전체'}</div>
                                         </div>
-                                        <div>
-                                            <div className="text-foreground-muted mb-2 font-medium">비고</div>
-                                            <div className="text-foreground font-bold text-base">선생님 개별 요청</div>
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">참가 예상 인원</div>
+                                            <div className="text-lg font-black text-foreground">{(job as any).participantCount || '미정'}</div>
+                                        </div>
+                                        <div className="space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">장비/교구 제공</div>
+                                            <div className="text-lg font-black text-foreground">{(job as any).equipmentProvided ? '업체 지참 권장' : '학교 측 제공'}</div>
+                                        </div>
+                                        <div className="md:col-span-2 space-y-1">
+                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">필수 자격 요건</div>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                                {(job as any).certifications?.map((cert: string) => (
+                                                    <span key={cert} className="px-3 py-1 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded-lg text-sm font-bold">{cert}</span>
+                                                ))}
+                                            </div>
                                         </div>
                                     </>
                                 )}
                             </div>
-                        </div>
+                        </StandardCard>
 
-
-                        {/* Application Section */}
-                        {((user?.role === Role.TEACHER || user?.role === 'BUSINESS') &&
-                            user.id !== job.schoolProfile?.userId &&
-                            user.id !== (job as any).teacherProfile?.userId) && (
-                                <div className="mt-12 border-t border-border pt-12">
-                                    {hasApplied ? (
-                                        <div className="bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30 text-green-700 dark:text-green-400 p-8 rounded-3xl text-center shadow-inner">
-                                            <div className="text-4xl mb-4">✅</div>
-                                            <div className="text-xl font-bold mb-2">이미 지원한 공고입니다.</div>
-                                            <div className="text-sm">지원 현황에서 진행 상태를 확인하세요.</div>
-                                            <Link href="/dashboard/applications" className="mt-6 inline-block px-6 py-2 bg-green-600 text-white font-bold rounded-xl hover:bg-green-700 transition-all">지원 현황 보기</Link>
-                                        </div>
-                                    ) : (
-                                        <div className="animate-in fade-in slide-in-from-top-4 duration-500">
-                                            <h2 className="text-2xl font-bold text-foreground mb-6 flex items-center gap-2">
-                                                <span className="w-1.5 h-6 bg-primary rounded-full"></span>
-                                                이 공고에 지원하기
-                                            </h2>
-
-                                            {/* Permission Check */}
-                                            {((job as any).jobType === 'EVENT_VENDOR' && user.role !== 'BUSINESS') ? (
-                                                <div className="p-6 bg-amber-50 text-amber-800 rounded-2xl border border-amber-200">
-                                                    ⚠️ 행사 업체 공고는 <strong>기업/사업자(Business)</strong> 계정만 지원할 수 있습니다.
-                                                </div>
-                                            ) : ((job as any).jobType === 'TEACHER_HIRING' && user.role !== 'TEACHER') ? (
-                                                <div className="p-6 bg-amber-50 text-amber-800 rounded-2xl border border-amber-200">
-                                                    ⚠️ 기간제 교사 공고는 <strong>선생님(Teacher)</strong> 계정만 지원할 수 있습니다.
-                                                </div>
-                                            ) : (
-                                                /* Eligible to Apply */
-                                                <div className="space-y-4">
-                                                    {(job as any).jobType === 'EVENT_VENDOR' && (
-                                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="block text-sm font-bold text-foreground mb-2">
-                                                                    가견적 (Estimated Cost) <span className="text-xs font-normal text-amber-600 dark:text-amber-400">* 확정가가 아닙니다</span>
-                                                                </label>
-                                                                <input
-                                                                    type="text"
-                                                                    id="proposalCost"
-                                                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary text-right font-mono"
-                                                                    placeholder="예: 1,500,000"
-                                                                />
-                                                                <p className="text-xs text-foreground-muted mt-1">
-                                                                    이 금액은 시장 조사용 '참고 가격'이며, 실제 계약은 S2B/G2B 등 행정 절차에 따라 확정됩니다.
-                                                                </p>
-                                                            </div>
-                                                            <div>
-                                                                <label className="block text-sm font-bold text-foreground mb-2">담당자 연락처</label>
-                                                                <input
-                                                                    type="text"
-                                                                    id="contactInfo"
-                                                                    className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
-                                                                    placeholder="예: 010-1234-5678 (김철수 매니저)"
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    )}
-
-                                                    <div>
-                                                        <label className="block text-sm font-bold text-foreground mb-2">
-                                                            {(job as any).jobType === 'EVENT_VENDOR' ? '상세 제안 내용' : '자기소개 및 메시지'}
-                                                        </label>
-                                                        <textarea
-                                                            value={message}
-                                                            onChange={(e) => setMessage(e.target.value)}
-                                                            placeholder={(job as any).jobType === 'EVENT_VENDOR'
-                                                                ? "행사 프로그램 구성, 강점 등 상세 제안 내용을 입력해주세요.\n포트폴리오 링크를 포함하면 좋습니다."
-                                                                : "학교 담당자에게 보낼 자기소개나 메시지를 간단히 입력해주세요."}
-                                                            className="w-full h-40 p-6 rounded-3xl outline-none focus:border-primary resize-none shadow-sm"
-                                                        />
-                                                    </div>
-
-                                                    <button
-                                                        onClick={async () => {
-                                                            const costInput = document.getElementById('proposalCost') as HTMLInputElement;
-                                                            const contactInput = document.getElementById('contactInfo') as HTMLInputElement;
-
-                                                            let finalMessage = message;
-
-                                                            if ((job as any).jobType === 'EVENT_VENDOR') {
-                                                                const cost = costInput?.value || '미기재';
-                                                                const contact = contactInput?.value || '미기재';
-
-                                                                if (!costInput?.value || !contactInput?.value || !message.trim()) {
-                                                                    alert('모든 필드를 입력해주세요.');
-                                                                    return;
-                                                                }
-
-                                                                finalMessage = `[제안서 요약]\n- 제안 금액: ${cost}\n- 담당자: ${contact}\n\n[상세 내용]\n${message}`;
-                                                            } else {
-                                                                if (!message.trim()) {
-                                                                    alert('지원 메시지를 입력해주세요.');
-                                                                    return;
-                                                                }
-                                                            }
-
-                                                            setIsApplying(true);
-                                                            try {
-                                                                await api.post(`/applications/${id}/apply`, { message: finalMessage });
-                                                                alert('지원이 완료되었습니다!');
-                                                                setHasApplied(true);
-                                                                router.push('/dashboard/applications');
-                                                            } catch (e: any) {
-                                                                alert(e.message || '지원 중 오류가 발생했습니다.');
-                                                            } finally {
-                                                                setIsApplying(false);
-                                                            }
-                                                        }}
-                                                        disabled={isApplying || !job.active}
-                                                        className="w-full py-5 bg-primary text-white font-bold rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary/90 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-lg"
-                                                    >
-                                                        {isApplying ? '지원 중...' : job.active ? '지원서 제출하기' : '마감된 공고입니다'}
-                                                    </button>
-                                                    <p className="text-center text-foreground-muted text-xs mt-4 italic">
-                                                        지원서를 제출하면 학교 담당자에게 알림이 전송됩니다.
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                        {/* Poster Info Card */}
+                        <StandardCard
+                            title={job.schoolProfile ? '학교 정보' : '요청자 정보'}
+                            icon={job.schoolProfile ? <Building className="w-5 h-5 text-emerald-500" /> : <User className="w-5 h-5 text-orange-500" />}
+                            extra={job.schoolProfile?.website && (
+                                <a href={job.schoolProfile.website} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-1 text-sm font-bold hover:underline">
+                                    홈페이지 <ExternalLink className="w-3 h-3" />
+                                </a>
                             )}
+                        >
+                            <div className="flex items-center gap-5 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-border/50">
+                                <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-xl flex items-center justify-center text-3xl shadow-sm border border-border">
+                                    {job.schoolProfile ? '🏫' : '👤'}
+                                </div>
+                                <div>
+                                    <h4 className="font-black text-xl text-foreground">{job.schoolProfile?.schoolName || (job as any).teacherProfile?.user?.name || '정보 없음'}</h4>
+                                    <p className="text-sm text-foreground-muted flex items-center gap-1.5 mt-1">
+                                        <MapPin className="w-3 h-3" /> {job.schoolProfile?.address || '위치 정보 협의'}
+                                    </p>
+                                </div>
+                            </div>
+                        </StandardCard>
+                    </div>
+
+                    {/* Right Column: Sticky Sidebar */}
+                    <div className="lg:col-span-4 space-y-6">
+                        <div className="sticky top-24 space-y-6">
+                            <StandardCard className="border-t-4 border-t-primary">
+                                <div className="space-y-6">
+                                    <div>
+                                        <div className="text-xs font-bold text-foreground-muted uppercase mb-1">상태</div>
+                                        {/* Compliance Workflow Status */}
+                                        {(job as any).workflowStatus && (job as any).workflowStatus !== 'PUBLISHED' ? (
+                                            <div className="space-y-2">
+                                                <div className="text-xl font-black text-amber-500 flex items-center gap-2">
+                                                    {(job as any).workflowStatus === 'PLAN_DRAFT' ? '기안 작성 중' : '내부 결재 진행 중'}
+                                                    <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
+                                                </div>
+                                                <p className="text-xs text-foreground-muted">
+                                                    현재 이 공고는 외부에 노출되지 않습니다.<br />
+                                                    학교장 결재 완료 후 자동 게시됩니다.
+                                                </p>
+                                                {user?.id === job.schoolId && (job as any).workflowStatus === 'PLAN_DRAFT' && (
+                                                    <button onClick={() => alert('결재 상신 기능은 준비 중입니다.')} className="w-full py-2 bg-amber-100 text-amber-700 font-bold rounded-xl text-sm hover:bg-amber-200 transition-colors">
+                                                        결재 올리기 (상신)
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div className="text-2xl font-black text-foreground flex items-center gap-2">
+                                                {job.active ? '지원 가능' : '마감된 공고'}
+                                                {job.active && <span className="w-2.5 h-2.5 bg-success rounded-full animate-bounce" />}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="pt-6 border-t border-border">
+                                        {hasApplied ? (
+                                            <div className="space-y-4">
+                                                <div className="flex flex-col items-center justify-center p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl text-center">
+                                                    <CheckCircle className="w-10 h-10 text-emerald-500 mb-3" />
+                                                    <div className="font-black text-emerald-600 dark:text-emerald-400">지원 완료</div>
+                                                    <p className="text-xs text-foreground-muted mt-1">담당자가 확인 중입니다.</p>
+                                                </div>
+                                                <Link
+                                                    href="/dashboard/applications"
+                                                    className="w-full py-4 bg-emerald-500 text-white font-black rounded-2xl text-center block shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
+                                                >
+                                                    지원 현황 확인하기
+                                                </Link>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                {/* Role Permission Check */}
+                                                {((isEventVendor && user?.role !== 'BUSINESS') || (isTeacherHiring && user?.role !== 'TEACHER')) ? (
+                                                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-600 dark:text-amber-400 text-xs leading-relaxed text-center font-bold">
+                                                        ⚠️ 이 공고의 자격 요건(역할)과<br />사용자 계정 정보가 일치하지 않습니다.
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={handleApplyClick}
+                                                            disabled={isApplying || !job.active}
+                                                            className="w-full py-5 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 text-lg flex items-center justify-center gap-2"
+                                                        >
+                                                            <Send className="w-5 h-5" /> 간편 지원하기
+                                                        </button>
+                                                        <p className="text-center text-[11px] text-foreground-muted font-medium">
+                                                            * 프로필 정보가 자동으로 전송됩니다.<br />
+                                                            * 승인 후에는 담당자와 채팅이 가능합니다.
+                                                        </p>
+                                                    </>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </StandardCard>
+
+                            {/* Info Card Snippet */}
+                            <div className="bg-indigo-600 rounded-[32px] p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden">
+                                <div className="relative z-10">
+                                    <h5 className="font-bold text-indigo-100 text-xs mb-4">공고 요약</h5>
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center border-b border-indigo-500/50 pb-3">
+                                            <span className="text-sm opacity-80">과목/분야</span>
+                                            <span className="font-bold">{job.subjects?.[0] || '전체'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center border-b border-indigo-500/50 pb-3">
+                                            <span className="text-sm opacity-80">지역</span>
+                                            <span className="font-bold">{job.regions?.[0] || '전체'}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center">
+                                            <span className="text-sm opacity-80">모집 인원</span>
+                                            <span className="font-bold">1명</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Subtle Background Pattern */}
+                                <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
+
+            {/* Mobile Sticky Button Only (Floating style) */}
+            {!hasApplied && job.active && user && ((isEventVendor && user.role === 'BUSINESS') || (isTeacherHiring && user.role === 'TEACHER')) && (
+                <div className="fixed bottom-6 left-6 right-6 z-50 md:hidden animate-in slide-in-from-bottom-full duration-500">
+                    <button
+                        onClick={handleApplyClick}
+                        className="w-full py-5 bg-primary text-white font-black rounded-2xl shadow-2xl shadow-primary/40 active:scale-95 transition-transform flex items-center justify-center gap-2"
+                    >
+                        <Send className="w-5 h-5" /> 1초 만에 지원하기
+                    </button>
+                </div>
+            )}
+
+            <QuickApplyModal
+                isOpen={isApplyModalOpen}
+                onClose={() => setIsApplyModalOpen(false)}
+                onSubmit={handleApplySubmit}
+                jobType={(job as any).jobType || 'TEACHER_HIRING'}
+                jobTitle={job.title}
+            />
         </DashboardLayout>
     );
 }

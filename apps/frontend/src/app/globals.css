@@ -1,4 +1,13 @@
 @import "tailwindcss";
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+.card-standard {
+  @apply bg-surface border border-border rounded-[32px] p-6 shadow-sm hover:shadow-md transition-all;
+}
+
+.badge-standard {
+  @apply px-3 py-1 rounded-full text-xs font-bold border;
+}
 
 @theme inline {
   --color-primary: var(--primary);

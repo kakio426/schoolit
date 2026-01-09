@@ -1,0 +1,61 @@
+# Implementation Plan: 2025 경기도교육청 지침 준수 플랫폼 (Schoolit Compliance Engine)
+
+**Status**: ✅ Completed
+**Started**: 2026-01-09
+**Last Updated**: 2026-01-10
+**Completed**: 2026-01-09 (Actual)
+
+---
+
+**⚠️ CRITICAL INSTRUCTIONS**: After completing each phase:
+1. ✅ Check off completed task checkboxes
+2. 🧪 Run all quality gate validation commands
+3. ⚠️ Verify ALL quality gate items pass
+4. 📅 Update "Last Updated" date above
+5. 📝 Document learnings in Notes section
+6. ➡️ Only then proceed to next phase
+
+⛔ **DO NOT skip quality gates or proceed with failing checks**
+
+---
+
+## 📋 Overview
+
+### Feature Description
+경기도교육청의 '2025 계약제교원 운영 지침'을 완벽하게 준수하는 **"컴플라이언스 엔진(Compliance Engine)"**과 **"프리미엄 문서 생성(Premium Document Engine)"** 기능을 구축합니다.
+단순한 채용 게시판을 넘어, **[채용 계획] → [공고] → [심사] → [계약] → [행정 서류 파기]**에 이르는 전 과정을 시스템으로 강제하여 학교의 행정 리스크를 원천 차단합니다.
+
+### Success Criteria
+- [x] **100% 서식 일치**: [서식 1] 채용계획서, [서식 16] 표준근로계약서, [서식 12~14] 평가표가 실제 공문과 동일한 규격(PDF)으로 생성되어야 함.
+- [x] **개인정보 자동 파기**: 탈락자의 민감 정보(증빙 파일 등)가 채용 확정 후 7일 이내에, 혹은 '반환 청구' 시 즉시 물리적으로 파기되어야 함.
+- [x] **호봉/기간 자동 검증**: 시스템이 '교육공무원법' 및 '지침'에 따라 최대 호봉(14호봉 제한 등)과 계약 기간을 자동 검증해야 함.
+- [x] **TDD 준수**: 비즈니스 로직(호봉 계산, 파기 기한 계산) 핵심 로직 구현 및 검증 완료.
+
+### User Impact
+- **학교(School)**: 복잡한 지침 공부 없이 "시스템이 시키는 대로만 하면" 감사(Audit)에서 자유로워짐. 수작업 평가 집계와 계약서 작성 시간 90% 단축.
+- **교사(Teacher)**: 본인의 자격 요건(늘봄 등)에 맞는 공고만 필터링되며, 합격 시 복잡한 서류 제출 절차를 모바일로 간편하게 처리.
+
+---
+
+## 🚀 Implementation Phases
+
+### Phase 1: Premium Document Engine Foundation ✅
+- [x] **Task 1.3**: Install `@react-pdf/renderer` & Configure Fonts (Noto Sans KR 등록)
+- [x] **Task 1.4**: Create `DocumentService` (`documentStyles.ts` 및 공통 컴포넌트)
+- [x] **Task 1.5**: Implement `Seosik1_HiringPlan.tsx` Template (React Component)
+- [x] **Task 1.6**: Extract common document styles to `documentStyles.ts`
+
+### Phase 2: Compliance Workflow & Wizard UI ✅
+- [x] **Task 2.3**: Update `schema.prisma` (`hiringReason`, `salaryStepLimit`, `workflowStatus`)
+- [x] **Task 2.4**: Implement `HiringWizard` Frontend Component (Steps 1~3 with Progress Bar)
+- [x] **Task 2.5**: Connect Step 2 (Plan) to `DocumentService` to preview [Seosik 1]
+
+### Phase 3: Digital Evaluation & Ranking ✅
+- [x] **Task 3.4**: Create `Evaluation` & `Score` models in Prisma
+- [x] **Task 3.5**: Frontend - Mobile-friendly `DigitalScorecard.tsx` using Sliders/Inputs
+- [x] **Task 3.6**: Report View - `/dashboard/jobs/[id]/evaluate` 페이지 구현
+
+### Phase 4: Lifecycle Management ✅
+- [x] **Task 4.3**: Implement `Seosik16_Contract.tsx` (Standard Labor Contract)
+- [x] **Task 4.4**: Implement `DataCleanupService` (Daily 3AM Cron) 및 파기 로직
+- [x] **Task 4.5**: Backend API - ComplianceController (validation & scoring)

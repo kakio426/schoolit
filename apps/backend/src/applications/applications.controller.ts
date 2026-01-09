@@ -18,9 +18,14 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
+import { DataCleanupService } from '../scheduler/data-cleanup.service';
+
 @Controller('applications')
 export class ApplicationsController {
-  constructor(private applicationsService: ApplicationsService) {}
+  constructor(
+    private applicationsService: ApplicationsService,
+    private dataCleanupService: DataCleanupService,
+  ) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.TEACHER, Role.BUSINESS)
@@ -84,7 +89,12 @@ export class ApplicationsController {
       'Content-Disposition': `attachment; filename="contract_${appId}.pdf"`,
       'Content-Length': buffer.length,
     });
-
     res.end(buffer);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post(':id/destroy-documents')
+  async destroyDocuments(@Request() req, @Param('id', ParseIntPipe) appId: number) {
+    return this.dataCleanupService.immediateDocumentDestruction(appId);
   }
 }
