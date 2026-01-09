@@ -259,7 +259,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </header>
                 <main className="p-4 md:p-8 max-w-[1200px] w-full mx-auto">
                     {user?.role === 'SCHOOL' && user?.schoolProfile && !user.schoolProfile.isVerified ? (
-                        <VerificationPendingView />
+                        !user.schoolProfile.schoolName ? (
+                            // Redirect to email verify if they haven't done it yet
+                            <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6">
+                                <div className="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center text-4xl mb-4">🛡️</div>
+                                <h2 className="text-2xl font-bold">학교 인증이 필요합니다</h2>
+                                <p className="text-foreground-muted">아직 학교 이메일 인증을 완료하지 않았습니다.</p>
+                                <button
+                                    onClick={() => router.push('/onboarding/email-verify')}
+                                    className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary-hover transition-all"
+                                >
+                                    이메일 인증하러 가기
+                                </button>
+                            </div>
+                        ) : (
+                            <VerificationPendingView />
+                        )
                     ) : (
                         children
                     )}
