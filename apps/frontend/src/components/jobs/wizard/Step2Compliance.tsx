@@ -114,12 +114,34 @@ export default function Step2Compliance({ formData, setFormData, jobType, setIsV
 
                         <div>
                             <label className="block text-sm font-semibold text-foreground mb-2">계약 기간</label>
-                            <input
-                                value={formData.contractPeriod}
-                                onChange={(e) => handleChange('contractPeriod', e.target.value)}
-                                className="w-full px-4 py-3 rounded-xl outline-none border border-border focus:border-primary bg-background"
-                                placeholder="예: 2024.03.01 ~ 2024.08.31"
-                            />
+                            <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                    <input
+                                        type="date"
+                                        value={formData.contractPeriod?.split(' ~ ')[0] || ''}
+                                        onChange={(e) => {
+                                            const start = e.target.value;
+                                            const end = formData.contractPeriod?.split(' ~ ')[1] || '';
+                                            handleChange('contractPeriod', `${start} ~ ${end}`);
+                                        }}
+                                        className="w-full pl-4 pr-10 py-3 rounded-xl outline-none border border-border focus:border-primary bg-background uppercase"
+                                    />
+                                </div>
+                                <span className="text-foreground-muted font-bold">~</span>
+                                <div className="relative flex-1">
+                                    <input
+                                        type="date"
+                                        value={formData.contractPeriod?.split(' ~ ')[1] || ''}
+                                        onChange={(e) => {
+                                            const start = formData.contractPeriod?.split(' ~ ')[0] || '';
+                                            const end = e.target.value;
+                                            handleChange('contractPeriod', `${start} ~ ${end}`);
+                                        }}
+                                        min={formData.contractPeriod?.split(' ~ ')[0]}
+                                        className="w-full pl-4 pr-10 py-3 rounded-xl outline-none border border-border focus:border-primary bg-background uppercase"
+                                    />
+                                </div>
+                            </div>
                         </div>
 
                         <div>
@@ -236,7 +258,8 @@ export default function Step2Compliance({ formData, setFormData, jobType, setIsV
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
+            )
+            }
+        </div >
     );
 }
