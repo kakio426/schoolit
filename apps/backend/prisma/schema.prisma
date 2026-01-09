@@ -109,6 +109,32 @@ enum JobStatus {
   CLOSED
 }
 
+// 2025 Compliance: Workflow Status for Hiring Process
+enum HiringWorkflowStatus {
+  DRAFT           // 초안 작성 중
+  PLAN_APPROVED   // 내부결재 승인 (서식 1 완료)
+  PUBLISHED       // 공고 게시 완료
+  RECEIVING       // 지원서 접수 중
+  SCREENING       // 1차 서류 심사
+  INTERVIEW       // 2차 면접 심사
+  DEMONSTRATION   // 3차 수업 실연 (선택)
+  FINALIZING      // 최종 심사 및 결격사유 조회
+  CONTRACTED      // 계약 완료
+  CANCELLED       // 채용 취소
+}
+
+// 2025 Compliance: Hiring Reasons per Guidelines
+enum HiringReason {
+  LEAVE           // 일반 휴직
+  SICK_LEAVE      // 병가
+  MATERNITY       // 출산휴가/육아휴직
+  DISPATCH        // 파견
+  STUDY           // 연수
+  VACANCY         // 결원
+  SEASONAL        // 계절학기
+  OTHER           // 기타
+}
+
 model JobListing {
   id              Int              @id @default(autoincrement())
   schoolProfileId Int?             @map("school_profile_id")
@@ -131,6 +157,19 @@ model JobListing {
   gradeLevel      String[]         @default([]) @map("grade_level")      // ["초등", "중등", "고등"]
   teachingHours   Int?             @map("teaching_hours")   // 주당 수업 시수
   
+  // === 2025 COMPLIANCE FIELDS (Gyeonggi-do Guidelines) ===
+  hiringReason       HiringReason?           @map("hiring_reason")       // 채용 사유
+  workflowStatus     HiringWorkflowStatus    @default(DRAFT) @map("workflow_status") // 채용 진행 상태
+  salaryStepLimit    Int?                    @default(14) @map("salary_step_limit")  // 호봉 상한 (명예퇴직자 등 14호봉 제한)
+  originalTeacherName String?                @map("original_teacher_name") // 휴직 교사명 (서식 1용)
+  contractStartDate  DateTime?               @map("contract_start_date")   // 계약 시작일 (정확한 날짜)
+  contractEndDate    DateTime?               @map("contract_end_date")     // 계약 종료일 (정확한 날짜)
+  draftDocumentNumber String?                @map("draft_document_number") // 기안 문서 번호
+  
+  // Evaluation Relations
+  evaluations     Evaluation[]
+  // === END COMPLIANCE FIELDS ===
+  
   // Event-specific fields
   eventType       String?          @map("event_type")        // "진로체험", "스포츠데이", "찾아오는 체험학습"
   eventDuration   String?          @map("event_duration")    // "4교시", "1일", "2일"
@@ -146,6 +185,7 @@ model JobListing {
 
   @@map("job_listings")
 }
+
 
 enum CertStatus {
   PENDING
@@ -280,6 +320,9 @@ model JobApplication {
 
   viewedAt     DateTime?         @map("viewed_at")
   internalNote String?           @map("internal_note")
+  
+  // 2025 Compliance: Evaluations relation
+  evaluations  Evaluation[]
 
   @@unique([jobId, userId])
   @@map("job_applications")
@@ -484,4 +527,45 @@ model PostLike {
   
   @@unique([postId, userId]) // One like per user per post
   @@map("post_likes")
+}
+
+// ============================================
+// 2025 COMPLIANCE: Digital Evaluation System
+// ============================================
+
+enum EvaluationType {
+  DOCUMENT       // 1차 서류 심사 (Seosik 12)
+  INTERVIEW      // 2차 면접 심사 (Seosik 13)
+  DEMONSTRATION  // 3차 수업 실연 (Seosik 14)
+}
+
+model Evaluation {
+  id            Int             @id @default(autoincrement())
+  jobListingId  Int             @map("job_listing_id")
+  jobListing    JobListing      @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+  
+  applicationId Int             @map("application_id")
+  application   JobApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  
+  evaluatorName String          @map("evaluator_name")  // 심사위원 이름 (익명 가능)
+  evaluatorRole String?         @map("evaluator_role")  // 교장, 교감, 외부 위원 등
+  
+  type          EvaluationType  // 심사 유형
+  totalScore    Float           @default(0) @map("total_score")  // 합계 점수
+  
+  // Detailed scores stored as JSON for flexibility
+  // Example: { "전공": 6, "학위": 6, "경력": 5, "연수": 4, "자기소개서": 6 }
+  criteriaScores Json?          @map("criteria_scores")
+  
+  comment       String?         // 심사평
+  
+  // National Merit Bonus (국가유공자 가산점)
+  meritBonus    Float           @default(0) @map("merit_bonus")
+  
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  
+  @@map("evaluations")
+  @@index([jobListingId])
+  @@index([applicationId])
 }
