@@ -19,6 +19,17 @@ export default function EmailVerificationPage() {
 
     const handleSendCode = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Client-side validation for official domains
+        const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
+        const domain = email.split('@')[1];
+        const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
+
+        if (!isAllowed) {
+            setError('공직자 통합 메일(@korea.kr, @go.kr)만 사용 가능합니다.');
+            return;
+        }
+
         setIsLoading(true);
         setError('');
 

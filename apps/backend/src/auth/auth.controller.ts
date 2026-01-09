@@ -89,8 +89,9 @@ export class AuthController {
     const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
 
     if (!isAllowed) {
-      // Allow for testing if needed, but strictly enforce for "School" logic
-      // user said "korea.kr system".
+      throw new BadRequestException(
+        '공직자/기관 공식 이메일(@korea.kr, @go.kr 등)만 사용 가능합니다.',
+      );
     }
 
     return this.authService.requestEmailVerification(req.user.userId, email);
