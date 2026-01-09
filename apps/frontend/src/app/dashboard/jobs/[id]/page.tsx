@@ -220,11 +220,12 @@ export default function JobDetailPage() {
                                                     아래 버튼을 눌러 다음 단계로 진행하세요.
                                                 </p>
 
+
                                                 {/* 학교 관리자 전용 워크플로우 버튼 */}
-                                                {user?.id === job.schoolId && (
+                                                {user?.role === 'SCHOOL' && (
                                                     <div className="space-y-2 pt-2">
-                                                        {/* DRAFT -> PLAN_APPROVED */}
-                                                        {(job as any).workflowStatus === 'DRAFT' && (
+                                                        {/* DRAFT or PLAN_DRAFT -> PLAN_APPROVED */}
+                                                        {((job as any).workflowStatus === 'DRAFT' || (job as any).workflowStatus === 'PLAN_DRAFT') && (
                                                             <button
                                                                 onClick={async () => {
                                                                     if (!confirm('결재를 승인하시겠습니까? 이후 게시 단계로 넘어갑니다.')) return;
@@ -259,6 +260,11 @@ export default function JobDetailPage() {
                                                             >
                                                                 🚀 공고 게시하기
                                                             </button>
+                                                        )}
+
+                                                        {/* Debug: Show current status if no button matched */}
+                                                        {!['DRAFT', 'PLAN_DRAFT', 'PLAN_APPROVED'].includes((job as any).workflowStatus) && (
+                                                            <p className="text-[10px] text-slate-500">현재 상태: {(job as any).workflowStatus}</p>
                                                         )}
                                                     </div>
                                                 )}
