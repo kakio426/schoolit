@@ -52,7 +52,7 @@ export function StandardBadge({
     className = ""
 }: {
     children: React.ReactNode,
-    variant?: 'primary' | 'success' | 'warning' | 'error' | 'neutral' | 'indigo',
+    variant?: 'primary' | 'success' | 'warning' | 'error' | 'neutral' | 'indigo' | 'info' | 'default',
     className?: string
 }) {
     const variants = {
@@ -62,6 +62,8 @@ export function StandardBadge({
         error: 'bg-red-500/10 text-red-500 border-red-500/20',
         neutral: 'bg-slate-500/10 text-slate-500 border-slate-500/20',
         indigo: 'bg-indigo-500/10 text-indigo-500 border-indigo-500/20',
+        info: 'bg-cyan-500/10 text-cyan-500 border-cyan-500/20',
+        default: 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700',
     };
 
     return (

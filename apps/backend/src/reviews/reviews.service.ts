@@ -10,7 +10,12 @@ export class ReviewsService {
   ) { }
 
   async createReview(dto: any, userId: number, files?: Express.Multer.File[]) {
-    const { jobId, receiverId, content, rating, keywords, reMatchIntent } = dto;
+    // Parse numeric fields which might come as strings from FormData
+    const jobId = typeof dto.jobId === 'string' ? parseInt(dto.jobId, 10) : dto.jobId;
+    const receiverId = typeof dto.receiverId === 'string' ? parseInt(dto.receiverId, 10) : dto.receiverId;
+    const { content, rating } = dto;
+    const reMatchIntent = dto.reMatchIntent === 'true' || dto.reMatchIntent === true;
+    const keywords = Array.isArray(dto['keywords[]']) ? dto['keywords[]'] : (dto.keywords ? [dto.keywords] : []);
 
     // 1. Verify Application Status
     const application = await this.prisma.jobApplication.findUnique({

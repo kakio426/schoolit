@@ -89,8 +89,8 @@ export default function ReviewListModal({ userId, userName, onClose }: ReviewLis
                                             )}
                                         </span>
                                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${review.sender.role === 'SCHOOL' ? 'bg-blue-500/20 text-blue-600' :
-                                                review.sender.role === 'TEACHER' ? 'bg-green-500/20 text-green-600' :
-                                                    'bg-orange-500/20 text-orange-600'
+                                            review.sender.role === 'TEACHER' ? 'bg-green-500/20 text-green-600' :
+                                                'bg-orange-500/20 text-orange-600'
                                             }`}>
                                             {review.sender.role}
                                         </span>
@@ -114,6 +114,17 @@ export default function ReviewListModal({ userId, userName, onClose }: ReviewLis
 
                                 {/* Content */}
                                 <p className="text-foreground leading-relaxed mb-3">{review.content || '(내용 없음)'}</p>
+
+                                {/* Images */}
+                                {review.imageUrls && review.imageUrls.length > 0 && (
+                                    <div className="flex gap-2 overflow-x-auto pb-2 mb-3 no-scrollbar">
+                                        {review.imageUrls.map((url, idx) => (
+                                            <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden flex-shrink-0 border border-border">
+                                                <img src={url} alt={`review-img-${idx}`} className="w-full h-full object-cover" />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
 
                                 {/* Keywords */}
                                 {review.keywords && review.keywords.length > 0 && (

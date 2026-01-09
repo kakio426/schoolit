@@ -14,6 +14,7 @@ interface Review {
     content: string | null;
     reMatchIntent: boolean;
     keywords: { keyword: string }[];
+    imageUrls?: string[];
     createdAt: string;
 }
 
@@ -139,6 +140,17 @@ export default function AdminReviewsPage() {
                                             {/* Content */}
                                             {review.content && (
                                                 <p className="text-foreground mb-3 whitespace-pre-wrap">{review.content}</p>
+                                            )}
+
+                                            {/* Images */}
+                                            {review.imageUrls && review.imageUrls.length > 0 && (
+                                                <div className="flex gap-2 mb-3 overflow-x-auto pb-1 no-scrollbar">
+                                                    {review.imageUrls.map((url, idx) => (
+                                                        <div key={idx} className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 border border-slate-100 dark:border-slate-800 shadow-sm">
+                                                            <img src={url} alt={`preview-${idx}`} className="w-full h-full object-cover" />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
 
                                             {/* Keywords */}

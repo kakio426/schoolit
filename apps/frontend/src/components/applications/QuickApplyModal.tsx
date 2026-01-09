@@ -1,7 +1,19 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
-import { X, Send, FileUp, CheckCircle, Paperclip } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { X, Send, FileUp, CheckCircle, Paperclip, User, Mail, Phone, Briefcase, Award } from 'lucide-react';
+import { api } from '@/lib/api';
+
+interface ProfilePreview {
+    name: string;
+    email: string;
+    phone?: string;
+    subjects?: string[];
+    experience?: string;
+    certifications?: string[];
+    s2bNumber?: string;
+    companyName?: string;
+}
 
 interface QuickApplyModalProps {
     isOpen: boolean;
@@ -23,7 +35,46 @@ export default function QuickApplyModal({
     const [contact, setContact] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [profile, setProfile] = useState<ProfilePreview | null>(null);
+    const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Fetch user profile when modal opens
+    useEffect(() => {
+        if (isOpen) {
+            fetchProfilePreview();
+        }
+    }, [isOpen]);
+
+    const fetchProfilePreview = async () => {
+        setIsLoadingProfile(true);
+        try {
+            const endpoint = jobType === 'TEACHER_HIRING' ? '/teacher-profile/me' : '/business-profile/me';
+            const data = await api.get<any>(endpoint);
+            if (jobType === 'TEACHER_HIRING') {
+                setProfile({
+                    name: data.user?.name || '(이름 없음)',
+                    email: data.user?.email || '',
+                    phone: data.user?.phone,
+                    subjects: data.subjects,
+                    experience: data.experience,
+                    certifications: data.certifications,
+                });
+            } else {
+                setProfile({
+                    name: data.user?.name || '(담당자명 없음)',
+                    email: data.user?.email || '',
+                    phone: data.user?.phone,
+                    companyName: data.companyName,
+                    s2bNumber: data.s2bNumber,
+                });
+            }
+        } catch (e) {
+            console.error('Failed to fetch profile preview', e);
+        } finally {
+            setIsLoadingProfile(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -82,6 +133,51 @@ export default function QuickApplyModal({
 
                 {/* Body */}
                 <div className="p-8 pt-4 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                    {/* Profile Preview Section */}
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 border border-border animate-in slide-in-from-bottom-2 duration-300">
+                        <div className="flex items-center gap-2 mb-3">
+                            <User className="w-4 h-4 text-primary" />
+                            <span className="text-xs font-black text-foreground-muted uppercase">전송될 프로필 정보</span>
+                        </div>
+                        {isLoadingProfile ? (
+                            <div className="flex items-center justify-center py-4">
+                                <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-primary"></div>
+                            </div>
+                        ) : profile ? (
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center gap-2">
+                                    <span className="font-bold text-foreground">{profile.name}</span>
+                                    <span className="text-foreground-muted">{profile.email}</span>
+                                </div>
+                                {profile.phone && (
+                                    <div className="flex items-center gap-1.5 text-foreground-muted">
+                                        <Phone className="w-3 h-3" /> {profile.phone}
+                                    </div>
+                                )}
+                                {jobType === 'TEACHER_HIRING' && profile.subjects && profile.subjects.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mt-2">
+                                        {profile.subjects.map((s: string) => (
+                                            <span key={s} className="px-2 py-0.5 bg-primary/10 text-primary text-xs font-bold rounded">{s}</span>
+                                        ))}
+                                    </div>
+                                )}
+                                {jobType === 'EVENT_VENDOR' && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <Briefcase className="w-3 h-3 text-indigo-500" />
+                                        <span className="font-bold text-foreground">{profile.companyName || '(회사명 미입력)'}</span>
+                                        {profile.s2bNumber && (
+                                            <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-xs font-bold rounded flex items-center gap-1">
+                                                <Award className="w-3 h-3" /> S2B 등록
+                                            </span>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <p className="text-xs text-foreground-muted">프로필 정보를 불러올 수 없습니다.</p>
+                        )}
+                    </div>
+
                     {jobType === 'EVENT_VENDOR' && (
                         <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-300">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
