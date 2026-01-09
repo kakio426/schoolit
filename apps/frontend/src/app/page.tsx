@@ -69,8 +69,8 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="p-8 rounded-3xl bg-slate-900 border border-white/5 hover:border-primary/50 transition-colors group">
-      <div className="mb-6 p-4 rounded-2xl bg-slate-800 w-fit group-hover:bg-slate-800/80 transition-colors">
+    <div className="p-8 rounded-3xl bg-slate-800/40 border border-white/5 hover:border-white/10 hover:bg-slate-800/60 transition-all group hover:-translate-y-1 duration-300">
+      <div className="mb-6 p-4 rounded-2xl bg-slate-800/50 w-fit group-hover:bg-slate-800 transition-colors ring-1 ring-white/5">
         {icon}
       </div>
       <h3 className="text-xl font-bold text-white mb-3">{title}</h3>
