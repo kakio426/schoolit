@@ -14,8 +14,11 @@ export default function JobsPage() {
     const [jobs, setJobs] = useState<JobListing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
-    const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
-    const [viewMode, setViewMode] = useState<'SEARCH' | 'MY'>('SEARCH'); // For Teachers (Search vs My Requests)
+    const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(
+        user?.role === 'TEACHER' ? 'TEACHER_HIRING' :
+            user?.role === 'BUSINESS' ? 'EVENT_VENDOR' : null
+    );
+    const [viewMode, setViewMode] = useState<'SEARCH' | 'MY'>('SEARCH');
 
     useEffect(() => {
         if (user) {
@@ -160,25 +163,15 @@ export default function JobsPage() {
             <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div className="mb-8 flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold text-foreground">🔎 채용 공고 찾기 (행사 요청)</h1>
-                        <p className="text-foreground-muted text-sm">전국의 학교 채용 공고를 검색하거나, 내가 요청한 행사 공고를 관리하세요.</p>
+                        <h1 className="text-2xl font-bold text-foreground">
+                            {user?.role === 'BUSINESS' ? '🔎 행사 공고 찾기' : '🔎 채용 공고 찾기'}
+                        </h1>
+                        <p className="text-foreground-muted text-sm">
+                            {user?.role === 'BUSINESS'
+                                ? '전국의 학교에서 요청한 행사 공고를 검색하고 지원하세요.'
+                                : '전국의 학교 채용 공고를 검색하고 새로운 기회를 찾으세요.'}
+                        </p>
                     </div>
-                    {user?.role === 'TEACHER' && (
-                        <div className="flex bg-surface border border-slate-200 dark:border-slate-700 rounded-xl p-1 shadow-sm">
-                            <button
-                                onClick={() => setViewMode('SEARCH')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'SEARCH' ? 'bg-primary text-white shadow-sm' : 'text-foreground-muted hover:text-foreground'}`}
-                            >
-                                공고 검색
-                            </button>
-                            <button
-                                onClick={() => setViewMode('MY')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold transition-all ${viewMode === 'MY' ? 'bg-primary text-white shadow-sm' : 'text-foreground-muted hover:text-foreground'}`}
-                            >
-                                나의 행사 요청
-                            </button>
-                        </div>
-                    )}
                 </div>
 
                 {viewMode === 'MY' ? (
@@ -231,36 +224,38 @@ export default function JobsPage() {
                 ) : (
                     /* Search View */
                     <>
-                        {/* Job Type Filter Tabs */}
-                        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-                            <button
-                                onClick={() => setJobTypeFilter(null)}
-                                className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${!jobTypeFilter
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
-                                    }`}
-                            >
-                                전체
-                            </button>
-                            <button
-                                onClick={() => setJobTypeFilter('TEACHER_HIRING')}
-                                className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'TEACHER_HIRING'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
-                                    }`}
-                            >
-                                <span>👨‍🏫</span> 기간제 교사
-                            </button>
-                            <button
-                                onClick={() => setJobTypeFilter('EVENT_VENDOR')}
-                                className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'EVENT_VENDOR'
-                                    ? 'bg-primary text-white shadow-lg shadow-primary/30'
-                                    : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
-                                    }`}
-                            >
-                                <span>🎪</span> 행사 업체
-                            </button>
-                        </div>
+                        {/* Job Type Filter Tabs - Only show if not restricted by role */}
+                        {!user?.role || (user.role !== 'TEACHER' && user.role !== 'BUSINESS') ? (
+                            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                                <button
+                                    onClick={() => setJobTypeFilter(null)}
+                                    className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all ${!jobTypeFilter
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                                        }`}
+                                >
+                                    전체
+                                </button>
+                                <button
+                                    onClick={() => setJobTypeFilter('TEACHER_HIRING')}
+                                    className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'TEACHER_HIRING'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                                        }`}
+                                >
+                                    <span>👨‍🏫</span> 기간제 교사
+                                </button>
+                                <button
+                                    onClick={() => setJobTypeFilter('EVENT_VENDOR')}
+                                    className={`px-4 py-2 rounded-xl font-bold text-sm whitespace-nowrap transition-all flex items-center gap-2 ${jobTypeFilter === 'EVENT_VENDOR'
+                                        ? 'bg-primary text-white shadow-lg shadow-primary/30'
+                                        : 'bg-surface border border-slate-200 dark:border-slate-700 text-foreground hover:bg-surface-hover'
+                                        }`}
+                                >
+                                    <span>🎪</span> 행사 업체
+                                </button>
+                            </div>
+                        ) : null}
 
                         <RecommendedJobs />
 
