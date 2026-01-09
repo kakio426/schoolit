@@ -6,11 +6,11 @@ Font.register({
     family: 'NotoSansKR',
     fonts: [
         {
-            src: 'https://fonts.gstatic.com/s/notosanskr/v27/PbyxFmXiEBPT4ITbgNA5CgmF0n4biSbz.otf',
+            src: '/fonts/NotoSansKR-Regular.ttf',
             fontWeight: 'normal',
         },
         {
-            src: 'https://fonts.gstatic.com/s/notosanskr/v27/PbyxFmXiEBPT4ITbgNA5CgmF8nwbiSbz.otf',
+            src: '/fonts/NotoSansKR-Bold.ttf',
             fontWeight: 'bold',
         },
     ],

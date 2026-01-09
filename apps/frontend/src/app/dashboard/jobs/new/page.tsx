@@ -167,14 +167,14 @@ export default function NewJobPage() {
                                     value={formData.title}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 rounded-xl outline-none focus:border-primary"
-                                    placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제, 늘봄 강사 등" : "예: 2024 진로체험의 날 행사 업체 모집"}
+                                    placeholder={jobType === JobType.TEACHER_HIRING ? "예: 2024년 1학기 수학 기간제, 늘봄 선생님 등" : "예: 2024 진로체험의 날 행사 업체 모집"}
                                     required
                                 />
                             </div>
 
                             <div>
                                 <label className="block text-sm font-semibold text-foreground mb-2">
-                                    {jobType === JobType.TEACHER_HIRING ? '보수 / 강사료 정보' : '예상 예산 (원)'}
+                                    {jobType === JobType.TEACHER_HIRING ? '보수 / 수당 정보' : '예상 예산 (원)'}
                                 </label>
 
                                 <div className="space-y-3">

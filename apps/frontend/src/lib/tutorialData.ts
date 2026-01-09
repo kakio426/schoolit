@@ -19,7 +19,7 @@ export type TutorialRole = {
 export const TUTORIAL_DATA: TutorialRole[] = [
     {
         id: 'SCHOOL',
-        label: '학교 (School)',
+        label: '학교',
         description: '복잡한 채용 행정은 그만. 공고 등록부터 인재 매칭까지 원스톱으로 해결하세요.',
         steps: [
             {
@@ -47,8 +47,8 @@ export const TUTORIAL_DATA: TutorialRole[] = [
     },
     {
         id: 'TEACHER',
-        label: '강사님 (Instructor)',
-        description: '자신의 전문성을 인정받고, 원하는 조건의 학교를 쉽고 빠르게 찾으세요.',
+        label: '선생님',
+        description: '전문성을 인정받고, 원하는 조건의 학교를 쉽고 빠르게 찾으세요.',
         steps: [
             {
                 id: 't1',
@@ -75,7 +75,7 @@ export const TUTORIAL_DATA: TutorialRole[] = [
     },
     {
         id: 'BUSINESS',
-        label: '교육 행사 업체 (Vendor)',
+        label: '교육 행사 업체',
         description: '진로체험, 스포츠데이 등 우수한 콘텐츠와 포트폴리오를 전국의 학교에 알리세요.',
         steps: [
             {

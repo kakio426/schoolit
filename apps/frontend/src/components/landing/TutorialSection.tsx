@@ -187,12 +187,12 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                     <div className="flex gap-3 mb-4">
                         <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-2xl">🏫</div>
                         <div>
-                            <div className="text-sm font-bold text-slate-800 dark:text-white">에듀핀 중학교</div>
+                            <div className="text-sm font-bold text-slate-800 dark:text-white">에듀핀 학교</div>
                             <div className="text-[10px] text-slate-500">서울 강남구 | 2026.01.04</div>
                         </div>
                     </div>
                     <div className="space-y-2 mb-6">
-                        <div className="text-lg font-bold text-slate-800 dark:text-white leading-tight">2026학년도 방과후<br />수학 교사 채용 공고</div>
+                        <div className="text-lg font-bold text-slate-800 dark:text-white leading-tight">2026학년도 방과후<br />수학 선생님 채용 공고</div>
                         <div className="text-xs text-slate-500 line-clamp-2">주 2회 기초 수학 지도 및 교재 활용 수업 진행 (경력자 우대)</div>
                     </div>
                     <div className="flex gap-2">

@@ -24,7 +24,7 @@ export function JobTypeSelector({ value, onChange }: JobTypeSelectorProps) {
                         }`}
                 >
                     <div className="text-5xl mb-3">👨‍🏫</div>
-                    <div className="font-bold text-lg text-foreground mb-1">교사 · 강사 채용</div>
+                    <div className="font-bold text-lg text-foreground mb-1">선생님 채용</div>
                     <div className="text-xs text-foreground-muted">
                         기간제, 시간강사, 늘봄 · 돌봄, 방과후 등
                     </div>
