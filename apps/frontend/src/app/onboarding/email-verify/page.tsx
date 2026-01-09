@@ -13,7 +13,6 @@ export default function EmailVerificationPage() {
     const [step, setStep] = useState<'INPUT_EMAIL' | 'INPUT_CODE'>('INPUT_EMAIL');
     const [email, setEmail] = useState('');
     const [schoolName, setSchoolName] = useState('');
-    const [phone, setPhone] = useState('');
     const [code, setCode] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
@@ -42,7 +41,6 @@ export default function EmailVerificationPage() {
             const res = await api.post<{ success: boolean }>('/auth/email/verify', {
                 code,
                 schoolName,
-                phoneNumber: phone
             });
             if (res.success) {
                 // Success! Proceed to dashboard (where "Pending" state will be shown)
@@ -86,20 +84,6 @@ export default function EmailVerificationPage() {
                                     className="w-full h-14 px-5 rounded-2xl bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     required
                                 />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-foreground ml-1">행정실 전화번호</label>
-                                <input
-                                    type="tel"
-                                    placeholder="02-1234-5678"
-                                    value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
-                                    className="w-full h-14 px-5 rounded-2xl bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                                    required
-                                />
-                                <p className="text-xs text-foreground-muted ml-1">
-                                    * 실제 학교 행정실 번호를 입력해주세요. 담당자가 확인 전화를 드립니다.
-                                </p>
                             </div>
                             <div className="pt-2 border-t border-border/50"></div>
                             <div className="space-y-2">

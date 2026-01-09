@@ -15,7 +15,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private smsService: SmsService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
@@ -84,7 +84,7 @@ export class AuthService {
   async verifyEmail(
     userId: number,
     code: string,
-    schoolData?: { schoolName: string; phoneNumber: string },
+    schoolData?: { schoolName: string; phoneNumber?: string | null },
   ) {
     const { valid, email } = await this.userService.validateVerificationCode(userId, code);
     if (!valid) return { success: false };
