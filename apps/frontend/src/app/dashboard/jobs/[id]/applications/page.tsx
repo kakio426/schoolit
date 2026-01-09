@@ -258,7 +258,7 @@ export default function JobApplicantsPage() {
                                 onClick={() => setViewMode('kanban')}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${viewMode === 'kanban' ? 'bg-primary text-white shadow-sm' : 'text-foreground-muted hover:text-foreground'}`}
                             >
-                                📊 칸반
+                                📊 보드
                             </button>
                         </div>
                         {job && (
@@ -323,7 +323,7 @@ export default function JobApplicantsPage() {
                     </div>
                 )}
 
-                {/* KANBAN VIEW */}
+                {/* BOARD VIEW */}
                 {viewMode === 'kanban' && !isLoading && (
                     <KanbanBoard
                         applicants={applicants.map(a => ({
