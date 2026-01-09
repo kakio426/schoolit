@@ -208,19 +208,59 @@ export default function JobDetailPage() {
                                         <div className="text-xs font-bold text-foreground-muted uppercase mb-1">상태</div>
                                         {/* Compliance Workflow Status */}
                                         {(job as any).workflowStatus && (job as any).workflowStatus !== 'PUBLISHED' ? (
-                                            <div className="space-y-2">
+                                            <div className="space-y-3">
                                                 <div className="text-xl font-black text-amber-500 flex items-center gap-2">
-                                                    {(job as any).workflowStatus === 'PLAN_DRAFT' ? '기안 작성 중' : '내부 결재 진행 중'}
+                                                    {(job as any).workflowStatus === 'DRAFT' ? '기안 작성 중' :
+                                                        (job as any).workflowStatus === 'PLAN_APPROVED' ? '결재 승인됨' :
+                                                            '내부 결재 진행 중'}
                                                     <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
                                                 </div>
                                                 <p className="text-xs text-foreground-muted">
                                                     현재 이 공고는 외부에 노출되지 않습니다.<br />
-                                                    학교장 결재 완료 후 자동 게시됩니다.
+                                                    아래 버튼을 눌러 다음 단계로 진행하세요.
                                                 </p>
-                                                {user?.id === job.schoolId && (job as any).workflowStatus === 'PLAN_DRAFT' && (
-                                                    <button onClick={() => alert('결재 상신 기능은 준비 중입니다.')} className="w-full py-2 bg-amber-100 text-amber-700 font-bold rounded-xl text-sm hover:bg-amber-200 transition-colors">
-                                                        결재 올리기 (상신)
-                                                    </button>
+
+                                                {/* 학교 관리자 전용 워크플로우 버튼 */}
+                                                {user?.id === job.schoolId && (
+                                                    <div className="space-y-2 pt-2">
+                                                        {/* DRAFT -> PLAN_APPROVED */}
+                                                        {(job as any).workflowStatus === 'DRAFT' && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (!confirm('결재를 승인하시겠습니까? 이후 게시 단계로 넘어갑니다.')) return;
+                                                                    try {
+                                                                        await api.put(`/compliance/jobs/${job.id}/workflow`, { status: 'PLAN_APPROVED' });
+                                                                        alert('결재가 승인되었습니다.');
+                                                                        fetchJob();
+                                                                    } catch (e: any) {
+                                                                        alert(e.message || '오류가 발생했습니다.');
+                                                                    }
+                                                                }}
+                                                                className="w-full py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm hover:bg-amber-600 transition-colors"
+                                                            >
+                                                                ✅ 결재 승인하기
+                                                            </button>
+                                                        )}
+
+                                                        {/* PLAN_APPROVED -> PUBLISHED */}
+                                                        {(job as any).workflowStatus === 'PLAN_APPROVED' && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (!confirm('공고를 게시하시겠습니까? 외부에 공개됩니다.')) return;
+                                                                    try {
+                                                                        await api.put(`/compliance/jobs/${job.id}/workflow`, { status: 'PUBLISHED' });
+                                                                        alert('공고가 게시되었습니다!');
+                                                                        fetchJob();
+                                                                    } catch (e: any) {
+                                                                        alert(e.message || '오류가 발생했습니다.');
+                                                                    }
+                                                                }}
+                                                                className="w-full py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:bg-emerald-600 transition-colors"
+                                                            >
+                                                                🚀 공고 게시하기
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 )}
                                             </div>
                                         ) : (
