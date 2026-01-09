@@ -107,32 +107,32 @@ export default function TutorialSection() {
                 </div>
 
                 {/* Main Content Area */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 stretch">
 
-                    {/* Left: Steps List */}
-                    <div className="space-y-4">
+                    {/* Left: Steps List - Flex col to distribute space if needed, or just fill */}
+                    <div className="flex flex-col gap-4 h-full">
                         {activeRole.steps.map((step, index) => (
                             <div
                                 key={step.id}
-                                className={`relative p-5 rounded-2xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
-                                    ? 'bg-slate-800 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
-                                    : 'bg-slate-800 border-white/5 hover:bg-slate-700 hover:border-white/20 scale-[0.98] opacity-80 hover:opacity-100'
+                                className={`relative p-6 flex-1 flex flex-col justify-center rounded-2xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
+                                    ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
+                                    : 'bg-slate-800 border-white/5 hover:bg-slate-700 hover:border-white/20 opacity-80 hover:opacity-100'
                                     }`}
                                 onClick={() => setActiveStepIndex(index)}
                             >
-                                <div className="flex items-start gap-4">
+                                <div className="flex items-start gap-5">
                                     <div className={`p-3 rounded-xl shrink-0 ${index === activeStepIndex
                                         ? 'bg-primary text-white'
                                         : 'bg-slate-900/50 text-slate-400'
                                         }`}>
-                                        <step.icon size={20} />
+                                        <step.icon size={24} />
                                     </div>
                                     <div>
-                                        <h3 className={`text-lg font-bold mb-1 ${index === activeStepIndex ? 'text-white' : 'text-slate-200'
+                                        <h3 className={`text-xl font-bold mb-2 ${index === activeStepIndex ? 'text-white' : 'text-slate-200'
                                             }`}>
                                             {step.title}
                                         </h3>
-                                        <p className="text-slate-400 text-sm leading-relaxed">
+                                        <p className="text-slate-400 font-medium leading-relaxed">
                                             {step.description}
                                         </p>
                                     </div>
@@ -141,7 +141,7 @@ export default function TutorialSection() {
                                 {/* Progress Bar for Active Step */}
                                 {index === activeStepIndex && (
                                     <motion.div
-                                        className="absolute bottom-0 left-0 h-0.5 bg-primary rounded-b-2xl"
+                                        className="absolute bottom-0 left-0 h-1 bg-primary rounded-b-2xl"
                                         initial={{ width: "0%" }}
                                         animate={{ width: "100%" }}
                                         transition={{ duration: 4, ease: "linear" }}
@@ -151,8 +151,8 @@ export default function TutorialSection() {
                         ))}
                     </div>
 
-                    {/* Right: Mock UI Display */}
-                    <div className="relative h-[480px] w-full bg-slate-800 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-10 ring-1 ring-white/10 mx-auto max-w-[500px] lg:max-w-full">
+                    {/* Right: Mock UI Display - Stretches to match Left Column Height */}
+                    <div className="relative w-full bg-slate-800 rounded-[32px] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-12 ring-1 ring-white/5 mx-auto max-w-[500px] lg:max-w-full lg:h-auto min-h-[400px]">
                         {/* Abstract Background Decoration */}
                         <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-slate-800 to-slate-900/50" />
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-primary/5 blur-[80px] rounded-full" />
