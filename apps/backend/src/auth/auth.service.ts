@@ -91,10 +91,14 @@ export class AuthService {
 
     // Update School Profile if data provided
     if (schoolData) {
+      // Auto-verify if email is from korea.kr or go.kr
+      const isTrustedEmail = email?.endsWith('.kr') || email?.endsWith('.go.kr');
+
       await this.userService.updateSchoolProfile(userId, {
         schoolName: schoolData.schoolName,
         phoneNumber: schoolData.phoneNumber,
         description: email ? `[Verified Email: ${email}]` : undefined,
+        isVerified: isTrustedEmail, // Automatically mark as verified for official emails
       });
     }
 
