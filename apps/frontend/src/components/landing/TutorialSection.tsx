@@ -27,37 +27,61 @@ export default function TutorialSection() {
     return (
         <section className="pt-24 pb-32 px-6 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-16 space-y-4">
+                <div className="text-center mb-12 space-y-6">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         className="inline-block px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-bold mb-4"
                     >
-                        Easy Guide
+                        2026년 학교 채용의 새로운 표준
                     </motion.div>
-                    <motion.h2
+                    <motion.h1
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-5xl font-bold text-white tracking-tight"
+                        className="text-5xl md:text-7xl font-bold text-white tracking-tight leading-tight"
                     >
-                        누구나 쉽게 시작할 수 있어요
-                    </motion.h2>
+                        학교와 선생님을 잇는<br />
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-primary">
+                            가장 스마트한 방법
+                        </span>
+                    </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="text-slate-400 text-lg max-w-2xl mx-auto"
+                        className="text-slate-400 text-xl max-w-2xl mx-auto leading-relaxed"
                     >
-                        학교도, 선생님도, 교육 업체도. School It에서는 복잡한 절차 없이 간편합니다.
+                        복잡한 절차는 이제 그만.<br />
+                        School It에서 직관적인 채용과 매칭을 경험하세요.
                     </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.3 }}
+                        className="pt-8 flex flex-col items-center justify-center gap-4"
+                    >
+                        <a
+                            href="/auth/login"
+                            className="group relative px-10 py-4 bg-primary text-white font-bold rounded-full overflow-hidden hover:scale-105 transition-all shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center gap-2 text-lg"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
+                            무료로 시작하기
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-arrow-right w-5 h-5 group-hover:translate-x-1 transition-transform"><path d="M5 12h14" /><path d="m12 5 7 7-7 7" /></svg>
+                        </a>
+                        <p className="text-slate-500 text-xs font-medium tracking-wide">
+                            * 3초 만에 완료되는 간편 가입
+                        </p>
+                    </motion.div>
                 </div>
 
                 {/* Role Tabs */}
-                <div className="flex justify-center mb-16">
+                <div className="flex justify-center mb-12">
                     <div className="flex bg-slate-800/50 p-1.5 rounded-full border border-white/10 backdrop-blur-sm overflow-x-auto max-w-full">
                         {TUTORIAL_DATA.map((role) => (
                             <button

@@ -32,48 +32,10 @@ export default function LandingPage() {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 px-6 overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-primary/20 rounded-full blur-[120px] -z-10 opacity-50"></div>
-
-        <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-primary-300 mb-4">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-            </span>
-            2026년 학교 채용의 새로운 표준
-          </div>
-
-          <h1 className="text-5xl md:text-7xl font-bold tracking-tight leading-tight">
-            학교와 선생님을 잇는<br />
-            <span className="bg-gradient-to-r from-primary to-blue-400 bg-clip-text text-transparent">
-              가장 스마트한 방법
-            </span>
-          </h1>
-
-          <p className="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto leading-relaxed">
-            상세한 선생님 프로필부터 학교 행사 중개까지.<br />
-            복잡한 채용과 매칭 프로세스를 School It에서 간편하게 해결하세요.
-          </p>
-
-          <div className="flex flex-col items-center justify-center gap-4 pt-8">
-            <Link
-              href="/auth/login"
-              className="group relative px-12 py-5 bg-primary text-white font-bold rounded-full overflow-hidden hover:scale-105 transition-all shadow-[0_0_40px_rgba(59,130,246,0.3)] hover:shadow-[0_0_50px_rgba(59,130,246,0.5)] flex items-center gap-3 text-lg"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
-              무료로 시작하기
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <p className="text-slate-500 text-xs font-medium tracking-wide">
-              * 3초 만에 완료되는 간편 가입
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <TutorialSection />
+      {/* Hero Section (Easy Guide) */}
+      <div className="pt-20">
+        <TutorialSection />
+      </div>
 
       {/* Feature Grid */}
       <section className="py-24 px-6 bg-slate-800/30">
