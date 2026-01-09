@@ -24,58 +24,74 @@ export class ApplicationsService {
   ) { }
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
-    // Check if job exists and is OPEN
-    const job = await this.prisma.jobListing.findUnique({
-      where: { id: jobId },
-      include: { schoolProfile: true },
-    });
+    try {
+      // Check if job exists and is OPEN
+      const job = await this.prisma.jobListing.findUnique({
+        where: { id: jobId },
+        include: { schoolProfile: true },
+      });
 
-    if (!job) {
-      throw new NotFoundException('Job not found');
-    }
+      if (!job) {
+        throw new NotFoundException('Job not found');
+      }
 
-    if (job.status !== 'OPEN' || !job.active) {
-      throw new BadRequestException('Job is closed');
-    }
+      if (job.status !== 'OPEN' || !job.active) {
+        throw new BadRequestException('Job is closed or inactive');
+      }
 
-    // Check duplicate
-    const existing = await this.prisma.jobApplication.findUnique({
-      where: {
-        jobId_userId: {
+      // Check duplicate
+      const existing = await this.prisma.jobApplication.findUnique({
+        where: {
+          jobId_userId: {
+            jobId,
+            userId,
+          },
+        },
+      });
+
+      if (existing) {
+        throw new BadRequestException('이미 지원하신 공고입니다.');
+      }
+
+      // Create application
+      const app = await this.prisma.jobApplication.create({
+        data: {
           jobId,
           userId,
+          message: dto.message,
+          cost: dto.cost,
+          contactEmail: dto.contactEmail,
+          contactPhone: dto.contactPhone,
+          attachmentUrl: dto.attachmentUrl,
+          status: 'PENDING',
         },
-      },
-    });
+      });
 
-    if (existing) {
-      throw new BadRequestException('You have already applied to this job');
+      // Notify Job Owner Safely
+      // Use schoolProfile first, then fall back to teacherProfile or any owner record
+      const ownerId = job.schoolProfile?.userId || (job as any).teacherProfile?.userId || (job as any).userId;
+
+      if (ownerId) {
+        try {
+          await this.notificationsService.create({
+            userId: ownerId,
+            type: 'APPLICATION',
+            title: '새로운 지원서 도착',
+            content: `'${job.title}' 공고에 새로운 지원자가 있습니다.`,
+            link: `/dashboard/jobs/${job.id}`,
+          });
+        } catch (notifError) {
+          console.error('Failed to send notification upon application', notifError);
+          // Don't fail the whole request if only notification fails
+        }
+      }
+
+      return app;
+    } catch (e: any) {
+      console.error('CRITICAL: Job Application Failure', e);
+      if (e instanceof BadRequestException || e instanceof NotFoundException) throw e;
+      throw new BadRequestException(e.message || '지원서 제출 중 예기치 못한 서버 오류가 발생했습니다.');
     }
-
-    // Create application
-    const app = await this.prisma.jobApplication.create({
-      data: {
-        jobId,
-        userId,
-        message: dto.message,
-        cost: dto.cost,
-        contactEmail: dto.contactEmail,
-        contactPhone: dto.contactPhone,
-        attachmentUrl: dto.attachmentUrl,
-        status: 'PENDING',
-      },
-    });
-
-    // Notify School
-    await this.notificationsService.create({
-      userId: job.schoolProfile.userId,
-      type: 'APPLICATION',
-      title: '새로운 지원서 도착',
-      content: `'${job.title}' 공고에 새로운 지원자가 있습니다.`,
-      link: `/dashboard/jobs/${job.id}`,
-    });
-
-    return app;
   }
 
   async getMyApplications(userId: number, role?: string) {
