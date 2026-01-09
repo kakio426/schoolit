@@ -19,28 +19,27 @@ export class EmailService implements OnModuleInit {
     }
 
     this.transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
+      service: 'gmail',
       auth: {
         user: user,
         pass: pass,
       },
-      tls: {
-        rejectUnauthorized: false
-      },
-      connectionTimeout: 15000,
-      greetingTimeout: 15000,
-      socketTimeout: 20000,
+      debug: true,
+      logger: true,
+      connectionTimeout: 20000, // 20 seconds
+      greetingTimeout: 20000,
+      socketTimeout: 30000,
     });
 
-    // Verify connection configuration
+    // Verify connection
+    this.logger.log('Verifying Email Transporter connection...');
     this.transporter.verify((error) => {
       if (error) {
-        this.logger.error('Email Transporter verification failed:');
-        this.logger.error(error);
+        this.logger.error('==== Email Transporter Verification Failed ====');
+        this.logger.error(error.message);
+        this.logger.error(error.stack);
       } else {
-        this.logger.log('Email Transporter is ready to take messages');
+        this.logger.log('✅ Email Transporter is ready and connected');
       }
     });
   }
