@@ -21,9 +21,9 @@ export class EmailService implements OnModuleInit {
   }
 
   async sendVerificationCode(email: string, code: string) {
-    // Verified domain: send.schoolit.shop
-    // You can use any prefix like 'noreply', 'auth', 'onboarding' with the verified domain.
-    const from = 'Schoolit <onboarding@send.schoolit.shop>';
+    // Verified domain: schoolit.shop
+    // Use the root domain instead of the 'send' subdomain for the FROM address.
+    const from = 'Schoolit <onboarding@schoolit.shop>';
 
     this.logger.log(`Attempting to send email to ${email} via Resend...`);
 
