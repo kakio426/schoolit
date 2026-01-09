@@ -21,7 +21,7 @@ export class AuthService {
     const user = await this.userService.findOne(email);
 
     // 탈퇴한 계정 차단
-    if (user && user.isDeleted) {
+    if (user && (user as any).isDeleted) {
       return { isDeleted: true, message: '탈퇴한 계정입니다.' };
     }
 
