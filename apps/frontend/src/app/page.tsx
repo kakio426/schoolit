@@ -38,7 +38,7 @@ export default function LandingPage() {
       </div>
 
       {/* Feature Grid */}
-      <section className="py-24 px-6 bg-slate-800/30">
+      <section className="py-16 px-6 bg-slate-900">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <FeatureCard
@@ -61,7 +61,6 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      {/* Footer */}
       <FooterDisclaimer />
     </div>
   );
@@ -69,8 +68,8 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="p-8 rounded-3xl bg-slate-800/40 border border-white/5 hover:border-white/10 hover:bg-slate-800/60 transition-all group hover:-translate-y-1 duration-300">
-      <div className="mb-6 p-4 rounded-2xl bg-slate-800/50 w-fit group-hover:bg-slate-800 transition-colors ring-1 ring-white/5">
+    <div className="p-8 rounded-3xl bg-slate-800 border border-white/5 hover:border-white/20 hover:bg-slate-700 transition-all group hover:-translate-y-1 duration-300 shadow-lg">
+      <div className="mb-6 p-4 rounded-2xl bg-slate-900/50 w-fit group-hover:bg-slate-900 transition-colors ring-1 ring-white/5">
         {icon}
       </div>
       <h3 className="text-xl font-bold text-white mb-3">{title}</h3>

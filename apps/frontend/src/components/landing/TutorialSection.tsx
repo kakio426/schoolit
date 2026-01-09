@@ -115,20 +115,20 @@ export default function TutorialSection() {
                             <div
                                 key={step.id}
                                 className={`relative p-5 rounded-2xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
-                                    ? 'bg-primary/10 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
-                                    : 'bg-slate-800/40 border-white/5 hover:bg-slate-800/60 hover:border-white/10 scale-[0.98] opacity-70'
+                                    ? 'bg-slate-800 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
+                                    : 'bg-slate-800 border-white/5 hover:bg-slate-700 hover:border-white/20 scale-[0.98] opacity-80 hover:opacity-100'
                                     }`}
                                 onClick={() => setActiveStepIndex(index)}
                             >
                                 <div className="flex items-start gap-4">
                                     <div className={`p-3 rounded-xl shrink-0 ${index === activeStepIndex
                                         ? 'bg-primary text-white'
-                                        : 'bg-slate-700/50 text-slate-400'
+                                        : 'bg-slate-900/50 text-slate-400'
                                         }`}>
                                         <step.icon size={20} />
                                     </div>
                                     <div>
-                                        <h3 className={`text-lg font-bold mb-1 ${index === activeStepIndex ? 'text-white' : 'text-slate-300'
+                                        <h3 className={`text-lg font-bold mb-1 ${index === activeStepIndex ? 'text-white' : 'text-slate-200'
                                             }`}>
                                             {step.title}
                                         </h3>
@@ -152,9 +152,9 @@ export default function TutorialSection() {
                     </div>
 
                     {/* Right: Mock UI Display */}
-                    <div className="relative h-[480px] w-full bg-slate-950 rounded-[32px] border border-slate-700 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-10 ring-4 ring-slate-900 mx-auto max-w-[500px] lg:max-w-full">
+                    <div className="relative h-[480px] w-full bg-slate-800 rounded-[32px] border border-white/5 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-10 ring-1 ring-white/10 mx-auto max-w-[500px] lg:max-w-full">
                         {/* Abstract Background Decoration */}
-                        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-slate-800 to-slate-900/50" />
                         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-primary/5 blur-[80px] rounded-full" />
 
                         <AnimatePresence mode="wait">
