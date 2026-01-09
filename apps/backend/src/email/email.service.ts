@@ -21,9 +21,9 @@ export class EmailService implements OnModuleInit {
   }
 
   async sendVerificationCode(email: string, code: string) {
-    const from = 'Schoolit <onboarding@resend.dev>'; // Default Resend testing domain
-    // NOTE: In production, you should verify your own domain (e.g., no-reply@schoolit.com)
-    // and update this variable or set 'EMAIL_FROM' in .env
+    // Verified domain: send.schoolit.shop
+    // You can use any prefix like 'noreply', 'auth', 'onboarding' with the verified domain.
+    const from = 'Schoolit <onboarding@send.schoolit.shop>';
 
     this.logger.log(`Attempting to send email to ${email} via Resend...`);
 
