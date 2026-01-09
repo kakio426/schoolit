@@ -11,7 +11,7 @@ import { PrismaService } from '../prisma.service';
 export class DataCleanupService {
   private readonly logger = new Logger(DataCleanupService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   /**
    * 매주 일요일 자정에 실행 (6개월 이상 경과 유저 삭제)
@@ -156,4 +156,129 @@ export class DataCleanupService {
       },
     });
   }
+
+  // ============================================
+  // 2025 COMPLIANCE: 채용 서류 7일 파기 (PIPA)
+  // ============================================
+
+  /**
+   * 매일 새벽 3시에 실행 - 탈락자 서류 7일 후 자동 파기
+   * 2025 경기도교육청 지침: "채용 확정 후 14일 반환청구 + 7일 후 파기"
+   */
+  @Cron('0 3 * * *') // 매일 오전 3시
+  async cleanupRecruitmentDocuments() {
+    this.logger.log('[COMPLIANCE] Starting recruitment document cleanup...');
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    try {
+      // 1. 탈락(REJECTED) 상태이고 7일 이상 경과한 지원서 조회
+      const applicationsToClean = await this.prisma.jobApplication.findMany({
+        where: {
+          status: 'REJECTED',
+          updatedAt: { lt: sevenDaysAgo },
+        },
+        include: {
+          user: {
+            include: {
+              teacherProfile: true,
+            },
+          },
+        },
+      });
+
+      if (applicationsToClean.length === 0) {
+        this.logger.log('[COMPLIANCE] No recruitment documents to cleanup.');
+        return { cleaned: 0 };
+      }
+
+      this.logger.log(`[COMPLIANCE] Found ${applicationsToClean.length} applications to clean.`);
+
+      let cleanedCount = 0;
+
+      for (const application of applicationsToClean) {
+        // 2. TeacherProfile의 transientDocuments 필드 정리 (일시 증빙 서류 삭제)
+        if (application.user.teacherProfile?.transientDocuments) {
+          await this.prisma.teacherProfile.update({
+            where: { id: application.user.teacherProfile.id },
+            data: {
+              transientDocuments: null, // JSON 필드 초기화
+            },
+          });
+          this.logger.log(`[COMPLIANCE] Cleaned transient documents for user ${application.userId}`);
+        }
+
+        // 3. 해당 지원서의 평가(Evaluation) 데이터도 비식별화 (점수만 유지, 개인정보 삭제)
+        await this.prisma.evaluation.updateMany({
+          where: { applicationId: application.id },
+          data: {
+            comment: null, // 심사평 삭제 (개인정보 포함 가능)
+          },
+        });
+
+        cleanedCount++;
+      }
+
+      this.logger.log(`[COMPLIANCE] Recruitment document cleanup complete. Cleaned: ${cleanedCount}`);
+      return { cleaned: cleanedCount };
+    } catch (error) {
+      this.logger.error(`[COMPLIANCE] Recruitment cleanup failed: ${error.message}`, error.stack);
+      throw error;
+    }
+  }
+
+  /**
+   * 개별 지원자의 서류 즉시 파기 요청 처리
+   * 불합격자가 "채용 서류 반환/파기 요청"을 할 경우 호출
+   */
+  async immediateDocumentDestruction(applicationId: number): Promise<{ success: boolean; message: string }> {
+    this.logger.log(`[COMPLIANCE] Immediate destruction requested for application ${applicationId}`);
+
+    try {
+      const application = await this.prisma.jobApplication.findUnique({
+        where: { id: applicationId },
+        include: {
+          user: {
+            include: {
+              teacherProfile: true,
+            },
+          },
+        },
+      });
+
+      if (!application) {
+        return { success: false, message: '지원서를 찾을 수 없습니다.' };
+      }
+
+      if (application.status !== 'REJECTED') {
+        return { success: false, message: '탈락 상태의 지원서만 서류 파기를 요청할 수 있습니다.' };
+      }
+
+      // 일시 증빙 서류 삭제
+      if (application.user.teacherProfile) {
+        await this.prisma.teacherProfile.update({
+          where: { id: application.user.teacherProfile.id },
+          data: {
+            transientDocuments: null,
+          },
+        });
+      }
+
+      // 심사평 삭제
+      await this.prisma.evaluation.updateMany({
+        where: { applicationId: application.id },
+        data: {
+          comment: null,
+        },
+      });
+
+      this.logger.log(`[COMPLIANCE] Documents destroyed for application ${applicationId}`);
+      return { success: true, message: '채용 서류가 파기되었습니다. 파기 확인서가 발급됩니다.' };
+    } catch (error) {
+      this.logger.error(`[COMPLIANCE] Immediate destruction failed: ${error.message}`);
+      return { success: false, message: '서류 파기 중 오류가 발생했습니다.' };
+    }
+  }
 }
+
