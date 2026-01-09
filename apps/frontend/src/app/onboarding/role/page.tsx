@@ -52,9 +52,9 @@ export default function RoleSelectionPage() {
                                 👨‍🏫
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-2xl font-bold text-foreground">프리랜서 강사</h3>
+                                <h3 className="text-2xl font-bold text-foreground">프리랜서 교사 및 강사</h3>
                                 <p className="text-sm text-foreground-muted leading-relaxed">
-                                    방과후 학교, 돌봄 교실 등<br />나의 재능을 펼칠 곳을 찾습니다.
+                                    방과후 학교, 돌봄 교실, 늘봄 교실, 시간제 강사 등<br />나의 역할이 필요한 곳을 찾습니다.
                                 </p>
                             </div>
                         </div>
@@ -78,9 +78,9 @@ export default function RoleSelectionPage() {
                                 🏫
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-2xl font-bold text-foreground">학교/기관 담당자</h3>
+                                <h3 className="text-2xl font-bold text-foreground">학교/업무 담당 교사</h3>
                                 <p className="text-sm text-foreground-muted leading-relaxed">
-                                    위변조 방지 2단계 인증을 거쳐<br />검증된 강사를 채용합니다.
+                                    검증된 교사(강사) 및 행사 업체를 찾아<br />견적을 받고 계약을 진행합니다.
                                 </p>
                             </div>
                         </div>
@@ -104,9 +104,9 @@ export default function RoleSelectionPage() {
                                 🏢
                             </div>
                             <div className="space-y-2">
-                                <h3 className="text-2xl font-bold text-foreground">교육 위탁 업체</h3>
+                                <h3 className="text-2xl font-bold text-foreground">교육 관련 업체</h3>
                                 <p className="text-sm text-foreground-muted leading-relaxed">
-                                    방과후/돌봄 위탁 운영 및<br />교육 행사 전문 기업입니다.
+                                    진로체험, 스포츠데이, 체험학습 등<br />학교에서 필요한 교육 행사 전문 기업입니다.
                                 </p>
                             </div>
                         </div>

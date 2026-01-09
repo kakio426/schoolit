@@ -74,8 +74,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         } else if (user?.role === 'TEACHER') {
             navItems.push(
                 { label: '채용 공고 찾기', href: '/dashboard/jobs', icon: '📋' },
-                { label: '행사 요청하기', href: '/dashboard/jobs/new', icon: '📢' },
-                { label: '업체 찾기', href: '/dashboard/business', icon: '🏢' },
                 { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
                 { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
             );

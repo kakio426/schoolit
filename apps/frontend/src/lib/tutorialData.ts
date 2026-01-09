@@ -47,7 +47,7 @@ export const TUTORIAL_DATA: TutorialRole[] = [
     },
     {
         id: 'TEACHER',
-        label: '선생님 (Teacher)',
+        label: '강사님 (Instructor)',
         description: '자신의 전문성을 인정받고, 원하는 조건의 학교를 쉽고 빠르게 찾으세요.',
         steps: [
             {
@@ -75,8 +75,8 @@ export const TUTORIAL_DATA: TutorialRole[] = [
     },
     {
         id: 'BUSINESS',
-        label: '교육 업체 (Business)',
-        description: '우리 업체의 우수한 콘텐츠와 포트폴리오를 전국의 학교에 알리세요.',
+        label: '교육 행사 업체 (Vendor)',
+        description: '진로체험, 스포츠데이 등 우수한 콘텐츠와 포트폴리오를 전국의 학교에 알리세요.',
         steps: [
             {
                 id: 'b1',

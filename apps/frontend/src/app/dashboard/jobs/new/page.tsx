@@ -114,15 +114,9 @@ export default function NewJobPage() {
     // Dynamic Guide Steps (from constants)
     const guideSteps = getGuideSteps(jobType);
 
-    // Set default jobType for Teachers
-    React.useEffect(() => {
-        if (user?.role === 'TEACHER') {
-            setJobType(JobType.EVENT_VENDOR);
-        }
-    }, [user]);
-
-    if (user?.role !== 'SCHOOL' && user?.role !== 'TEACHER') {
-        return <DashboardLayout><div>접근 권한 없음</div></DashboardLayout>
+    // [RBAC] Only SCHOOL role can create jobs/events
+    if (user?.role !== 'SCHOOL') {
+        return <DashboardLayout><div className="text-center py-20 text-foreground-muted">접근 권한이 없습니다.<br />공고 등록은 학교/업무 담당 교사만 가능합니다.</div></DashboardLayout>
     }
 
     return (
