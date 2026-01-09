@@ -1,4 +1,4 @@
-import { PrismaClient, ApplicationStatus } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import { CloudinaryService } from './src/common/storage/cloudinary.service';
 import { ReviewsService } from './src/reviews/reviews.service';
 import { ConfigService } from '@nestjs/config';
@@ -20,11 +20,11 @@ async function testReviewUpload() {
         console.log('1. Updating application to HIRED...');
         await prisma.jobApplication.upsert({
             where: { jobId_userId: { jobId: 1, userId: 3 } },
-            update: { status: ApplicationStatus.HIRED },
+            update: { status: 'HIRED' as any },
             create: {
                 jobId: 1,
                 userId: 3,
-                status: ApplicationStatus.HIRED,
+                status: 'HIRED' as any,
                 message: 'Test hired application'
             }
         });
