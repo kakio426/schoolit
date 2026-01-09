@@ -1,20 +1,23 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { EmailService } from './email.service';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
-// Mock nodemailer
-jest.mock('nodemailer');
-const sendMailMock = jest.fn();
-(nodemailer.createTransport as jest.Mock).mockReturnValue({
-    sendMail: sendMailMock,
+// Mock Resend
+jest.mock('resend', () => {
+    return {
+        Resend: jest.fn().mockImplementation(() => ({
+            emails: {
+                send: jest.fn().mockResolvedValue({ data: { id: 'test-email-id' }, error: null }),
+            },
+        })),
+    };
 });
 
 const mockConfigService = {
     get: jest.fn((key: string) => {
         switch (key) {
-            case 'EMAIL_USER': return 'test@gmail.com';
-            case 'EMAIL_PASSWORD': return 'password';
+            case 'RESEND_API_KEY': return 're_123456789';
             case 'EMAIL_FROM': return 'test@edupin.com';
             default: return null;
         }
@@ -23,6 +26,7 @@ const mockConfigService = {
 
 describe('EmailService', () => {
     let service: EmailService;
+    let resendMock: any;
 
     beforeEach(async () => {
         const module: TestingModule = await Test.createTestingModule({
@@ -36,29 +40,31 @@ describe('EmailService', () => {
         }).compile();
 
         service = module.get<EmailService>(EmailService);
-        sendMailMock.mockClear();
+
+        // Get the instance of the mocked Resend class
+        resendMock = (service as any).resend;
+
+        // Manually trigger onModuleInit since tests don't always do it automatically
+        service.onModuleInit();
     });
 
     it('should be defined', () => {
         expect(service).toBeDefined();
     });
 
-    it('should send verification code using nodemailer', async () => {
+    it('should initialize Resend with API key', () => {
+        expect(Resend).toHaveBeenCalledWith('re_123456789');
+    });
+
+    it('should send verification code using Resend API', async () => {
         const email = 'test@korea.kr';
         const code = '123456';
 
         await service.sendVerificationCode(email, code);
 
-        expect(nodemailer.createTransport).toHaveBeenCalledWith(expect.objectContaining({
-            service: 'gmail',
-            auth: {
-                user: 'test@gmail.com',
-                pass: 'password'
-            }
-        }));
-
-        expect(sendMailMock).toHaveBeenCalledWith(expect.objectContaining({
-            to: email,
+        // Access the mock directly from the service instance
+        expect((service as any).resend.emails.send).toHaveBeenCalledWith(expect.objectContaining({
+            to: [email],
             subject: expect.stringContaining('인증번호'),
             html: expect.stringContaining(code),
         }));

@@ -49,6 +49,7 @@
     "passport-naver-v2": "^2.0.8",
     "pdf-lib": "^1.17.1",
     "reflect-metadata": "^0.1.13",
+    "resend": "^6.7.0",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3",

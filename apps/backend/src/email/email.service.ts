@@ -1,59 +1,38 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class EmailService implements OnModuleInit {
   private readonly logger = new Logger(EmailService.name);
-  private transporter: nodemailer.Transporter;
+  private resend: Resend;
 
   constructor(private configService: ConfigService) { }
 
   onModuleInit() {
-    this.logger.log('Initializing Email Transporter...');
-    const user = this.configService.get<string>('EMAIL_USER');
-    const pass = this.configService.get<string>('EMAIL_PASSWORD');
+    this.logger.log('Initializing Resend Email Client...');
+    const apiKey = this.configService.get<string>('RESEND_API_KEY');
 
-    if (!user || !pass) {
-      this.logger.warn('EMAIL_USER or EMAIL_PASSWORD is not set in .env. Email sending will fail.');
+    if (!apiKey) {
+      this.logger.warn('RESEND_API_KEY is not set in .env. Email sending will fail.');
     }
 
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: user,
-        pass: pass,
-      },
-      debug: true,
-      logger: true,
-      connectionTimeout: 20000, // 20 seconds
-      greetingTimeout: 20000,
-      socketTimeout: 30000,
-    });
-
-    // Verify connection
-    this.logger.log('Verifying Email Transporter connection...');
-    this.transporter.verify((error) => {
-      if (error) {
-        this.logger.error('==== Email Transporter Verification Failed ====');
-        this.logger.error(error.message);
-        this.logger.error(error.stack);
-      } else {
-        this.logger.log('✅ Email Transporter is ready and connected');
-      }
-    });
+    this.resend = new Resend(apiKey);
   }
 
   async sendVerificationCode(email: string, code: string) {
-    const from = this.configService.get<string>('EMAIL_FROM') || 'Schoolit <no-reply@edupin.com>';
+    const from = 'Schoolit <onboarding@resend.dev>'; // Default Resend testing domain
+    // NOTE: In production, you should verify your own domain (e.g., no-reply@schoolit.com)
+    // and update this variable or set 'EMAIL_FROM' in .env
 
-    this.logger.log(`Attempting to send email to ${email}...`);
+    this.logger.log(`Attempting to send email to ${email} via Resend...`);
 
-    const mailOptions = {
-      from,
-      to: email,
-      subject: '[Schoolit] 학교/기관 인증번호 안내',
-      html: `
+    try {
+      const { data, error } = await this.resend.emails.send({
+        from: from,
+        to: [email],
+        subject: '[Schoolit] 학교/기관 인증번호 안내',
+        html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
           <h2 style="color: #0070f3; text-align: center;">학교/기관 인증 번호</h2>
           <p style="font-size: 16px; color: #333; line-height: 1.5;">
@@ -70,21 +49,18 @@ export class EmailService implements OnModuleInit {
           </p>
         </div>
       `,
-    };
+      });
 
-    try {
-      const info = await this.transporter.sendMail(mailOptions);
-      this.logger.log(`Email sent successfully: ${info.messageId}`);
+      if (error) {
+        this.logger.error(`Resend API Error: ${error.message}`);
+        throw new Error(error.message);
+      }
+
+      this.logger.log(`Email sent successfully: ${data?.id}`);
       return true;
     } catch (error: any) {
       this.logger.error(`==== EMAIL SEND ERROR ====`);
-      this.logger.error(`Error: ${error.message}`);
-      if (error.code === 'EAUTH') {
-        this.logger.error('Authentication failed. Check your Gmail App Password.');
-      } else if (error.code === 'ECONNECTION') {
-        this.logger.error('Connection failed. Check your network or firewall.');
-      }
-      this.logger.error(error.stack);
+      this.logger.error(error.message);
       throw error;
     }
   }
