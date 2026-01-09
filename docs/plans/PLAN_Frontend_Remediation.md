@@ -60,6 +60,7 @@ This plan addresses the **mismatch between Backend capabilities and Frontend imp
 - [x] **Test 3.1**: `JobStatusBadge` renders "Waiting Approval" for `PLAN_APPROVED` status.
 - [x] **Task 3.2**: Update `JobStatusBadge` to handle `HiringWorkflowStatus` enum (not just OPEN/CLOSED).
 - [x] **Task 3.3**: Add "Request Approval" button in `JobDetail` for Draft jobs.
+- [x] **Task 3.4**: **[CRITICAL]** Synchronize Database Schema (Added missing `cost` and `Evaluation` tables to production DB).
 
 ---
 
