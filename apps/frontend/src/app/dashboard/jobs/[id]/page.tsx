@@ -19,24 +19,57 @@ export default function JobDetailPage() {
     const [job, setJob] = useState<JobListing | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isApplying, setIsApplying] = useState(false);
-    const [hasApplied, setHasApplied] = useState(false);
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
 
-    const profileCompleteness = user?.role === 'TEACHER' ? 85 : 100;
-    const isProfileIncomplete = profileCompleteness < 80;
+    // 🔥 hasApplied는 백엔드에서 받아옴 (중복 지원 방지)
+    const hasApplied = (job as any)?.hasApplied || false;
 
     const handleApplyClick = () => {
-        if (isProfileIncomplete) {
-            alert(`프로필이 ${profileCompleteness}% 완성되었습니다. 80% 이상 작성해야 지원 가능합니다.`);
+        // 1. 로그인 체크
+        if (!user) {
+            alert('로그인이 필요합니다.');
+            router.push('/auth/login');
             return;
         }
+
+        // 2. 역할 체크
+        const isTeacherHiring = job?.jobType === 'TEACHER_HIRING';
+        const isEventVendor = job?.jobType === 'EVENT_VENDOR';
+
+        if (isTeacherHiring && user.role !== 'TEACHER') {
+            alert('선생님 계정으로만 지원할 수 있습니다.');
+            return;
+        }
+
+        if (isEventVendor && user.role !== 'BUSINESS') {
+            alert('기업 계정으로만 지원할 수 있습니다.');
+            return;
+        }
+
+        // 3. 🆔 프로필 존재 여부 체크 (핵심!)
+        if (isTeacherHiring && !user.teacherProfile) {
+            const confirm = window.confirm(
+                '지원하려면 먼저 선생님 프로필을 등록해야 합니다.\n프로필 등록 페이지로 이동하시겠습니까?'
+            );
+            if (confirm) router.push('/dashboard/profile/edit');
+            return;
+        }
+
+        if (isEventVendor && !user.businessProfile) {
+            const confirm = window.confirm(
+                '지원하려면 먼저 기업 프로필을 등록해야 합니다.\n프로필 등록 페이지로 이동하시겠습니까?'
+            );
+            if (confirm) router.push('/dashboard/profile/edit');
+            return;
+        }
+
+        // 4. 모달 열기
         setIsApplyModalOpen(true);
     };
 
     useEffect(() => {
         if (id) {
             fetchJob();
-            checkExistingApplication();
         }
     }, [id]);
 
@@ -51,23 +84,14 @@ export default function JobDetailPage() {
         }
     };
 
-    const checkExistingApplication = async () => {
-        try {
-            const data = await api.get<JobApplication[]>('/applications/me');
-            const existing = data.find((a) => a.jobId === Number(id));
-            if (existing) setHasApplied(true);
-        } catch (e) {
-            console.error(e);
-        }
-    };
-
     const handleApplySubmit = async (data: any) => {
         setIsApplying(true);
         try {
             await api.post(`/applications/${id}/apply`, data);
-            alert('지원이 완료되었습니다!');
-            setHasApplied(true);
-            router.push('/dashboard/applications');
+            alert('✅ 지원이 완료되었습니다!');
+            setIsApplyModalOpen(false);
+            // 🔄 지원 완료 후 공고 정보 다시 불러오기 (hasApplied 업데이트)
+            await fetchJob();
         } catch (e: any) {
             alert(e.message || '지원 중 오류가 발생했습니다.');
         } finally {

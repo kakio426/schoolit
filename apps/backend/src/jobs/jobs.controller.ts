@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) {}
+  constructor(private jobsService: JobsService) { }
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {
@@ -41,8 +41,9 @@ export class JobsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
-    return this.jobsService.findOne(id);
+  async findOne(@Param('id', ParseIntPipe) id: number, @Request() req?) {
+    const userId = req?.user?.userId; // 로그인하지 않은 경우 undefined
+    return this.jobsService.findOne(id, userId);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)

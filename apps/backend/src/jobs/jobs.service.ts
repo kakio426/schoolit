@@ -144,7 +144,7 @@ export class JobsService {
     });
   }
 
-  async findOne(id: number) {
+  async findOne(id: number, userId?: number) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id },
       include: {
@@ -160,7 +160,20 @@ export class JobsService {
     });
 
     if (!job) throw new NotFoundException('해당 공고를 찾을 수 없습니다.');
-    return job;
+
+    // 🚫 중복 지원 방지: 로그인한 유저라면 지원 내역 확인
+    let hasApplied = false;
+    if (userId) {
+      const application = await this.prisma.jobApplication.findFirst({
+        where: {
+          jobId: id,
+          userId: userId // JobApplication은 userId를 직접 가지고 있음
+        }
+      });
+      hasApplied = !!application;
+    }
+
+    return { ...job, hasApplied };
   }
 
   // [Fix] 누락되었던 update 메서드 복구 및 권한 체크 추가

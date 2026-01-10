@@ -38,24 +38,46 @@ function SignupOnboardingContent() {
             return;
         }
 
+        if (!formData.legalAgreed) {
+            alert('약관에 동의해 주세요.');
+            return;
+        }
+
         setIsSubmitting(true);
         try {
+            console.log('[Signup] Submitting with role:', role);
+
             // Using the api helper for consistency and automatic token handling
-            const response = await api.post<{ success: boolean }>('/auth/social/finish-signup', {
+            const response = await api.post<{ accessToken: string }>('/auth/social/finish-signup', {
                 role,
                 name: formData.name,
                 phone: formData.phone,
             });
 
+            console.log('[Signup] Response received:', response);
+
+            // 🔑 새로운 토큰 저장 (역할이 업데이트되었으므로)
+            if (response.accessToken) {
+                localStorage.setItem('token', response.accessToken);
+                console.log('[Signup] New token saved');
+            }
+
+            // 프로필 새로고침
             await refreshProfile();
+            console.log('[Signup] Profile refreshed');
+
+            // 역할에 따라 리다이렉트
             if (role === 'SCHOOL') {
+                console.log('[Signup] Redirecting to email verification');
                 router.push('/onboarding/email-verify');
             } else {
+                console.log('[Signup] Redirecting to dashboard');
                 router.push('/dashboard');
             }
         } catch (error: any) {
-            console.error('Failed to finish signup:', error);
-            alert(`가입 처리 중 오류가 발생했습니다: ${error.message}`);
+            console.error('[Signup] Failed to finish signup:', error);
+            const errorMessage = error.response?.data?.message || error.message || '알 수 없는 오류';
+            alert(`가입 처리 중 오류가 발생했습니다:\n${errorMessage}`);
         } finally {
             setIsSubmitting(false);
         }
