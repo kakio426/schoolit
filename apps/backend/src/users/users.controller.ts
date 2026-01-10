@@ -26,18 +26,19 @@ import {
   CreateTeacherLicenseDto,
 } from './dtos/teacher-details.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname, join } from 'path';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 import { GamificationService } from './gamification.service';
+
+import { CloudinaryService } from '../common/storage/cloudinary.service';
 
 @Controller('users')
 export class UserController {
   constructor(
     private userService: UserService,
     private gamificationService: GamificationService,
+    private cloudinaryService: CloudinaryService,
   ) { }
 
   @UseGuards(AuthGuard('jwt'))
@@ -137,40 +138,22 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL)
   @Post('school/logo/upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', 'uploads'),
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `school-logo-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-      limits: { fileSize: 5 * 1024 * 1024 },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   async uploadSchoolLogo(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
-    return { fileUrl: `/uploads/${file.filename}` };
+    const publicId = await this.cloudinaryService.uploadFile(file, 'schools/logos');
+    const fileUrl = this.cloudinaryService.getFileUrl(publicId);
+    return { fileUrl };
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Post('teacher/image/upload')
-  @UseInterceptors(
-    FileInterceptor('file', {
-      storage: diskStorage({
-        destination: join(__dirname, '..', '..', 'uploads'), // apps/backend/uploads
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `teacher-img-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-      limits: { fileSize: 5 * 1024 * 1024 },
-    }),
-  )
+  @UseInterceptors(FileInterceptor('file'))
   async uploadTeacherImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
-    return { fileUrl: `/uploads/${file.filename}` };
+    const publicId = await this.cloudinaryService.uploadFile(file, 'teachers/images');
+    const fileUrl = this.cloudinaryService.getFileUrl(publicId);
+    return { fileUrl };
   }
 
   @UseGuards(AuthGuard('jwt'))

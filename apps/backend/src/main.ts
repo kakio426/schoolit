@@ -3,26 +3,29 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import * as fs from 'fs';
-import { join } from 'path';
-
 async function bootstrap() {
-  // Ensure uploads directory exists
-  const uploadsDir = join(__dirname, '..', 'uploads');
-  if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir);
-    console.log('Created uploads directory:', uploadsDir);
-  }
 
   const app = await NestFactory.create(AppModule);
 
   // CORS configuration
-  // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
-  // This resolves "Failed to fetch" caused by strict CORS + Wildcard conflicts.
-  app.enableCors({
-    origin: '*',
-    credentials: false,
-  });
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (isProduction) {
+    app.enableCors({
+      origin: process.env.FRONTEND_URL || 'https://schoolit.shop',
+      credentials: true,
+      methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+      allowedHeaders: 'Content-Type, Accept, Authorization',
+    });
+    console.log(`CORS enabled for production: ${process.env.FRONTEND_URL}`);
+  } else {
+    // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
+    app.enableCors({
+      origin: '*',
+      credentials: false,
+    });
+    console.log('CORS enabled for development (Allow All)');
+  }
 
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());

@@ -16,17 +16,20 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { BusinessProfileService } from './business-profile.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
 
 import { UpdateBusinessProfileDto } from '../users/dtos/update-business-profile.dto';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
+import { CloudinaryService } from '../common/storage/cloudinary.service';
+
 @Controller('business-profiles')
 export class BusinessProfileController {
-  constructor(private readonly service: BusinessProfileService) {}
+  constructor(
+    private readonly service: BusinessProfileService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL, Role.TEACHER)
@@ -76,13 +79,6 @@ export class BusinessProfileController {
   @Post('registration-upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `biz-reg-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
       fileFilter: (req, file, cb) => {
         if (!file.originalname.match(/\.(jpg|jpeg|png|pdf)$/)) {
           return cb(new BadRequestException('Only images and pdf allowed'), false);
@@ -97,7 +93,9 @@ export class BusinessProfileController {
   async uploadRegistration(@Request() req, @UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
 
-    const fileUrl = `/uploads/${file.filename}`;
+    const publicId = await this.cloudinaryService.uploadFile(file, 'business/registrations');
+    const fileUrl = this.cloudinaryService.getFileUrl(publicId);
+
     await this.service.createOrUpdate(req.user.userId, { registrationFile: fileUrl });
 
     return { fileUrl };
@@ -107,13 +105,6 @@ export class BusinessProfileController {
   @Post('portfolios/upload')
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: './uploads',
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          cb(null, `portfolio-${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
       fileFilter: (req, file, cb) => {
         if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
           return cb(new BadRequestException('Only images allowed'), false);
@@ -127,6 +118,8 @@ export class BusinessProfileController {
   )
   async uploadPortfolioImage(@UploadedFile() file: Express.Multer.File) {
     if (!file) throw new BadRequestException('File is required');
-    return { fileUrl: `/uploads/${file.filename}` };
+    const publicId = await this.cloudinaryService.uploadFile(file, 'business/portfolios');
+    const fileUrl = this.cloudinaryService.getFileUrl(publicId);
+    return { fileUrl };
   }
 }

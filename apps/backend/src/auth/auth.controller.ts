@@ -10,6 +10,7 @@ import {
   Query,
   Res,
   BadRequestException,
+  NotFoundException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { AuthService } from './auth.service';
@@ -18,7 +19,7 @@ import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
@@ -69,6 +70,9 @@ export class AuthController {
     @Query('email') email?: string,
     @Query('role') role?: string,
   ) {
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
     return this.authService.testLogin({ email, role });
   }
 

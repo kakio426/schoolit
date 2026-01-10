@@ -13,7 +13,11 @@ describe('BusinessProfileController Permissions (TDD)', () => {
     reflector = new Reflector();
     // minimally mock service
     service = {} as any;
-    controller = new BusinessProfileController(service);
+    const mockCloudinaryService = {
+      uploadFile: jest.fn(),
+      getFileUrl: jest.fn(),
+    } as any;
+    controller = new BusinessProfileController(service, mockCloudinaryService);
   });
 
   it('findAll() should exist and allow TEACHER and SCHOOL', () => {
