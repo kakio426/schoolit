@@ -7,7 +7,7 @@ import { Role } from '@prisma/client';
 
 @Controller('feedback')
 export class FeedbackController {
-  constructor(private readonly feedbackService: FeedbackService) { }
+  constructor(private readonly feedbackService: FeedbackService) {}
 
   @Post()
   async create(@Body() body: { category: string; content: string; userId?: number }) {
@@ -15,12 +15,20 @@ export class FeedbackController {
   }
 
   @Post('report')
-  async report(@Body() body: { targetUserId: number; reason: string; description: string; reporterId?: number }) {
+  async report(
+    @Body()
+    body: {
+      targetUserId: number;
+      reason: string;
+      description: string;
+      reporterId?: number;
+    },
+  ) {
     // Map report to feedback structure for now, but prefix category
     return this.feedbackService.create({
       category: `REPORT:${body.reason}`,
       content: `TARGET_USER_ID: ${body.targetUserId}\nDETAILS: ${body.description}`,
-      userId: body.reporterId
+      userId: body.reporterId,
     });
   }
 

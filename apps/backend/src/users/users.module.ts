@@ -8,4 +8,4 @@ import { GamificationService } from './gamification.service';
   providers: [UserService, GamificationService],
   exports: [UserService, GamificationService],
 })
-export class UsersModule { }
+export class UsersModule {}

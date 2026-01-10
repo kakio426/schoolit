@@ -5,97 +5,99 @@ import { format, differenceInMonths } from 'date-fns';
 
 // Types for document generation
 export interface HiringDocumentData {
-    documentNumber: string;      // 문서번호 (ex: 초등-2026-0001)
-    schoolName: string;          // 학교명
-    schoolAddress: string;       // 학교 주소
-    adminName: string;           // 담당자 이름
-    adminPhone: string;          // 담당자 연락처
-    teacherName: string;         // 채용 대상 강사명
-    subject: string;             // 담당 과목
-    contractPeriod: string;      // 계약 기간 (ex: 2026.03.01 ~ 2026.08.31)
-    teachingHours: number;       // 주당 수업 시수
-    salary?: number;             // 급여 (선택)
-    jobTitle: string;            // 채용 공고 제목
-    enforcementDate: string;     // 시행일 (ex: 2026.01.15)
+  documentNumber: string; // 문서번호 (ex: 초등-2026-0001)
+  schoolName: string; // 학교명
+  schoolAddress: string; // 학교 주소
+  adminName: string; // 담당자 이름
+  adminPhone: string; // 담당자 연락처
+  teacherName: string; // 채용 대상 강사명
+  subject: string; // 담당 과목
+  contractPeriod: string; // 계약 기간 (ex: 2026.03.01 ~ 2026.08.31)
+  teachingHours: number; // 주당 수업 시수
+  salary?: number; // 급여 (선택)
+  jobTitle: string; // 채용 공고 제목
+  enforcementDate: string; // 시행일 (ex: 2026.01.15)
 }
 
 export interface ContractDocumentData {
-    documentNumber: string;      // 문서번호
-    partyAName: string;          // 갑 (학교/기관명)
-    partyAAddress: string;       // 갑 주소
-    partyARepresentative: string;// 갑 대표자
-    partyBName: string;          // 을 (업체명)
-    partyBAddress: string;       // 을 주소
-    partyBRepresentative: string;// 을 대표자
-    partyBS2bNumber?: string;    // 을 S2B 등록번호
-    contractSubject: string;     // 계약 목적/내용
-    contractAmount: number;      // 계약 금액
-    contractPeriod: string;      // 계약 기간
-    paymentTerms: string;        // 대금 지급 조건 (ex: 행사 완료 후 7일 이내)
-    warrantyPeriod?: string;     // 하자 보수 기간 (선택)
-    enforcementDate: string;     // 시행일
+  documentNumber: string; // 문서번호
+  partyAName: string; // 갑 (학교/기관명)
+  partyAAddress: string; // 갑 주소
+  partyARepresentative: string; // 갑 대표자
+  partyBName: string; // 을 (업체명)
+  partyBAddress: string; // 을 주소
+  partyBRepresentative: string; // 을 대표자
+  partyBS2bNumber?: string; // 을 S2B 등록번호
+  contractSubject: string; // 계약 목적/내용
+  contractAmount: number; // 계약 금액
+  contractPeriod: string; // 계약 기간
+  paymentTerms: string; // 대금 지급 조건 (ex: 행사 완료 후 7일 이내)
+  warrantyPeriod?: string; // 하자 보수 기간 (선택)
+  enforcementDate: string; // 시행일
 }
 
 @Injectable()
 export class DocumentsService {
-    private genAI: GoogleGenerativeAI | null = null;
-    private model: any = null;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
 
-    constructor() {
-        const apiKey = process.env.GEMINI_API_KEY;
-        if (apiKey) {
-            this.genAI = new GoogleGenerativeAI(apiKey);
-            this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
-        }
+  constructor() {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (apiKey) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash-latest' });
     }
+  }
 
-    // [CORE] PDF 생성 메인 로직
-    async generateHiringPlanPdf(data: any): Promise<Buffer> {
-        try {
-            const browser = await puppeteer.launch({
-                headless: true,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'], // Docker 환경 호환용
-            });
-            const page = await browser.newPage();
+  // [CORE] PDF 생성 메인 로직
+  async generateHiringPlanPdf(data: any): Promise<Buffer> {
+    try {
+      const browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Docker 환경 호환용
+      });
+      const page = await browser.newPage();
 
-            // HTML 템플릿 생성 (아래 메서드 호출)
-            const htmlContent = this.getHiringPlanTemplate(data);
+      // HTML 템플릿 생성 (아래 메서드 호출)
+      const htmlContent = this.getHiringPlanTemplate(data);
 
-            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-            const pdfBuffer = await page.pdf({
-                format: 'A4',
-                printBackground: true, // 배경색/이미지 출력 허용
-                margin: {
-                    top: '20mm',
-                    bottom: '15mm',
-                    left: '20mm',
-                    right: '20mm',
-                },
-            });
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true, // 배경색/이미지 출력 허용
+        margin: {
+          top: '20mm',
+          bottom: '15mm',
+          left: '20mm',
+          right: '20mm',
+        },
+      });
 
-            await browser.close();
-            // Puppeteer 반환 타입이 Uint8Array로 변경됨에 따라 Buffer로 변환
-            return Buffer.from(pdfBuffer);
-
-        } catch (error) {
-            console.error('PDF Generation Error:', error);
-            throw new InternalServerErrorException('PDF 생성 중 오류가 발생했습니다.');
-        }
+      await browser.close();
+      // Puppeteer 반환 타입이 Uint8Array로 변경됨에 따라 Buffer로 변환
+      return Buffer.from(pdfBuffer);
+    } catch (error) {
+      console.error('PDF Generation Error:', error);
+      throw new InternalServerErrorException('PDF 생성 중 오류가 발생했습니다.');
     }
+  }
 
-    // [TEMPLATE] 교육청 공문 스타일 HTML/CSS
-    private getHiringPlanTemplate(data: any): string {
-        const today = format(new Date(), 'yyyy. MM. dd.');
-        const docNumber = `제 ${new Date().getFullYear()} - ${Math.floor(Math.random() * 100)}호`;
+  // [TEMPLATE] 교육청 공문 스타일 HTML/CSS
+  private getHiringPlanTemplate(data: any): string {
+    const today = format(new Date(), 'yyyy. MM. dd.');
+    const docNumber = `제 ${new Date().getFullYear()} - ${Math.floor(Math.random() * 100)}호`;
 
-        // 날짜 파싱 시도 (단순 문자열일 경우 대비)
-        const parseDate = (d: string) => {
-            try { return format(new Date(d), 'yyyy. MM. dd.'); }
-            catch (e) { return d; }
-        };
+    // 날짜 파싱 시도 (단순 문자열일 경우 대비)
+    const parseDate = (d: string) => {
+      try {
+        return format(new Date(d), 'yyyy. MM. dd.');
+      } catch (e) {
+        return d;
+      }
+    };
 
-        return `
+    return `
       <!DOCTYPE html>
       <html lang="ko">
       <head>
@@ -322,26 +324,26 @@ export class DocumentsService {
       </body>
       </html>
     `;
+  }
+
+  private calculateMonths(start: string, end: string): number {
+    try {
+      const result = differenceInMonths(new Date(end), new Date(start));
+      return result > 0 ? result : 6;
+    } catch (e) {
+      return 6;
+    }
+  }
+
+  /**
+   * 기간제 교사/강사 채용 공문 생성 (Gemini 텍스트)
+   */
+  async generateHiringDocument(data: HiringDocumentData): Promise<string> {
+    if (!this.model) {
+      throw new Error('Gemini API Key가 설정되지 않았습니다.');
     }
 
-    private calculateMonths(start: string, end: string): number {
-        try {
-            const result = differenceInMonths(new Date(end), new Date(start));
-            return result > 0 ? result : 6;
-        } catch (e) {
-            return 6;
-        }
-    }
-
-    /**
-     * 기간제 교사/강사 채용 공문 생성 (Gemini 텍스트)
-     */
-    async generateHiringDocument(data: HiringDocumentData): Promise<string> {
-        if (!this.model) {
-            throw new Error('Gemini API Key가 설정되지 않았습니다.');
-        }
-
-        const prompt = `
+    const prompt = `
 당신은 대한민국 초/중/고등학교의 공문서 작성 전문가입니다.
 아래 정보를 바탕으로 **교육부 및 교육청 지침**에 맞는 '기간제교원/강사 채용 결과 통보' 공문을 작성해주세요.
 
@@ -370,20 +372,20 @@ ${data.salary ? `- 월 급여: ${data.salary.toLocaleString()}원` : '- 급여: 
 - 줄바꿈으로 구분
 `;
 
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
+    const result = await this.model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  }
+
+  /**
+   * 행사/용역 계약 공문 생성 (Gemini 텍스트)
+   */
+  async generateContractDocument(data: ContractDocumentData): Promise<string> {
+    if (!this.model) {
+      throw new Error('Gemini API Key가 설정되지 않았습니다.');
     }
 
-    /**
-     * 행사/용역 계약 공문 생성 (Gemini 텍스트)
-     */
-    async generateContractDocument(data: ContractDocumentData): Promise<string> {
-        if (!this.model) {
-            throw new Error('Gemini API Key가 설정되지 않았습니다.');
-        }
-
-        const prompt = `
+    const prompt = `
 당신은 대한민국 공공기관/학교의 계약서 작성 전문가입니다.
 아래 정보를 바탕으로 **지방계약법** 및 **학교회계 예산편성 지침**에 맞는 '용역 계약서' 또는 '행사 계약서'를 작성해주세요.
 
@@ -418,8 +420,8 @@ ${data.warrantyPeriod ? `- 하자 보수 기간: ${data.warrantyPeriod}` : ''}
 - 마지막에 갑/을 서명란 포함
 `;
 
-        const result = await this.model.generateContent(prompt);
-        const response = await result.response;
-        return response.text();
-    }
+    const result = await this.model.generateContent(prompt);
+    const response = await result.response;
+    return response.text();
+  }
 }

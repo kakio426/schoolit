@@ -4,9 +4,9 @@ import { ComplianceController } from './compliance.controller';
 import { PrismaModule } from '../prisma.module';
 
 @Module({
-    imports: [PrismaModule],
-    providers: [ComplianceService],
-    controllers: [ComplianceController],
-    exports: [ComplianceService],
+  imports: [PrismaModule],
+  providers: [ComplianceService],
+  controllers: [ComplianceController],
+  exports: [ComplianceService],
 })
-export class ComplianceModule { }
+export class ComplianceModule {}

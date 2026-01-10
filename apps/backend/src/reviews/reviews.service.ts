@@ -7,15 +7,20 @@ export class ReviewsService {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-  ) { }
+  ) {}
 
   async createReview(dto: any, userId: number, files?: Express.Multer.File[]) {
     // Parse numeric fields which might come as strings from FormData
     const jobId = typeof dto.jobId === 'string' ? parseInt(dto.jobId, 10) : dto.jobId;
-    const receiverId = typeof dto.receiverId === 'string' ? parseInt(dto.receiverId, 10) : dto.receiverId;
+    const receiverId =
+      typeof dto.receiverId === 'string' ? parseInt(dto.receiverId, 10) : dto.receiverId;
     const { content, rating } = dto;
     const reMatchIntent = dto.reMatchIntent === 'true' || dto.reMatchIntent === true;
-    const keywords = Array.isArray(dto['keywords[]']) ? dto['keywords[]'] : (dto.keywords ? [dto.keywords] : []);
+    const keywords = Array.isArray(dto['keywords[]'])
+      ? dto['keywords[]']
+      : dto.keywords
+        ? [dto.keywords]
+        : [];
 
     // 1. Verify Application Status
     const application = await this.prisma.jobApplication.findUnique({
@@ -41,7 +46,9 @@ export class ReviewsService {
     // This supports the 'Transaction-Verified' trust model.
     if (application.status !== 'HIRED' && application.status !== 'PAYMENT_COMPLETED') {
       // Validating both for backward/forward compatibility
-      throw new ForbiddenException('Reviews are restricted to matched (verified) transactions only.');
+      throw new ForbiddenException(
+        'Reviews are restricted to matched (verified) transactions only.',
+      );
     }
 
     // 2. Determine Receiver Type
@@ -78,11 +85,11 @@ export class ReviewsService {
         imageIds,
         keywords: keywords
           ? {
-            connectOrCreate: keywords.map((k: string) => ({
-              where: { keyword: k },
-              create: { keyword: k },
-            })),
-          }
+              connectOrCreate: keywords.map((k: string) => ({
+                where: { keyword: k },
+                create: { keyword: k },
+              })),
+            }
           : undefined,
       },
       include: {

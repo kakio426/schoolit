@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) { }
+  ) {}
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     try {
@@ -163,8 +163,7 @@ export class ApplicationsService {
 
     if (!job) throw new NotFoundException('공고를 찾을 수 없습니다.');
 
-    const isOwner =
-      job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
+    const isOwner = job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
 
     if (!isOwner) throw new ForbiddenException('권한이 없습니다.');
 

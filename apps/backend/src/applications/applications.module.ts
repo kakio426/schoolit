@@ -14,4 +14,4 @@ import { SchedulerModule } from '../scheduler/scheduler.module';
   controllers: [ApplicationsController],
   exports: [ApplicationsService],
 })
-export class ApplicationsModule { }
+export class ApplicationsModule {}

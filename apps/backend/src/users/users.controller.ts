@@ -38,7 +38,7 @@ export class UserController {
   constructor(
     private userService: UserService,
     private gamificationService: GamificationService,
-  ) { }
+  ) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
@@ -49,7 +49,9 @@ export class UserController {
     if (!user) return null;
 
     // 2. Calculate Gamification Data
-    const completeness = await this.gamificationService.calculateProfileCompleteness(req.user.userId);
+    const completeness = await this.gamificationService.calculateProfileCompleteness(
+      req.user.userId,
+    );
     const tier = await this.gamificationService.updateTrustTier(req.user.userId); // Auto-update tier
 
     // 3. Merge

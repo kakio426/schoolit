@@ -11,7 +11,7 @@ import { PrismaService } from '../prisma.service';
 export class DataCleanupService {
   private readonly logger = new Logger(DataCleanupService.name);
 
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   /**
    * 매주 일요일 자정에 실행 (6개월 이상 경과 유저 삭제)
@@ -206,7 +206,9 @@ export class DataCleanupService {
               transientDocuments: null, // JSON 필드 초기화
             },
           });
-          this.logger.log(`[COMPLIANCE] Cleaned transient documents for user ${application.userId}`);
+          this.logger.log(
+            `[COMPLIANCE] Cleaned transient documents for user ${application.userId}`,
+          );
         }
 
         // 3. 해당 지원서의 평가(Evaluation) 데이터도 비식별화 (점수만 유지, 개인정보 삭제)
@@ -220,7 +222,9 @@ export class DataCleanupService {
         cleanedCount++;
       }
 
-      this.logger.log(`[COMPLIANCE] Recruitment document cleanup complete. Cleaned: ${cleanedCount}`);
+      this.logger.log(
+        `[COMPLIANCE] Recruitment document cleanup complete. Cleaned: ${cleanedCount}`,
+      );
       return { cleaned: cleanedCount };
     } catch (error) {
       this.logger.error(`[COMPLIANCE] Recruitment cleanup failed: ${error.message}`, error.stack);
@@ -232,8 +236,12 @@ export class DataCleanupService {
    * 개별 지원자의 서류 즉시 파기 요청 처리
    * 불합격자가 "채용 서류 반환/파기 요청"을 할 경우 호출
    */
-  async immediateDocumentDestruction(applicationId: number): Promise<{ success: boolean; message: string }> {
-    this.logger.log(`[COMPLIANCE] Immediate destruction requested for application ${applicationId}`);
+  async immediateDocumentDestruction(
+    applicationId: number,
+  ): Promise<{ success: boolean; message: string }> {
+    this.logger.log(
+      `[COMPLIANCE] Immediate destruction requested for application ${applicationId}`,
+    );
 
     try {
       const application = await this.prisma.jobApplication.findUnique({
@@ -281,4 +289,3 @@ export class DataCleanupService {
     }
   }
 }
-

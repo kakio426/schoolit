@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import {
@@ -12,7 +17,7 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -90,7 +95,7 @@ export class UserService {
         where: { id: userId },
         data: {
           ...(phone && { phone }),
-          ...(name && { name })
+          ...(name && { name }),
         },
       });
     }
@@ -177,8 +182,8 @@ export class UserService {
       where: { receiverId: userId },
       select: {
         keywords: {
-          select: { keyword: true }
-        }
+          select: { keyword: true },
+        },
       },
       take: 50, // 최근 50개 리뷰만 분석
     });
@@ -271,7 +276,12 @@ export class UserService {
         const { isVerified, ...bData } = data.profileData || {};
         await tx.businessProfile.upsert({
           where: { userId },
-          create: { userId, isVerified: false, companyName: bData.companyName || 'New Company', categories: [] },
+          create: {
+            userId,
+            isVerified: false,
+            companyName: bData.companyName || 'New Company',
+            categories: [],
+          },
           update: { ...bData },
         });
       }
@@ -290,7 +300,7 @@ export class UserService {
 
   async addExperience(userId: number, dto: CreateTeacherExperienceDto) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
-    if (!profile) throw new NotFoundException("Teacher profile not found");
+    if (!profile) throw new NotFoundException('Teacher profile not found');
 
     return this.prisma.teacherExperience.create({
       data: {
@@ -314,7 +324,7 @@ export class UserService {
 
   async addEducation(userId: number, dto: CreateTeacherEducationDto) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
-    if (!profile) throw new NotFoundException("Teacher profile not found");
+    if (!profile) throw new NotFoundException('Teacher profile not found');
 
     return this.prisma.teacherEducation.create({
       data: {
@@ -338,7 +348,7 @@ export class UserService {
 
   async addLink(userId: number, dto: CreateTeacherLinkDto) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
-    if (!profile) throw new NotFoundException("Teacher profile not found");
+    if (!profile) throw new NotFoundException('Teacher profile not found');
 
     return this.prisma.teacherLink.create({
       data: { teacherProfileId: profile.id, ...dto },
@@ -357,7 +367,7 @@ export class UserService {
 
   async addLicense(userId: number, dto: CreateTeacherLicenseDto) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
-    if (!profile) throw new NotFoundException("Teacher profile not found");
+    if (!profile) throw new NotFoundException('Teacher profile not found');
 
     return this.prisma.teacherLicense.create({
       data: { teacherProfileId: profile.id, ...dto },
@@ -385,7 +395,10 @@ export class UserService {
     });
   }
 
-  async validateVerificationCode(userId: number, code: string): Promise<{ valid: boolean; email?: string }> {
+  async validateVerificationCode(
+    userId: number,
+    code: string,
+  ): Promise<{ valid: boolean; email?: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { verificationCode: true, verificationExpires: true },
@@ -443,9 +456,15 @@ export class UserService {
   }
 
   async resetTestUser(userId: number) {
-    const protectedEmails = ['admin@schoolit.com', 'school@test.com', 'teacher@test.com', 'business@test.com'];
+    const protectedEmails = [
+      'admin@schoolit.com',
+      'school@test.com',
+      'teacher@test.com',
+      'business@test.com',
+    ];
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (user && protectedEmails.includes(user.email)) throw new ForbiddenException('기본 테스트 계정은 초기화할 수 없습니다.');
+    if (user && protectedEmails.includes(user.email))
+      throw new ForbiddenException('기본 테스트 계정은 초기화할 수 없습니다.');
 
     await Promise.all([
       this.prisma.teacherProfile.deleteMany({ where: { userId } }),
@@ -481,9 +500,18 @@ export class UserService {
     });
 
     await Promise.all([
-      this.prisma.teacherProfile.updateMany({ where: { userId }, data: { isVerified: false, bio: null, bankAccount: null } }),
-      this.prisma.schoolProfile.updateMany({ where: { userId }, data: { isVerified: false, description: null, phoneNumber: null } }),
-      this.prisma.businessProfile.updateMany({ where: { userId }, data: { isVerified: false, description: null, bankAccount: null, registrationNum: null } })
+      this.prisma.teacherProfile.updateMany({
+        where: { userId },
+        data: { isVerified: false, bio: null, bankAccount: null },
+      }),
+      this.prisma.schoolProfile.updateMany({
+        where: { userId },
+        data: { isVerified: false, description: null, phoneNumber: null },
+      }),
+      this.prisma.businessProfile.updateMany({
+        where: { userId },
+        data: { isVerified: false, description: null, bankAccount: null, registrationNum: null },
+      }),
     ]);
 
     return { success: true, message: '회원 탈퇴가 완료되었습니다.' };
@@ -491,7 +519,7 @@ export class UserService {
 
   async findActiveById(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
-    return (!user || user.isDeleted) ? null : user;
+    return !user || user.isDeleted ? null : user;
   }
 
   async isDeletedUser(userId: number): Promise<boolean> {

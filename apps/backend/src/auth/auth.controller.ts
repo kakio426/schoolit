@@ -18,7 +18,7 @@ import { CreateUserDto } from '../users/dtos/create-user.dto';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService) {}
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
@@ -109,7 +109,7 @@ export class AuthController {
     if (body.schoolName) {
       schoolData = {
         schoolName: body.schoolName,
-        phoneNumber: body.phoneNumber || null
+        phoneNumber: body.phoneNumber || null,
       };
     }
 

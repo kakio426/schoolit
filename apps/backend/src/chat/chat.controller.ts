@@ -19,7 +19,7 @@ export class ChatController {
   constructor(
     private chatService: ChatService,
     private chatGateway: ChatGateway,
-  ) { }
+  ) {}
 
   @Get('rooms')
   async getMyRooms(@Request() req) {

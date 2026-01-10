@@ -20,7 +20,7 @@ import { Role } from '@prisma/client';
 
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) { }
+  constructor(private jobsService: JobsService) {}
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {

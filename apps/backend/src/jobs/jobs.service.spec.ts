@@ -106,7 +106,11 @@ describe('JobsService', () => {
     };
 
     mockPrismaService.schoolProfile.findUnique.mockResolvedValue({ id: 99, userId: 1 });
-    mockPrismaService.jobListing.create.mockResolvedValue({ id: 2, ...createDto, status: 'CLOSED' });
+    mockPrismaService.jobListing.create.mockResolvedValue({
+      id: 2,
+      ...createDto,
+      status: 'CLOSED',
+    });
 
     await service.createJob(1, createDto);
 
@@ -127,8 +131,8 @@ describe('JobsService', () => {
         where: expect.objectContaining({
           status: 'OPEN', // This is currently NOT happening in code
           active: true,
-        })
-      })
+        }),
+      }),
     );
   });
 });

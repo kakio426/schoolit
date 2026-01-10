@@ -59,4 +59,4 @@ import { ComplianceModule } from './compliance/compliance.module';
   controllers: [],
   providers: [],
 })
-export class AppModule { }
+export class AppModule {}
