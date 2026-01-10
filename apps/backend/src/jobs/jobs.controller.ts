@@ -10,13 +10,17 @@ import {
   ParseIntPipe,
   Query,
   Delete,
+  Injectable,
 } from '@nestjs/common';
+import { OptionalJwtAuthGuard } from '../auth/optional-jwt-auth.guard';
 import { JobsService } from './jobs.service';
 import { CreateJobDto, UpdateJobDto } from './dtos/create-job.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+
+
 
 @Controller('jobs')
 export class JobsController {
@@ -40,6 +44,7 @@ export class JobsController {
     return this.jobsService.deleteJob(req.user.userId, req.user.role, id);
   }
 
+  @UseGuards(OptionalJwtAuthGuard)
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number, @Request() req?) {
     const userId = req?.user?.userId; // 로그인하지 않은 경우 undefined
