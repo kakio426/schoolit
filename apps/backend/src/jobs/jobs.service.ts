@@ -30,6 +30,7 @@ export class JobsService {
           schoolProfileId: schoolProfile.id,
           ...data,
           workflowStatus: initialStatus,
+          status: JobStatus.CLOSED,
         },
       });
     }
@@ -45,6 +46,7 @@ export class JobsService {
         data: {
           teacherProfileId: teacherProfile.id,
           ...data,
+          status: JobStatus.CLOSED,
         },
       });
     }
@@ -188,7 +190,10 @@ export class JobsService {
   }
 
   async searchJobs(filters: { subject?: string; region?: string; keyword?: string }) {
-    const where: Prisma.JobListingWhereInput = { active: true };
+    const where: Prisma.JobListingWhereInput = {
+      active: true,
+      status: JobStatus.OPEN,
+    };
 
     if (filters.subject) {
       where.subjects = { has: filters.subject };

@@ -93,10 +93,10 @@ export default function JobDetailPage() {
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> 뒤로 가기
                     </button>
                     <div className="flex gap-1.5">
-                        {job.active ? (
+                        {job.status === 'OPEN' ? (
                             <StandardBadge variant="success" className="px-2 py-0.5 text-[10px]">모집 중</StandardBadge>
                         ) : (
-                            <StandardBadge variant="error" className="px-2 py-0.5 text-[10px]">모집 완료</StandardBadge>
+                            <StandardBadge variant="neutral" className="px-2 py-0.5 text-[10px] text-zinc-400">비공개</StandardBadge>
                         )}
                         <StandardBadge variant="indigo" className="px-2 py-0.5 text-[10px]">{job.jobType === 'EVENT_VENDOR' ? '🏢 행사/입찰' : '🎓 교사 채용'}</StandardBadge>
                     </div>

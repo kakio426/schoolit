@@ -12,6 +12,7 @@ describe('JobsService', () => {
       create: jest.fn(),
       delete: jest.fn(),
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
     schoolProfile: {
       findUnique: jest.fn(),
@@ -92,5 +93,42 @@ describe('JobsService', () => {
     });
 
     await expect(service.deleteJob(userId, jobId)).rejects.toThrow();
+  });
+
+  it('should create a job with CLOSED status by default', async () => {
+    const createDto = {
+      title: 'Hidden Job',
+      description: 'Draft',
+      subjects: ['Math'],
+      regions: ['Seoul'],
+      budget: 0,
+      jobType: 'TEACHER_HIRING' as any,
+    };
+
+    mockPrismaService.schoolProfile.findUnique.mockResolvedValue({ id: 99, userId: 1 });
+    mockPrismaService.jobListing.create.mockResolvedValue({ id: 2, ...createDto, status: 'CLOSED' });
+
+    await service.createJob(1, createDto);
+
+    expect(prisma.jobListing.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          status: 'CLOSED', // This is what we expect now
+        }),
+      }),
+    );
+  });
+
+  // NEW TEST: Ensure search only returns OPEN jobs
+  it('should only return OPEN jobs in search', async () => {
+    await service.searchJobs({});
+    expect(prisma.jobListing.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: 'OPEN', // This is currently NOT happening in code
+          active: true,
+        })
+      })
+    );
   });
 });

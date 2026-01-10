@@ -89,9 +89,17 @@ export class ComplianceService {
             };
         }
 
+        const data: Prisma.JobListingUpdateInput = { workflowStatus: newStatus };
+
+        if (newStatus === HiringWorkflowStatus.PUBLISHED || newStatus === HiringWorkflowStatus.RECEIVING) {
+            data.status = 'OPEN'; // Using string literal or ensure JobStatus is imported
+        } else if (newStatus === HiringWorkflowStatus.CANCELLED || newStatus === HiringWorkflowStatus.DRAFT) {
+            data.status = 'CLOSED';
+        }
+
         await this.prisma.jobListing.update({
             where: { id: jobId },
-            data: { workflowStatus: newStatus },
+            data,
         });
 
         return { success: true, message: '상태가 업데이트되었습니다.' };

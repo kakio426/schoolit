@@ -91,6 +91,42 @@ describe('ComplianceService', () => {
             expect(result.success).toBe(false);
             expect(result.message).toContain('전환할 수 없습니다');
         });
+
+        // NEW TEST: Status visibility flip
+        it('should update status to OPEN when published', async () => {
+            mockPrismaService.jobListing.findUnique.mockResolvedValue({
+                workflowStatus: 'PLAN_APPROVED',
+            });
+
+            const result = await service.updateWorkflowStatus(1, 'PUBLISHED');
+            expect(result.success).toBe(true);
+            expect(mockPrismaService.jobListing.update).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        workflowStatus: 'PUBLISHED',
+                        status: 'OPEN' // Must verify this flip
+                    })
+                })
+            );
+        });
+
+        // NEW TEST: Status visibility flip back
+        it('should update status to CLOSED when cancelled', async () => {
+            mockPrismaService.jobListing.findUnique.mockResolvedValue({
+                workflowStatus: 'PUBLISHED',
+            });
+
+            const result = await service.updateWorkflowStatus(1, 'CANCELLED');
+            expect(result.success).toBe(true);
+            expect(mockPrismaService.jobListing.update).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: expect.objectContaining({
+                        workflowStatus: 'CANCELLED',
+                        status: 'CLOSED'
+                    })
+                })
+            );
+        });
     });
 
     describe('aggregateScores', () => {
