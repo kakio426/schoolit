@@ -12,24 +12,33 @@ async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (isProduction) {
-    const frontendUrl = process.env.FRONTEND_URL || 'https://schoolit.shop';
+    const rawFrontendUrl = process.env.FRONTEND_URL || 'https://schoolit.shop';
+    const normalize = (url: string) => url.replace(/\/$/, ''); // 끝의 / 제거 유틸 
+
     app.enableCors({
       origin: (requestOrigin, callback) => {
-        const allowedOrigins = [frontendUrl, 'https://schoolit.shop', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+        const allowedOrigins = [rawFrontendUrl, 'https://schoolit.shop', 'http://localhost:3000', 'http://127.0.0.1:3000'];
 
-        // !requestOrigin은 Postman이나 서버 간 통신일 때 등 Origin 헤더가 없을 경우 허용
-        if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+        if (!requestOrigin) {
+          callback(null, true);
+          return;
+        }
+
+        const isAllowed = allowedOrigins.some(allowed => normalize(allowed) === normalize(requestOrigin));
+
+        if (isAllowed) {
           callback(null, true);
         } else {
-          console.warn(`[CORS Blocked] Request Origin: ${requestOrigin}`);
-          callback(null, false); // Block
+          console.warn(`[CORS Blocked] Request Origin: "${requestOrigin}"`);
+          callback(null, false);
         }
       },
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       allowedHeaders: 'Content-Type, Accept, Authorization',
+      optionsSuccessStatus: 204, // Preflight 응답 상태 코드
     });
-    console.log(`[Bootstrap] CORS enabled for production with whitelist`);
+    console.log(`[Bootstrap] CORS production config updated (with normalization)`);
   } else {
     // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
     app.enableCors({
