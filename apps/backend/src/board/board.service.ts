@@ -1,13 +1,58 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, Inject, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { IStorageService, STORAGE_SERVICE } from '../common/storage/interfaces/storage.interface';
 
 @Injectable()
-export class BoardService {
+export class BoardService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-  ) {}
+  ) { }
+
+  async onModuleInit() {
+    await this.seedBoards();
+  }
+
+  private async seedBoards() {
+    const defaultBoards = [
+      {
+        title: '공지사항',
+        description: '스쿨잇의 새로운 소식을 전해드립니다.',
+        category: 'NOTICE'
+      },
+      {
+        title: '자유게시판',
+        description: '자유롭게 정보를 공유하고 이야기 나누는 공간입니다.',
+        category: 'FREE'
+      },
+      {
+        title: '질문과 답변',
+        description: '궁금한 점을 묻고 전문가의 답변을 받아보세요.',
+        category: 'QNA'
+      },
+      {
+        title: '후기게시판',
+        description: '생생한 업체 이용 후기를 공유합니다.',
+        category: 'REVIEW_BOARD'
+      },
+    ];
+
+    try {
+      for (const board of defaultBoards) {
+        await this.prisma.board.upsert({
+          where: { category: board.category },
+          update: {},
+          create: {
+            ...board,
+            isPublic: true,
+          },
+        });
+      }
+      console.log('✅ Default boards initialized successfully');
+    } catch (error) {
+      console.error('❌ Failed to seed default boards:', error);
+    }
+  }
 
   // ============================================
   // Board CRUD
@@ -219,7 +264,7 @@ export class BoardService {
     if (files && files.length > 0) {
       // Delete old images
       for (const oldId of post.imageIds) {
-        await this.storageService.deleteFile(oldId).catch(() => {});
+        await this.storageService.deleteFile(oldId).catch(() => { });
       }
 
       // Upload new images
@@ -255,7 +300,7 @@ export class BoardService {
 
     // Delete images from storage
     for (const imageId of post.imageIds) {
-      await this.storageService.deleteFile(imageId).catch(() => {});
+      await this.storageService.deleteFile(imageId).catch(() => { });
     }
 
     await this.prisma.post.delete({ where: { id: postId } });
