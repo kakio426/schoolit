@@ -84,7 +84,15 @@ export default function HiringWizard({ initialType = JobType.TEACHER_HIRING }: H
             router.push('/dashboard/jobs');
         } catch (e: any) {
             console.error(e);
-            alert(e.message || '등록 실패');
+            const errorMessage = e.message || '';
+            // 프로필 관련 403 에러 처리
+            if (errorMessage.includes('프로필')) {
+                alert('프로필을 먼저 등록해주세요.');
+                // 확인 누르면 설정/프로필 페이지로 이동 (UX 강화)
+                router.push('/dashboard/settings');
+            } else {
+                alert(errorMessage || '등록 실패');
+            }
         }
         finally {
             setIsLoading(false);

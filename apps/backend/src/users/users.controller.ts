@@ -60,18 +60,6 @@ export class UserController {
     };
   }
 
-  @UseGuards(AuthGuard('jwt'))
-  @Get(':id/profile')
-  async getPublicProfile(@Param('id', ParseIntPipe) userId: number, @Request() req) {
-    return this.userService.getProfileWithStats(userId, req.user.userId);
-  }
-
-  @UseGuards(AuthGuard('jwt'))
-  @Patch('profile')
-  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
-    return this.userService.updateProfile(req.user.userId, updateProfileDto);
-  }
-
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL)
   @Get('school/profile')
@@ -86,6 +74,18 @@ export class UserController {
   async updateSchoolProfile(@Request() req, @Body() dto: UpdateSchoolProfileDto) {
     const profile = await this.userService.updateSchoolProfile(req.user.userId, dto);
     return { schoolProfile: profile }; // Return wrapped to match test expectation
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':id/profile')
+  async getPublicProfile(@Param('id', ParseIntPipe) userId: number, @Request() req) {
+    return this.userService.getProfileWithStats(userId, req.user.userId);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('profile')
+  async updateProfile(@Request() req, @Body() updateProfileDto: UpdateProfileDto) {
+    return this.userService.updateProfile(req.user.userId, updateProfileDto);
   }
 
   @UseGuards(AuthGuard('jwt'))
