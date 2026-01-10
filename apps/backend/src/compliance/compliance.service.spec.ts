@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ComplianceService } from './compliance.service';
 import { PrismaService } from '../prisma.service';
-import { HiringWorkflowStatus, EvaluationType } from '@prisma/client';
+import { HiringWorkflowStatus } from '@prisma/client';
 
 describe('ComplianceService', () => {
   let service: ComplianceService;

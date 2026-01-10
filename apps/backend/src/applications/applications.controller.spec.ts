@@ -3,12 +3,18 @@ import { ApplicationsController } from './applications.controller';
 import { ApplicationsService } from './applications.service';
 import { Readable } from 'stream';
 
+import { DataCleanupService } from '../scheduler/data-cleanup.service';
+
 describe('ApplicationsController', () => {
   let controller: ApplicationsController;
   let service: ApplicationsService;
 
   const mockApplicationsService = {
     generateContract: jest.fn(),
+  };
+
+  const mockDataCleanupService = {
+    immediateDocumentDestruction: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -18,6 +24,10 @@ describe('ApplicationsController', () => {
         {
           provide: ApplicationsService,
           useValue: mockApplicationsService,
+        },
+        {
+          provide: DataCleanupService,
+          useValue: mockDataCleanupService,
         },
       ],
     }).compile();

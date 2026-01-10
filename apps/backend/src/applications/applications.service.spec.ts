@@ -123,4 +123,43 @@ describe('ApplicationsService', () => {
       expect(mockChatService.createRoom).toHaveBeenCalledWith(1, 2, 1);
     });
   });
+  describe('updateCompliance', () => {
+    it('should throw Forbidden if user is not the job owner', async () => {
+      const mockApp = { jobListing: { schoolProfile: { userId: 99 } } };
+      mockPrismaService.jobApplication.findUnique.mockResolvedValue(mockApp);
+
+      await expect(service.updateCompliance(1, 1, {})).rejects.toThrow(ForbiddenException);
+    });
+
+    it('should throw BadRequest if mandatory 2025 items are missing', async () => {
+      const mockApp = { jobListing: { schoolProfile: { userId: 1 } } };
+      mockPrismaService.jobApplication.findUnique.mockResolvedValue(mockApp);
+
+      // Missing 'narcotics_check'
+      const invalidChecklist = {
+        sex_offender_check: true,
+        child_abuse_check: true,
+      };
+
+      await expect(service.updateCompliance(1, 1, invalidChecklist)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
+    it('should update checklist if all mandatory items are verified', async () => {
+      const mockApp = { id: 1, jobListing: { schoolProfile: { userId: 1 } } };
+      mockPrismaService.jobApplication.findUnique.mockResolvedValue(mockApp);
+      mockPrismaService.jobApplication.update.mockResolvedValue({ ...mockApp, complianceChecklist: {} });
+
+      const validChecklist = {
+        sex_offender_check: true,
+        child_abuse_check: true,
+        narcotics_check: true, // 2025 New
+        family_hiring_restriction: true, // 2025 New
+      };
+
+      await service.updateCompliance(1, 1, validChecklist);
+      expect(mockPrismaService.jobApplication.update).toHaveBeenCalled();
+    });
+  });
 });

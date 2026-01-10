@@ -1,7 +1,9 @@
 import { Controller, Post, Put, Get, Param, Body, UseGuards, ParseIntPipe } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ComplianceService } from './compliance.service';
-import { EvaluationType, HiringWorkflowStatus } from '@prisma/client';
+import { HiringWorkflowStatus } from '@prisma/client';
+
+type EvaluationType = 'DOCUMENT' | 'INTERVIEW' | 'DEMONSTRATION';
 
 class SaveEvaluationDto {
   jobListingId: number;
@@ -21,7 +23,7 @@ class UpdateWorkflowDto {
 @Controller('compliance')
 @UseGuards(AuthGuard('jwt'))
 export class ComplianceController {
-  constructor(private readonly complianceService: ComplianceService) {}
+  constructor(private readonly complianceService: ComplianceService) { }
 
   /**
    * 평가 점수 저장

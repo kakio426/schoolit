@@ -185,6 +185,18 @@ export interface JobListing {
     schoolId?: number;
 }
 
+export interface Evaluation {
+    id: number;
+    type: 'DOCUMENT' | 'INTERVIEW' | 'DEMONSTRATION';
+    totalScore: number;
+    aggregatedData?: any;
+    evaluatorName?: string;
+    criteriaScores?: any;
+    comment?: string;
+    meritBonus: number;
+    createdAt: string;
+}
+
 export interface JobApplication {
     id: number;
     jobId: number;
@@ -201,6 +213,8 @@ export interface JobApplication {
     contactEmail?: string;
     contactPhone?: string;
     attachmentUrl?: string;
+    complianceChecklist?: any;
+    evaluations?: Evaluation[];
 }
 
 /**

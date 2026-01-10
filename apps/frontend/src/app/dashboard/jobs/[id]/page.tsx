@@ -102,6 +102,30 @@ export default function JobDetailPage() {
     if (isLoading) return <DashboardLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div></DashboardLayout>;
     if (!job) return <DashboardLayout><div className="text-center py-20">공고를 찾을 수 없습니다.</div></DashboardLayout>;
 
+    // 🔒 권한 체크: 게시되지 않은 공고는 학교(작성자)와 관리자만 볼 수 있음
+    const isSchoolOrAdmin = user?.role === 'SCHOOL' || user?.role === 'ADMIN';
+    // workflowStatus가 있으면 PUBLISHED여야 함. 없으면(legacy) 보여줌.
+    // 주의: active는 '모집 중' 여부이므로, 모집 종료된 공고(active=false)도 볼 수 있어야 함 -> active 체크 제거
+    const isPublished = job.workflowStatus === 'PUBLISHED' || !job.workflowStatus;
+
+    if (!isSchoolOrAdmin && !isPublished) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
+                    <div className="text-4xl">🔒</div>
+                    <div className="text-xl font-bold text-zinc-300">비공개 공고입니다</div>
+                    <p className="text-zinc-500">아직 게시되지 않았거나 접근 권한이 없습니다.</p>
+                    <button
+                        onClick={() => router.back()}
+                        className="px-6 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors text-sm font-medium"
+                    >
+                        돌아가기
+                    </button>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     const isTeacherHiring = job.jobType === 'TEACHER_HIRING';
     const isEventVendor = job.jobType === 'EVENT_VENDOR';
 

@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) {}
+  ) { }
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     try {
@@ -181,12 +181,16 @@ export class ApplicationsService {
             id: true,
             name: true,
             email: true,
+            phone: true, // Also need phone for authorized users
+            role: true, // Need role
             teacherProfile: {
               select: {
                 id: true,
+                profileImage: true,
                 subjects: true,
                 experiences: { take: 3 }, // 경력은 최근 3개만 미리보기
                 isVerified: true,
+                checklist: true, // Helper checklist
               },
             },
             businessProfile: {
@@ -194,10 +198,16 @@ export class ApplicationsService {
                 id: true,
                 companyName: true,
                 registrationNum: true,
+                s2bNumber: true,
+                checklist: true,
               },
             },
           },
         },
+        // 2025 Features
+        complianceChecklist: true,
+        internalNote: true, // Ensure this is available
+        evaluations: true, // Fetch evaluations
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -406,15 +416,17 @@ export class ApplicationsService {
     const app = await this.prisma.jobApplication.findUnique({
       where: { id: applicationId },
       include: {
-        user: { include: { teacherProfile: true } },
+        user: { include: { teacherProfile: true, businessProfile: true } },
         jobListing: { include: { schoolProfile: true } },
       },
     });
 
     if (!app) throw new NotFoundException('Application not found');
 
+    const jobOwnerId = app.jobListing.schoolProfile?.userId;
+
     // Authorization: only involved parties
-    if (app.userId !== userId && app.jobListing.schoolProfile.userId !== userId) {
+    if (app.userId !== userId && jobOwnerId !== userId) {
       throw new ForbiddenException('Access denied');
     }
 
@@ -424,22 +436,95 @@ export class ApplicationsService {
       );
     }
 
-    // Template Data
-    const schoolName = app.jobListing.schoolProfile.schoolName || '___________';
-    const teacherName = app.user.name || '___________';
-    const jobTitle = app.jobListing.title;
-    const date = new Date().toLocaleDateString('ko-KR');
+    try {
+      // Template Data
+      // Safely handle missing school profile
+      const schoolName = app.jobListing.schoolProfile?.schoolName || '___________';
+      const isVendor = app.jobListing.jobType === 'EVENT_VENDOR';
 
-    // Template Data call
-    const data = {
-      schoolName: app.jobListing.schoolProfile.schoolName || '___________',
-      teacherName: app.user.name || '___________',
-      jobTitle: app.jobListing.title,
-      date: new Date().toLocaleDateString('ko-KR'),
-      subjects: app.jobListing.subjects.join(', '),
-      regions: app.jobListing.regions.join(', '),
-    };
+      const data: any = {
+        templateType: isVendor ? 'VENDOR' : 'TEACHER',
+        schoolName,
+        jobTitle: app.jobListing.title,
+        date: new Date().toLocaleDateString('ko-KR'),
+        amount: app.cost ? app.cost.toLocaleString() : undefined, // Add cost/salary
+        signatureImage: app.signatureData, // Include signature
+        // subjects: app.jobListing.subjects.join(', '), // Not always relevant for vendor
+      };
 
-    return this.pdfGeneratorService.generateContract(data, []);
+      if (isVendor) {
+        data.vendorName = app.user.businessProfile?.companyName || app.user.name;
+        data.representativeName = app.user.name;
+      } else {
+        data.teacherName = app.user.name || '___________';
+      }
+
+      return await this.pdfGeneratorService.generateContract(data, []);
+    } catch (e) {
+      console.error('PDF Generation Failed:', e);
+      throw new BadRequestException('계약서 생성 중 오류가 발생했습니다. (PDF Error)');
+    }
+  }
+
+  async updateSignature(userId: number, applicationId: number, signatureData: string) {
+    const app = await this.prisma.jobApplication.findUnique({
+      where: { id: applicationId },
+      select: { userId: true, status: true }
+    });
+
+    if (!app) throw new NotFoundException('Application not found');
+
+    if (app.userId !== userId) {
+      throw new ForbiddenException('Only the applicant can sign the contract');
+    }
+
+    if (!['HIRED', 'CONTRACTING'].includes(app.status)) {
+      throw new BadRequestException('계약 진행 단계에서만 서명이 가능합니다.');
+    }
+
+    return this.prisma.jobApplication.update({
+      where: { id: applicationId },
+      data: { signatureData }
+    });
+  }
+
+  async updateCompliance(userId: number, applicationId: number, checklist: any) {
+    const app = await this.prisma.jobApplication.findUnique({
+      where: { id: applicationId },
+      include: {
+        jobListing: { include: { schoolProfile: true } },
+      },
+    });
+
+    if (!app) throw new NotFoundException('Application not found');
+
+    const jobOwnerId = app.jobListing.schoolProfile?.userId;
+    if (jobOwnerId !== userId) {
+      throw new ForbiddenException('Only the school admin can verify compliance documents');
+    }
+
+    // Mandatory Keys for 2025
+    const MANDATORY_KEYS = [
+      'sex_offender_check',
+      'child_abuse_check',
+      'narcotics_check',
+      'family_hiring_restriction',
+    ];
+
+    const missing = MANDATORY_KEYS.filter((key) => !checklist[key]);
+    if (missing.length > 0) {
+      throw new BadRequestException(
+        `Missing mandatory compliance checks: ${missing.join(', ')}`,
+      );
+    }
+
+    return this.prisma.jobApplication.update({
+      where: { id: applicationId },
+      data: {
+        complianceChecklist: checklist,
+        // If all verified, maybe we can auto-advance status? 
+        // For now, just save.
+      },
+    });
   }
 }

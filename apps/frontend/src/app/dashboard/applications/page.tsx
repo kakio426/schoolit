@@ -9,6 +9,7 @@ import { JobApplication } from '@/types';
 import { ApplicationStatus } from '@/lib/constants';
 import RecruitmentPipeline from '@/components/applications/RecruitmentPipeline';
 import InternalMemo from '@/components/applications/InternalMemo';
+import SelfChecklist from '@/components/applications/SelfChecklist';
 import StandardCard, { StandardBadge } from '@/components/ui/StandardCard';
 import { Search, Filter, MessageSquare, PenTool, Download, Inbox, ChevronRight, Briefcase, FileText, Calendar } from 'lucide-react';
 
@@ -198,6 +199,13 @@ export default function MyApplicationsPage() {
                                                 <InternalMemo applicationId={app.id} initialMemo={app.internalNote} />
                                             </div>
                                         )}
+
+                                        {/* Candidate View: Checklist Status */}
+                                        {user.role === 'TEACHER' && ['DOCUMENT_SCREENING', 'INTERVIEWING', 'VERIFICATION', 'HIRED'].includes(app.status) && (
+                                            <div className="pt-4">
+                                                <SelfChecklist checklist={app.complianceChecklist} />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Action Column */}
@@ -256,8 +264,8 @@ export default function MyApplicationsPage() {
                                                     <p className="text-[10px] text-zinc-600 font-black uppercase tracking-[3px] mb-2 scale-90">Status</p>
                                                     <div className="flex items-center gap-2 bg-white/[0.03] px-5 py-2.5 rounded-full border border-white/[0.05]">
                                                         <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${app.status === 'HIRED' ? 'bg-green-500' :
-                                                                app.status === 'REJECTED' ? 'bg-red-500' :
-                                                                    app.status === 'PENDING' ? 'bg-amber-500' : 'bg-blue-500'
+                                                            app.status === 'REJECTED' ? 'bg-red-500' :
+                                                                app.status === 'PENDING' ? 'bg-amber-500' : 'bg-blue-500'
                                                             }`}></div>
                                                         <span className="text-[13px] font-black text-zinc-300">{getStatusBadgeText(app.status)}</span>
                                                     </div>

@@ -1,0 +1,179 @@
+제공해주신 `plan-template.md`와 `SKILL.md`를 바탕으로, 선생님의 요구사항(개인정보 보호, 3인 평가 시스템, 2025 지침 반영 체크리스트, 전자 서명)을 완벽하게 반영한 **구현 계획서(Implementation Plan)**를 작성해 드립니다.
+
+특히, **"3명의 평가자가 있는데 디지털 채점이 소용없지 않나?"**라는 의문에 대해, **'평가 점수 자동 집계 및 총괄표(서식 15호) 생성'** 기능으로 접근하여 디지털 전환의 확실한 이점을 제공하는 방향으로 설계했습니다.
+
+---
+
+# Implementation Plan: 2025 Compliance Hiring Workflow & Contracts
+
+**Status**: 🔄 In Progress
+**Started**: 2026-01-11
+**Last Updated**: 2026-01-11
+**Estimated Completion**: 2026-01-14
+
+---
+
+**⚠️ CRITICAL INSTRUCTIONS**: After completing each phase:
+
+1. ✅ Check off completed task checkboxes
+2. 🧪 Run all quality gate validation commands
+3. ⚠️ Verify ALL quality gate items pass
+4. 📝 Document learnings in Notes section
+5. ➡️ Only then proceed to next phase
+
+⛔ **DO NOT skip quality gates or proceed with failing checks**
+
+---
+
+## 📋 Overview
+
+### Feature Description
+
+2025년 계약제교원 운영 지침을 준수하는 채용 프로세스 고도화 작업입니다. 개인정보 보호를 위해 민감 서류 업로드를 배제하고 **상호 교차 체크리스트(Cross-Checklist)** 방식을 도입합니다. 또한, 다수(3인) 평가자의 점수를 합산하여 **평가 총괄표를 자동 생성**하는 기능과, 직종(기간제/강사)에 따른 **맞춤형 전자 계약** 기능을 구현합니다.
+
+### Success Criteria
+
+* [ ] **2025 필수 항목 검증**: 마약 검사, 가족 채용 제한 등 신규 필수 확인 항목이 체크리스트에 포함되어야 함.
+* [ ] **평가 집계 자동화**: 3인 평가자의 점수를 입력하면 평균/합계가 계산되고 '채용 심사 평가 총괄표(서식 15)' 데이터가 생성되어야 함.
+* [ ] **전자 계약 차별화**: 기간제교원(서식 16)과 강사(서식 17)의 계약서 양식이 자동으로 구분되고 전자 서명이 가능해야 함.
+
+### User Impact
+
+* **학교(행정)**: 복잡한 점수 계산 실수를 방지하고, 계약서 작성 및 나이스 등록 정보 추출 시간을 단축합니다.
+* **지원자(교사)**: 필수 서류 누락으로 인한 불이익을 방지하고, 비대면으로 편리하게 계약을 체결할 수 있습니다.
+
+---
+
+## 🏗️ Architecture Decisions
+
+| Decision | Rationale | Trade-offs |
+| --- | --- | --- |
+| **Boolean-Based Compliance** | 개인정보 보호를 위해 민감 서류(신체검사서 등)는 파일 저장 없이 '제출 여부(Boolean)'만 DB에 저장함. | 실제 파일은 오프라인/별도 경로로 확인해야 하므로 학교 측의 실물 대조 절차가 필요함. |
+| **Admin-Input Aggregation** | 3명의 평가자가 각각 로그인하는 대신, 관리자가 평가표를 보고 점수를 입력하여 시스템이 집계하는 방식 채택. | 모든 평가자가 시스템에 가입할 필요가 없어 현장 수용성이 높으나, 관리자의 입력 수고가 발생함. |
+| **Template Pattern for Contracts** | 기간제교원/강사 계약서를 별도 컴포넌트가 아닌, 공통 인터페이스를 가진 템플릿 전략 패턴으로 구현. | 초기 구현 복잡도가 약간 증가하나, 추후 '돌봄전담사' 등 다른 직종 추가 시 확장성이 매우 높음. |
+
+---
+
+## 📦 Dependencies
+
+### Required Before Starting
+
+* [x] `User`, `JobApplication` Prisma Schema (기존 구축 완료)
+* [x] `Evaluation` Model (기존 구축 완료, 수정 필요)
+
+### External Dependencies
+
+* `react-signature-canvas`: 전자 서명 UI 구현용
+* `jspdf` or `html2canvas`: 계약서 PDF 변환용
+
+---
+
+## 🧪 Test Strategy
+
+### Testing Approach
+
+**TDD Principle**: 테스트 코드를 먼저 작성하여 요구사항(2025 지침)을 명확히 정의한 후 구현합니다.
+
+### Test Pyramid for This Feature
+
+* **Unit Tests (60%)**: 점수 계산 로직, 체크리스트 검증 로직, 계약서 템플릿 렌더링.
+* **Integration Tests (30%)**: 체크리스트 상태 변경에 따른 지원 상태 변화, 평가 점수 저장 및 집계.
+* **E2E Tests (10%)**: 체크리스트 확인 -> 평가 입력 -> 계약서 서명 흐름 검증.
+
+---
+
+## 🗓️ Phase 1: 2025 Compliance Checklist (Check-only)
+
+**Goal**: 민감 정보 업로드 없이, 필수 서류 준비 여부를 상호 확인하는 '스마트 체크리스트' 구현.
+
+### 🧪 Test Strategy (TDD)
+
+* **Test File**: `apps/backend/src/applications/applications.service.spec.ts`
+* **Scenarios**:
+1. `checkCompliance`: 마약 검사 확인서, 가족 채용 제한 여부가 누락되면 `false` 반환.
+2. `verifyApplication`: 학교 관리자가 체크리스트를 '확인(Verified)' 처리하면 상태가 업데이트됨.
+
+
+* **Mocking**: DB Repository.
+
+### 📝 Tasks
+
+* [ ] **[RED]** 2025 신규 항목(마약, 가족채용제한, 성범죄조회 등)을 포함한 체크리스트 검증 테스트 작성.
+* [ ] **[Backend]** `JobApplication` 또는 별도 `Checklist` 모델에 2025년 필수 항목 필드(Boolean) 추가.
+* [ ] **[Frontend]** 지원자용: "이 서류를 준비하셨나요?" 자가 진단 UI 구현 (`SelfChecklist`).
+* [ ] **[Frontend]** 관리자용: "실물 서류 확인 완료" 토글 UI 구현 (`AdminVerifier`).
+* [ ] **[Refactor]** 기존 하드코딩된 체크리스트 로직을 `ComplianceConstants`로 분리하여 관리.
+
+### ✅ Quality Gate
+
+* [ ] `npm run test` passes (Backend compliance logic)
+* [ ] 체크리스트 항목이 2025 지침과 일치하는지 확인.
+
+---
+
+## 🗓️ Phase 2: Multi-Evaluator Aggregation System
+
+**Goal**: 3인 평가자의 점수를 입력받아 '평가 총괄표'를 자동 생성하고 순위를 산정. (디지털 채점의 효용성 증명)
+
+### 🧪 Test Strategy (TDD)
+
+* **Test File**: `apps/backend/src/reviews/evaluation.service.spec.ts`
+* **Scenarios**:
+1. `calculateAggregateScore`: 3개의 평가 점수 객체가 주어지면 평균과 합계를 정확히 계산.
+2. `generateRank`: 합산 점수 내림차순으로 순위(Rank) 부여.
+3. `validateScoreLimit`: 항목별 배점을 초과하는 점수 입력 시 에러 반환.
+
+
+
+### 📝 Tasks
+
+* [ ] **[RED]** 다수 평가자 점수 합산 및 순위 산정 로직 테스트 작성.
+* [ ] **[Backend]** `Evaluation` 모델을 확장하여 `evaluatorA`, `evaluatorB`, `evaluatorC` 점수 저장 구조(JSON 또는 별도 테이블) 설계.
+* [ ] **[Frontend]** `EvaluationModal` 개선: 평가 위원 수(기본 3명) 설정 및 각 위원별 점수 입력 폼 구현.
+* [ ] **[Frontend]** **자동 계산 기능**: 입력 즉시 총점 및 평균 계산 UI 업데이트.
+* [ ] **[Frontend]** **총괄표 뷰**: 합산된 점수를 바탕으로 '서식 15호(채용심사 평가표)' 형태의 뷰 렌더링.
+
+### ✅ Quality Gate
+
+* [ ] 3명 분의 점수를 입력했을 때, 총점 오차가 0인지 확인.
+* [ ] 배점 한도를 넘는 점수가 입력되지 않도록 방어 로직 확인.
+
+---
+
+## 🗓️ Phase 3: Role-Based Contract & E-Signature
+
+**Goal**: 직종별(기간제/강사) 계약서 템플릿을 제공하고 전자 서명을 통해 계약을 체결.
+
+### 🧪 Test Strategy (TDD)
+
+* **Test File**: `apps/backend/src/contracts/contracts.service.spec.ts`
+* **Scenarios**:
+1. `getContractTemplate`: `role=TEACHER`일 때 서식 16, `role=INSTRUCTOR`일 때 서식 17 반환.
+2. `saveSignature`: Base64 서명 이미지가 정상적으로 저장되고 계약 상태가 `SIGNED`로 변경.
+3. `extractNeisData`: 계약 정보에서 NEIS 등록용 필수 데이터(호봉, 기간, 자격 등) 추출.
+
+
+
+### 📝 Tasks
+
+* [ ] **[RED]** 직종별 템플릿 반환 및 NEIS 데이터 추출 로직 테스트 작성.
+* [ ] **[Frontend]** `SignaturePad` 컴포넌트 고도화 (서명 지우기, 저장 기능).
+* [ ] **[Frontend]** 계약서 뷰어 구현:
+* **기간제교원**: 서식 16호 (호봉, 근무시간 중심)
+* **강사**: 서식 17호 (시간당 수당 중심)
+
+
+* [ ] **[Backend]** 계약 체결 API 구현 (서명 이미지 저장 + 계약서 PDF 생성/저장).
+* [ ] **[Feature]** **NEIS 데이터 추출 버튼**: 계약 완료 후, 행정실에서 필요한 정보만 요약해서 보여주는 모달/엑셀 다운로드 기능.
+
+### ✅ Quality Gate
+
+* [ ] 기간제교원과 강사 계약서의 문구가 지침(서식 16, 17)과 정확히 일치하는지 확인.
+* [ ] 전자 서명 후 계약서 위변조가 불가능하도록 상태 잠금(Lock) 확인.
+
+---
+
+## 📝 Notes & Learnings
+
+* **평가 시스템 전략**: 선생님 말씀대로 3명의 평가자가 실시간으로 접속하는 건 현실적으로 어려울 수 있습니다. 따라서 **"관리자가 취합하여 대리 입력 -> 시스템은 계산과 서류 생성 담당"**이라는 접근이 현장(행정실)에서 훨씬 환영받을 기능입니다.
+* **NEIS 연동**: 실제 NEIS DB에 직접 넣을 순 없지만, "보고 그대로 치면 되는" 수준으로 데이터를 정제해 주는 것만으로도 행정 업무는 절반으로 줄어듭니다.

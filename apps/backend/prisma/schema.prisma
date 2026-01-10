@@ -339,6 +339,12 @@ model JobApplication {
   // 2025 Compliance: Evaluations relation
   evaluations Evaluation[]
 
+  // 2025 Compliance: Hiring Checklist
+  complianceChecklist Json? @map("compliance_checklist") // { narcotics_check: boolean, ... }
+
+  // Phase 3: E-Signature
+  signatureData String? @map("signature_data") // Base64 signature image
+
   @@unique([jobId, userId])
   @@map("job_applications")
 }
@@ -562,17 +568,24 @@ model Evaluation {
   applicationId Int            @map("application_id")
   application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 
-  evaluatorName String  @map("evaluator_name") // 심사위원 이름 (익명 가능)
-  evaluatorRole String? @map("evaluator_role") // 교장, 교감, 외부 위원 등
+  type EvaluationType @default(DOCUMENT)
 
-  type       EvaluationType // 심사 유형
-  totalScore Float          @default(0) @map("total_score") // 합계 점수
+  // Aggregated Data for Multiple Evaluators
+  // {
+  //   "evaluators": [
+  //      { "name": "A", "score": 85, "details": {...} },
+  //      { "name": "B", "score": 90, "details": {...} }
+  //   ],
+  //   "average": 87.5
+  // }
+  aggregatedData Json? @map("aggregated_data") 
 
-  // Detailed scores stored as JSON for flexibility
-  // Example: { "전공": 6, "학위": 6, "경력": 5, "연수": 4, "자기소개서": 6 }
+  // Legacy fields (optional or used for single view)
+  evaluatorName String?  @map("evaluator_name") 
+  evaluatorRole String? @map("evaluator_role")
+  totalScore Float          @default(0) @map("total_score")
   criteriaScores Json? @map("criteria_scores")
-
-  comment String? // 심사평
+  comment String?
 
   // National Merit Bonus (국가유공자 가산점)
   meritBonus Float @default(0) @map("merit_bonus")

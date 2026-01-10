@@ -14,6 +14,9 @@ import InternalMemo from '@/components/applications/InternalMemo';
 import PDFDownloadButton from '@/components/documents/PDFDownloadButton';
 import KanbanBoard from '@/components/applications/KanbanBoard';
 import EvaluationModal from '@/components/applications/EvaluationModal';
+import EvaluationSummaryModal from '@/components/applications/EvaluationSummaryModal';
+import ContractViewer from '@/components/applications/ContractViewer';
+import NEISDataModal from '@/components/applications/NEISDataModal';
 import { api } from '@/lib/api';
 import { JobApplication, JobListing } from '@/types';
 import { ApplicationStatus, Role, JobType } from '@/lib/constants';
@@ -29,6 +32,7 @@ export default function JobApplicantsPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
     const [selectedApplicant, setSelectedApplicant] = useState<JobApplication | null>(null);
+    const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
     // Profile Modal State
     const [viewProfileId, setViewProfileId] = useState<number | null>(null);
@@ -39,6 +43,10 @@ export default function JobApplicantsPage() {
     const [showTimerWarning, setShowTimerWarning] = useState(false);
     const [showComplianceCheck, setShowComplianceCheck] = useState(false);
     const [pendingApplicantId, setPendingApplicantId] = useState<number | null>(null);
+
+    // Contract Viewer State
+    const [contractApplicant, setContractApplicant] = useState<JobApplication | null>(null);
+    const [isNEISModalOpen, setIsNEISModalOpen] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -151,17 +159,30 @@ export default function JobApplicantsPage() {
         }
     };
 
-    const handleSaveEvaluation = async (appId: number, scores: Record<string, number>, total: number, comment: string) => {
+    const handleSaveEvaluation = async (appId: number, scoresOrPayload: any, total: number, comment: string) => {
         try {
-            // Note: Ensure Backend API endpoint '/evaluations' exists and accepts this payload
-            await api.post('/evaluations', {
-                jobListingId: Number(id),
-                applicationId: appId,
-                type: 'DOCUMENT', // Defaulting to DOCUMENT for now, logic can be refined to detect stage
-                totalScore: total,
-                criteriaScores: scores,
-                comment: comment
-            });
+            const jobId = Number(id);
+            const endpoint = `/evaluations/${jobId}/applications/${appId}`;
+
+            let payload;
+
+            if (scoresOrPayload.evaluators) {
+                // Multi-evaluator payload from EvaluationModal
+                payload = scoresOrPayload;
+            } else {
+                // Legacy or single mode fallback
+                payload = {
+                    type: 'DOCUMENT',
+                    totalScore: total,
+                    criteriaScores: scoresOrPayload,
+                    comment: comment,
+                    evaluators: [
+                        { name: 'Single Evaluator', score: total, scores: scoresOrPayload, comment }
+                    ]
+                };
+            }
+
+            await api.post(endpoint, payload);
             alert('심사 결과가 저장되었습니다.');
         } catch (e: any) {
             console.error(e);
@@ -301,8 +322,22 @@ export default function JobApplicantsPage() {
                                 />
                             )}
 
+                            <button
+                                onClick={() => setIsNEISModalOpen(true)}
+                                className="px-4 py-2 text-sm font-medium text-blue-400 border border-blue-600/30 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 hover:border-blue-500/50 transition-all"
+                            >
+                                📥 NEIS 데이터
+                            </button>
+
                             <button className="px-4 py-2 text-sm font-medium text-slate-300 border border-slate-600 rounded-lg hover:bg-slate-800 hover:border-slate-500 transition-all">
                                 미리보기
+                            </button>
+
+                            <button
+                                onClick={() => setIsSummaryOpen(true)}
+                                className="px-4 py-2 text-sm font-bold text-amber-400 border border-amber-600/30 bg-amber-500/10 rounded-lg hover:bg-amber-500/20 hover:border-amber-500/50 transition-all"
+                            >
+                                📊 결과 종합
                             </button>
                         </div>
                     </div>
@@ -511,7 +546,11 @@ export default function JobApplicantsPage() {
                                                 onClick={() => setEvalApplicant(app)}
                                                 className="w-full py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-1.5"
                                             >
-                                                <Calculator className="w-3.5 h-3.5" /> 평가표 작성
+                                                <Calculator className="w-3.5 h-3.5" />
+                                                {(() => {
+                                                    const score = app.evaluations?.find(e => e.type === 'DOCUMENT')?.totalScore;
+                                                    return score ? `평가 수정 (${score.toFixed(1)}점)` : '서류 평가표 작성';
+                                                })()}
                                             </button>
                                             <div className="flex gap-1.5">
                                                 <button
@@ -537,7 +576,11 @@ export default function JobApplicantsPage() {
                                                 className="w-full py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-all flex items-center justify-center gap-1.5"
                                                 data-testid="btn-evaluate"
                                             >
-                                                <Calculator className="w-3.5 h-3.5" /> 면접 평가표
+                                                <Calculator className="w-3.5 h-3.5" />
+                                                {(() => {
+                                                    const score = app.evaluations?.find(e => e.type === 'INTERVIEW')?.totalScore;
+                                                    return score ? `평가 수정 (${score.toFixed(1)}점)` : '면접 평가표 작성';
+                                                })()}
                                             </button>
                                             <div className="flex gap-1.5">
                                                 <button
@@ -585,10 +628,10 @@ export default function JobApplicantsPage() {
                                     {(app.status === ApplicationStatus.HIRED || app.status === ApplicationStatus.PAYMENT_COMPLETED || app.status === ApplicationStatus.CONTRACTING || app.status === ApplicationStatus.EXECUTING) && (
                                         <div className="flex gap-1.5">
                                             <button
-                                                onClick={() => downloadContract(app.id, (job?.jobType as JobType) || JobType.TEACHER_HIRING)}
-                                                className="flex-1 py-1.5 text-xs text-slate-400 border border-slate-700 hover:border-slate-600 rounded-lg transition-all"
+                                                onClick={() => setContractApplicant(app)}
+                                                className="flex-1 py-1.5 text-xs text-blue-400 border border-blue-700/50 hover:border-blue-600 rounded-lg transition-all"
                                             >
-                                                📄 서류 다운
+                                                📄 계약서 확인
                                             </button>
                                             <button
                                                 onClick={() => { setSelectedApplicant(app); setIsReviewModalOpen(true); }}
@@ -682,6 +725,13 @@ export default function JobApplicantsPage() {
                 )
             }
 
+            <EvaluationSummaryModal
+                isOpen={isSummaryOpen}
+                onClose={() => setIsSummaryOpen(false)}
+                applicants={applicants}
+                jobTitle={job?.title || '채용 공고'}
+            />
+
             <UserProfileModal
                 isOpen={!!viewProfileId}
                 onClose={() => setViewProfileId(null)}
@@ -708,6 +758,11 @@ export default function JobApplicantsPage() {
                 onClose={() => setShowComplianceCheck(false)}
                 onConfirm={handleComplianceConfirmed}
                 candidateName={applicants.find(a => a.id === pendingApplicantId)?.user?.name || '지원자'}
+                applicationId={pendingApplicantId || 0}
+                initialChecklist={applicants.find(a => a.id === pendingApplicantId)?.complianceChecklist}
+                onUpdateChecklist={(newChecklist) => {
+                    setApplicants(prev => prev.map(a => a.id === pendingApplicantId ? { ...a, complianceChecklist: newChecklist } : a));
+                }}
             />
 
             {evalApplicant && (
@@ -716,9 +771,42 @@ export default function JobApplicantsPage() {
                     onClose={() => setEvalApplicant(null)}
                     applicantName={evalApplicant.user?.name || '지원자'}
                     type={evalApplicant.status === ApplicationStatus.DOCUMENT_SCREENING ? 'DOCUMENT' : 'INTERVIEW'}
+                    initialData={(() => {
+                        const type = evalApplicant.status === ApplicationStatus.DOCUMENT_SCREENING ? 'DOCUMENT' : 'INTERVIEW';
+                        const evaluation = evalApplicant.evaluations?.find(e => e.type === type);
+                        return evaluation?.aggregatedData;
+                    })()}
                     onSubmit={(scores, total, comment) => handleSaveEvaluation(evalApplicant.id, scores, total, comment)}
                 />
             )}
+
+            <ContractViewer
+                isOpen={!!contractApplicant}
+                onClose={() => setContractApplicant(null)}
+                applicationId={contractApplicant?.id || 0}
+                contractType={job?.jobType === JobType.EVENT_VENDOR ? 'VENDOR' : 'TEACHER'}
+                contractData={{
+                    schoolName: job?.schoolProfile?.schoolName || '본교',
+                    jobTitle: job?.title || '채용 공고',
+                    applicantName: contractApplicant?.user?.name || '지원자',
+                    contractPeriod: job?.contractPeriod || '',
+                    salary: contractApplicant?.cost?.toLocaleString() || '',
+                    isSigned: !!contractApplicant?.signatureData
+                }}
+                canSign={user?.role === Role.TEACHER || user?.role === Role.BUSINESS}
+                onSignatureComplete={fetchData}
+            />
+
+            <NEISDataModal
+                isOpen={isNEISModalOpen}
+                onClose={() => setIsNEISModalOpen(false)}
+                onDataExtracted={(data) => {
+                    // Integration logic for NEIS data
+                    // For now, we just log it or alert
+                    console.log('Extracted NEIS Data:', data);
+                    alert(`NEIS 데이터 추출 완료: ${data.teacherName} (${data.schoolName})`);
+                }}
+            />
         </DashboardLayout >
 
     );

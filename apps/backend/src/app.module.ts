@@ -26,6 +26,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 import { DocumentsModule } from './documents/documents.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { ComplianceModule } from './compliance/compliance.module';
+import { EvaluationsModule } from './evaluations/evaluations.module';
 
 @Module({
   imports: [
@@ -55,8 +56,9 @@ import { ComplianceModule } from './compliance/compliance.module';
     DocumentsModule,
     RecommendationsModule,
     ComplianceModule,
+    EvaluationsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule { }

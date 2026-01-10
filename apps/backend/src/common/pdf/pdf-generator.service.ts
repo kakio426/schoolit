@@ -12,6 +12,13 @@ export class PdfGeneratorService {
 
     // Load Korean Font
     const fontPath = path.join(__dirname, 'NanumGothic-Regular.ttf');
+
+    // Debug Log
+    if (!fs.existsSync(fontPath)) {
+      console.error(`[PDF Error] Font file not found at: ${fontPath}`);
+      // Fallback or let it crash but with log
+    }
+
     const fontBytes = fs.readFileSync(fontPath);
     const customFont = await pdfDoc.embedFont(fontBytes);
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
@@ -33,8 +40,11 @@ export class PdfGeneratorService {
       borderWidth: 1,
     });
 
+    const templateType = data.templateType || 'TEACHER';
+    const isVendor = templateType === 'VENDOR';
+
     // Title
-    page.drawText('표준 근로 계약서', {
+    page.drawText(isVendor ? '표준 용역 계약서' : '표준 근로 계약서', {
       x: margin + 150,
       y: yPos - 25,
       size: 24,
@@ -42,7 +52,7 @@ export class PdfGeneratorService {
       color: rgb(0, 0, 0),
     });
 
-    page.drawText('Standard Employment Contract', {
+    page.drawText(isVendor ? 'Standard Service Agreement' : 'Standard Employment Contract', {
       x: margin + 120,
       y: yPos - 45,
       size: 12,
@@ -80,13 +90,27 @@ export class PdfGeneratorService {
       });
     };
 
-    drawField('학교명 (Institution):', data.schoolName || '', yPos);
+    drawField('학 교 명 (Institution):', data.schoolName || '', yPos);
     yPos -= 35;
-    drawField('교사명 (Teacher):', data.teacherName || '', yPos);
+
+    if (isVendor) {
+      drawField('업 체 명 (Vendor):', data.vendorName || '', yPos);
+      yPos -= 35;
+      drawField('대 표 자 (Representative):', data.representativeName || '', yPos);
+      yPos -= 35;
+      drawField('용 역 명 (Service Name):', data.jobTitle || '', yPos);
+      yPos -= 35;
+      drawField('계 약 금 (Amount):', data.amount ? `${data.amount} 원` : '-', yPos);
+    } else {
+      drawField('교 사 명 (Teacher):', data.teacherName || '', yPos);
+      yPos -= 35;
+      drawField('직위/과목 (Position):', data.jobTitle || '', yPos);
+      yPos -= 35;
+      drawField('급 여 (Salary):', data.amount ? `${data.amount} 원` : '-', yPos);
+    }
+
     yPos -= 35;
-    drawField('직위/과목 (Position):', data.jobTitle || '', yPos);
-    yPos -= 35;
-    drawField('계약일 (Contract Date):', data.date || '', yPos);
+    drawField('계 약 일 (Date):', data.date || '', yPos);
     yPos -= 50;
 
     // Terms Section
@@ -107,11 +131,19 @@ export class PdfGeneratorService {
       color: rgb(0, 0, 0),
     });
 
-    const terms = [
+    const teacherTerms = [
       '1. 본 계약은 양 당사자의 합의 하에 체결되었습니다.',
       '2. 근무 조건 및 급여는 별도 협의된 사항을 따릅니다.',
       '3. 계약 해지 시 1개월 전 사전 통보를 원칙으로 합니다.',
     ];
+
+    const vendorTerms = [
+      '1. 본 계약은 지방계약법 및 관련 규정에 따릅니다.',
+      '2. 과업 수행은 학교의 지시 및 감독 하에 성실히 수행해야 합니다.',
+      '3. 계약 불이행 시 계약 보증금 귀속 및 손해배상 책임이 있습니다.',
+    ];
+
+    const terms = isVendor ? vendorTerms : teacherTerms;
 
     let termY = yPos - 45;
     terms.forEach((term) => {
@@ -158,9 +190,10 @@ export class PdfGeneratorService {
       y: yPos - 50,
       size: 9,
       font: customFont,
+      color: rgb(0, 0, 0), // Explicit color
     });
 
-    page.drawText('교사 (Teacher)', {
+    page.drawText(isVendor ? '업체 대표 (Vendor)' : '교사 (Teacher)', {
       x: margin + (width - 2 * margin) / 2 + 60,
       y: yPos - 20,
       size: 10,

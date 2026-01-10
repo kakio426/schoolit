@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { HiringWorkflowStatus, EvaluationType, Prisma } from '@prisma/client';
+import { HiringWorkflowStatus, Prisma } from '@prisma/client';
+
+type EvaluationType = 'DOCUMENT' | 'INTERVIEW' | 'DEMONSTRATION';
 
 @Injectable()
 export class ComplianceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * 호봉 상한 확인 (2025 지침: 명예퇴직자 등 14호봉 제한)
@@ -131,11 +133,11 @@ export class ComplianceService {
 
     const evaluation = await this.prisma.evaluation.create({
       data: {
-        jobListingId: data.jobListingId,
-        applicationId: data.applicationId,
+        jobListing: { connect: { id: data.jobListingId } },
+        application: { connect: { id: data.applicationId } },
         evaluatorName: data.evaluatorName,
         evaluatorRole: data.evaluatorRole,
-        type: data.type,
+        type: data.type as any, // Cast to enum
         totalScore,
         criteriaScores: data.criteriaScores as Prisma.InputJsonValue,
         comment: data.comment,

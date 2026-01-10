@@ -25,7 +25,7 @@ export class ApplicationsController {
   constructor(
     private applicationsService: ApplicationsService,
     private dataCleanupService: DataCleanupService,
-  ) {}
+  ) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.TEACHER, Role.BUSINESS)
@@ -79,6 +79,17 @@ export class ApplicationsController {
     return this.applicationsService.updateInternalNote(req.user.userId, appId, note);
   }
 
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.SCHOOL)
+  @Patch(':id/compliance')
+  async updateCompliance(
+    @Request() req,
+    @Param('id', ParseIntPipe) appId: number,
+    @Body('checklist') checklist: any,
+  ) {
+    return this.applicationsService.updateCompliance(req.user.userId, appId, checklist);
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get(':id/contract')
   async downloadContract(@Request() req, @Param('id', ParseIntPipe) appId: number, @Res() res) {
@@ -96,5 +107,16 @@ export class ApplicationsController {
   @Post(':id/destroy-documents')
   async destroyDocuments(@Request() req, @Param('id', ParseIntPipe) appId: number) {
     return this.dataCleanupService.immediateDocumentDestruction(appId);
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.TEACHER, Role.BUSINESS)
+  @Patch(':id/signature')
+  async updateSignature(
+    @Request() req,
+    @Param('id', ParseIntPipe) appId: number,
+    @Body('signature') signatureData: string,
+  ) {
+    return this.applicationsService.updateSignature(req.user.userId, appId, signatureData);
   }
 }
