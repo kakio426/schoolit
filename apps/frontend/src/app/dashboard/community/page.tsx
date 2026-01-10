@@ -1,273 +1,124 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { api } from '@/lib/api';
-import Link from 'next/link';
-import { MessageSquare, ThumbsUp, Eye, Plus, Pin, ArrowLeft } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import StandardCard from '@/components/ui/StandardCard';
+import { api } from '@/lib/api'; // api 유틸리티 사용
+import { Skeleton } from '@/components/ui/Skeleton';
+import { Button } from '@/components/ui/Button';
 
+// 타입 정의
 interface Board {
     id: number;
     title: string;
-    description: string | null;
     category: string;
+    description?: string;
+    _count?: { posts: number };
 }
 
-interface Post {
-    id: number;
-    title: string;
-    content: string;
-    views: number;
-    isPinned: boolean;
-    createdAt: string;
-    author: {
-        id: number;
-        name: string;
-        role: string;
-    };
-    imageUrls: string[];
-    _count: {
-        comments: number;
-        likes: number;
-    };
-}
-
-interface PostsResponse {
-    posts: Post[];
-    total: number;
-    page: number;
-    totalPages: number;
-}
-
-export default function CommunityPage() {
-    const { user } = useAuth();
+export default function CommunityDashboard() {
+    const router = useRouter();
     const [boards, setBoards] = useState<Board[]>([]);
-    const [selectedBoard, setSelectedBoard] = useState<Board | null>(null);
-    const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [error, setError] = useState<string | null>(null);
 
-    // 게시판 목록 조회
+    // 게시판 목록 가져오기
     useEffect(() => {
         const fetchBoards = async () => {
             try {
-                const data = await api.get<Board[]>('/api/boards');
-                setBoards(data);
-                if (data.length > 0) {
-                    setSelectedBoard(data[0]);
-                } else {
-                    setLoading(false); // 데이터가 없으면 로딩 종료
-                }
-            } catch (error) {
-                console.error('Failed to fetch boards:', error);
-                setLoading(false); // 에러 발생 시 로딩 종료
+                // 백엔드 API 호출 (경로 확인 필요: /board 또는 /boards)
+                const res = await api.get<Board[]>('/boards');
+                setBoards(res);
+            } catch (err) {
+                console.error("Failed to fetch boards:", err);
+                setError("게시판 정보를 불러오지 못했습니다.");
+            } finally {
+                setLoading(false);
             }
         };
         fetchBoards();
     }, []);
 
-    // 게시글 목록 조회
-    useEffect(() => {
-        if (!selectedBoard) return;
-
-        const fetchPosts = async () => {
-            setLoading(true);
-            try {
-                const data = await api.get<PostsResponse>(
-                    `/api/boards/${selectedBoard.id}/posts?page=${page}&limit=20`
-                );
-                setPosts(data.posts);
-                setTotalPages(data.totalPages);
-            } catch (error) {
-                console.error('Failed to fetch posts:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchPosts();
-    }, [selectedBoard, page]);
-
-    const getCategoryLabel = (category: string) => {
-        const labels: Record<string, string> = {
-            NOTICE: '📢 공지사항',
-            FREE: '💬 자유게시판',
-            QNA: '❓ Q&A',
-            REVIEW_BOARD: '⭐ 후기게시판',
-        };
-        return labels[category] || category;
-    };
-
-    const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        const now = new Date();
-        const diffMs = now.getTime() - date.getTime();
-        const diffHours = diffMs / (1000 * 60 * 60);
-
-        if (diffHours < 24) {
-            return date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
-        }
-        return date.toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' });
-    };
-
-    return (
-        <div className="min-h-screen bg-gray-900 text-white p-6">
-            <div className="max-w-6xl mx-auto">
-                {/* Top Navigation */}
-                <div className="mb-6">
-                    <Link
-                        href="/dashboard"
-                        className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800/80 hover:bg-gray-700 text-gray-300 hover:text-white rounded-full text-sm font-medium border border-gray-700/50 transition-all shadow-lg group"
-                    >
-                        <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" />
-                        대시보드 홈으로
-                    </Link>
-                </div>
-
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-                    <div>
-                        <h1 className="text-4xl font-extrabold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-500 bg-clip-text text-transparent tracking-tight">
-                            커뮤니티
-                        </h1>
-                        <p className="text-gray-400 mt-2 text-lg">에듀핀의 모든 파트너가 소통하는 열린 공간</p>
-                    </div>
-                    {selectedBoard && (selectedBoard.category !== 'NOTICE' || user?.role === 'ADMIN') && (
-                        <Link
-                            href={`/dashboard/community/write?boardId=${selectedBoard.id}`}
-                            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg font-medium hover:opacity-90 transition"
-                        >
-                            <Plus size={18} />
-                            글쓰기
-                        </Link>
-                    )}
-                </div>
-
-                <div className="flex gap-6">
-                    {/* Sidebar - 게시판 목록 */}
-                    <div className="w-64 shrink-0">
-                        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-4 border border-gray-700/50">
-                            <h2 className="text-sm font-semibold text-gray-400 uppercase mb-3">게시판</h2>
-                            <nav className="space-y-1">
-                                {boards.map((board) => (
-                                    <button
-                                        key={board.id}
-                                        onClick={() => { setSelectedBoard(board); setPage(1); }}
-                                        className={`w-full text-left px-3 py-2 rounded-lg transition ${selectedBoard?.id === board.id
-                                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                            : 'text-gray-300 hover:bg-gray-700/50'
-                                            }`}
-                                    >
-                                        {getCategoryLabel(board.category)}
-                                    </button>
-                                ))}
-                            </nav>
-                        </div>
-                    </div>
-
-                    {/* Main Content - 게시글 목록 */}
-                    <div className="flex-1">
-                        <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700/50 overflow-hidden">
-                            {/* 게시판 헤더 */}
-                            <div className="px-6 py-4 border-b border-gray-700/50">
-                                <h2 className="text-xl font-bold">
-                                    {selectedBoard ? getCategoryLabel(selectedBoard.category) : '게시판 선택'}
-                                </h2>
-                                {selectedBoard?.description && (
-                                    <p className="text-gray-400 text-sm mt-1">{selectedBoard.description}</p>
-                                )}
-                            </div>
-
-                            {/* 게시글 리스트 */}
-                            {loading ? (
-                                <div className="p-8 text-center text-gray-400">
-                                    <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-2" />
-                                    로딩 중...
-                                </div>
-                            ) : posts.length === 0 ? (
-                                <div className="p-12 text-center text-gray-400">
-                                    <MessageSquare size={48} className="mx-auto mb-4 opacity-50" />
-                                    <p>아직 게시글이 없습니다.</p>
-                                    <p className="text-sm mt-1">첫 번째 글을 작성해보세요!</p>
-                                </div>
-                            ) : (
-                                <ul className="divide-y divide-gray-700/50">
-                                    {posts.map((post) => (
-                                        <li key={post.id}>
-                                            <Link
-                                                href={`/dashboard/community/posts/${post.id}`}
-                                                className="block px-6 py-4 hover:bg-gray-700/30 transition"
-                                            >
-                                                <div className="flex items-start gap-4">
-                                                    {/* 썸네일 (있는 경우) */}
-                                                    {post.imageUrls.length > 0 && (
-                                                        <img
-                                                            src={post.imageUrls[0]}
-                                                            alt=""
-                                                            className="w-16 h-16 object-cover rounded-lg shrink-0"
-                                                        />
-                                                    )}
-
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            {post.isPinned && (
-                                                                <span className="flex items-center gap-1 text-xs text-yellow-400">
-                                                                    <Pin size={12} /> 고정
-                                                                </span>
-                                                            )}
-                                                            <h3 className="font-medium text-white truncate">
-                                                                {post.title}
-                                                            </h3>
-                                                            {post._count.comments > 0 && (
-                                                                <span className="text-xs text-blue-400">
-                                                                    [{post._count.comments}]
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        <p className="text-sm text-gray-400 mt-1 line-clamp-1">
-                                                            {post.content.replace(/<[^>]*>/g, '')}
-                                                        </p>
-
-                                                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                                            <span>{post.author.name}</span>
-                                                            <span>{formatDate(post.createdAt)}</span>
-                                                            <span className="flex items-center gap-1">
-                                                                <Eye size={12} /> {post.views}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <ThumbsUp size={12} /> {post._count.likes}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-
-                            {/* Pagination */}
-                            {totalPages > 1 && (
-                                <div className="flex justify-center gap-2 p-4 border-t border-gray-700/50">
-                                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                                        <button
-                                            key={p}
-                                            onClick={() => setPage(p)}
-                                            className={`w-8 h-8 rounded-lg transition ${page === p
-                                                ? 'bg-blue-500 text-white'
-                                                : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
-                                                }`}
-                                        >
-                                            {p}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
+    // 로딩 상태 (스켈레톤 UI)
+    if (loading) {
+        return (
+            <div className="space-y-6">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">커뮤니티</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[1, 2, 3].map((i) => (
+                        <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+                    ))}
                 </div>
             </div>
+        );
+    }
+
+    return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* 헤더 섹션 */}
+            <div className="flex justify-between items-center">
+                <div>
+                    <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
+                        커뮤니티 🗣️
+                    </h1>
+                    <p className="text-slate-500 mt-1">
+                        선생님, 학교, 기업들과 자유롭게 소통하세요.
+                    </p>
+                </div>
+                <Button onClick={() => router.push('/dashboard/community/write')}>
+                    ✏️ 글쓰기
+                </Button>
+            </div>
+
+            {/* 에러 발생 시 표시 */}
+            {error && (
+                <div className="p-4 bg-red-50 text-red-600 rounded-xl border border-red-100">
+                    ⚠️ {error}
+                </div>
+            )}
+
+            {/* 게시판 목록 렌더링 */}
+            {boards.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {boards.map((board) => (
+                        <StandardCard
+                            key={board.id}
+                            className="group cursor-pointer hover:border-primary/50 transition-all hover:shadow-lg dark:bg-slate-900"
+                            onClick={() => router.push(`/dashboard/community/posts?boardId=${board.id}`)}
+                        >
+                            <div className="p-6 space-y-4">
+                                <div className="flex justify-between items-start">
+                                    <div className="w-12 h-12 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center text-2xl">
+                                        {board.category === 'NOTICE' ? '📢' :
+                                            board.category === 'QNA' ? '❓' :
+                                                board.category === 'FREE' ? '💬' : '📂'}
+                                    </div>
+                                    {board._count?.posts !== undefined && (
+                                        <span className="px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-md text-xs font-bold text-slate-600 dark:text-slate-300">
+                                            {board._count.posts}개 글
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <h3 className="text-xl font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors">
+                                        {board.title}
+                                    </h3>
+                                    <p className="text-sm text-slate-500 mt-1 line-clamp-2">
+                                        {board.description || '새로운 소식과 이야기를 나눠보세요.'}
+                                    </p>
+                                </div>
+                            </div>
+                        </StandardCard>
+                    ))}
+                </div>
+            ) : (
+                /* 게시판이 하나도 없을 때 (초기 상태) */
+                <div className="text-center py-20 bg-slate-50 dark:bg-slate-800 rounded-3xl border border-dashed border-slate-300 dark:border-slate-700">
+                    <p className="text-xl text-slate-500">생성된 게시판이 없습니다.</p>
+                    <p className="text-sm text-slate-400 mb-6">관리자에게 문의해주세요.</p>
+                </div>
+            )}
         </div>
     );
 }

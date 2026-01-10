@@ -2,6 +2,7 @@
 import React from 'react';
 import { ChevronRight, CheckCircle2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CompletenessWidgetProps {
     completeness: {
@@ -11,7 +12,18 @@ interface CompletenessWidgetProps {
 }
 
 export const CompletenessWidget: React.FC<CompletenessWidgetProps> = ({ completeness }) => {
+    const { user } = useAuth();
     const { percentage, missingFields } = completeness;
+
+    // Helper to determine profile link based on user role
+    const getProfileLink = () => {
+        switch (user?.role) {
+            case 'SCHOOL': return '/dashboard/school/profile';
+            case 'TEACHER': return '/dashboard/profile';
+            case 'BUSINESS': return '/dashboard/profile';
+            default: return '/dashboard/settings';
+        }
+    };
 
     if (percentage === 100) return null; // Or return a minimized "Master" badge version
 
@@ -38,7 +50,7 @@ export const CompletenessWidget: React.FC<CompletenessWidgetProps> = ({ complete
                         <span className="text-2xl font-black text-primary">{percentage}%</span>
                     </div>
                     <Link
-                        href="/dashboard/settings"
+                        href={getProfileLink()}
                         className="text-xs font-semibold text-primary hover:text-primary-hover flex items-center transition-colors bg-primary/10 px-3 py-1.5 rounded-lg"
                     >
                         채우러 가기 <ChevronRight className="w-3 h-3 ml-1" />

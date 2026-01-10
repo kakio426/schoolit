@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateJobDto } from './dtos/create-job.dto';
 import { UserService } from '../users/user.service';
@@ -12,46 +12,49 @@ export class JobsService {
   ) { }
 
   async createJob(userId: number, data: CreateJobDto) {
-    // 1. 학교 프로필 조회 (가장 흔한 케이스)
-    const schoolProfile = await this.prisma.schoolProfile.findUnique({
-      where: { userId },
-      select: { id: true }, // ID만 가져오기
-    });
+    // 1. 작성자 프로필 찾기 (순서 중요: 학교 -> 교사 -> 기업)
+    const schoolProfile = await this.prisma.schoolProfile.findUnique({ where: { userId } });
+    const teacherProfile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    const businessProfile = await this.prisma.businessProfile.findUnique({ where: { userId } });
 
-    // 내부 결재가 완료된 건이면 바로 'PLAN_APPROVED' 상태로 시작
+    // 2. 프로필 ID 매핑 (없으면 에러)
+    let profileConnectData = {};
+
+    if (schoolProfile) {
+      profileConnectData = { schoolProfile: { connect: { id: schoolProfile.id } } };
+    } else if (teacherProfile) {
+      profileConnectData = { teacherProfile: { connect: { id: teacherProfile.id } } };
+    } else if (businessProfile) {
+      // 기업회원이 공고를 올리는 경우 (행사 공고 등)
+      // JobListing 모델에 businessProfileId가 없다면 이 부분은 스킵하거나 스키마 추가 필요
+      throw new ForbiddenException('기업 회원은 아직 공고를 등록할 수 없습니다.');
+    } else {
+      throw new ForbiddenException('공고를 등록하려면 먼저 프로필을 생성해야 합니다.');
+    }
+
+    // 3. 내부 결재 상태 기본값 설정
+    // 내부 결재가 완료된 건이면 바로 'PLAN_APPROVED' 상태로 시작 (User Logic Preservation)
     const initialStatus =
       data.internalChecklist && data.internalChecklist['planningApproved'] === true
         ? HiringWorkflowStatus.PLAN_APPROVED
         : HiringWorkflowStatus.DRAFT;
 
-    if (schoolProfile) {
-      return this.prisma.jobListing.create({
+    try {
+      return await this.prisma.jobListing.create({
         data: {
-          schoolProfileId: schoolProfile.id,
           ...data,
+          ...profileConnectData,
+          status: JobStatus.OPEN, // 기본 모집 상태
           workflowStatus: initialStatus,
-          status: JobStatus.CLOSED,
+          // checklist 필드가 JSON이라면 Prisma가 알아서 변환하지만, undefined가 들어가지 않게 주의
+          internalChecklist: data.internalChecklist ?? Prisma.JsonNull,
         },
       });
+    } catch (error) {
+      console.error("Job Creation Error:", error);
+      // 프론트엔드에 정확한 이유를 알려주기 위해 에러 메시지 가공
+      throw new InternalServerErrorException(`공고 등록 실패: ${error.message}`);
     }
-
-    // 2. 교사 프로필 조회 (강사/교사 개인 공고)
-    const teacherProfile = await this.prisma.teacherProfile.findUnique({
-      where: { userId },
-      select: { id: true },
-    });
-
-    if (teacherProfile) {
-      return this.prisma.jobListing.create({
-        data: {
-          teacherProfileId: teacherProfile.id,
-          ...data,
-          status: JobStatus.CLOSED,
-        },
-      });
-    }
-
-    throw new ForbiddenException('공고를 등록하려면 학교 또는 교사 프로필이 필요합니다.');
   }
 
   // [Refactor] 성능 최적화: 리스트 조회 시 필요한 필드만 Select (Payload 최소화)
@@ -127,7 +130,7 @@ export class JobsService {
   }
 
   // [Fix] 누락되었던 update 메서드 복구 및 권한 체크 추가
-  async update(id: number, userId: number, data: any) {
+  async update(id: number, userId: number, role: string, data: any) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id },
       select: { schoolProfile: { select: { userId: true } }, teacherProfile: { select: { userId: true } } },
@@ -137,8 +140,9 @@ export class JobsService {
 
     const isOwner =
       job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
+    const isAdmin = role === 'ADMIN';
 
-    if (!isOwner) throw new ForbiddenException('수정 권한이 없습니다.');
+    if (!isOwner && !isAdmin) throw new ForbiddenException('수정 권한이 없습니다.');
 
     return this.prisma.jobListing.update({
       where: { id },
@@ -147,7 +151,7 @@ export class JobsService {
   }
 
   // [Fix] 빌드 에러 원인: deleteJob 메서드 복구
-  async deleteJob(userId: number, jobId: number) {
+  async deleteJob(userId: number, role: string, jobId: number) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id: jobId },
       select: { schoolProfile: { select: { userId: true } }, teacherProfile: { select: { userId: true } } },
@@ -157,8 +161,9 @@ export class JobsService {
 
     const isOwner =
       job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
+    const isAdmin = role === 'ADMIN';
 
-    if (!isOwner) throw new ForbiddenException('삭제 권한이 없습니다.');
+    if (!isOwner && !isAdmin) throw new ForbiddenException('삭제 권한이 없습니다.');
 
     return this.prisma.jobListing.delete({
       where: { id: jobId },

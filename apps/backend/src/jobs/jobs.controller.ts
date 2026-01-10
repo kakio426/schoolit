@@ -34,10 +34,10 @@ export class JobsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL, Role.TEACHER)
+  @Roles(Role.SCHOOL, Role.TEACHER, Role.ADMIN)
   @Delete(':id')
   async delete(@Request() req, @Param('id', ParseIntPipe) id: number) {
-    return this.jobsService.deleteJob(req.user.userId, id);
+    return this.jobsService.deleteJob(req.user.userId, req.user.role, id);
   }
 
   @Get(':id')
@@ -46,20 +46,20 @@ export class JobsController {
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL, Role.TEACHER)
+  @Roles(Role.SCHOOL, Role.TEACHER, Role.ADMIN)
   @Post()
   async create(@Request() req, @Body() createJobDto: CreateJobDto) {
     return this.jobsService.createJob(req.user.userId, createJobDto);
   }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles(Role.SCHOOL, Role.TEACHER)
+  @Roles(Role.SCHOOL, Role.TEACHER, Role.ADMIN)
   @Patch(':id')
   async update(
     @Request() req,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateJobDto: UpdateJobDto,
   ) {
-    return this.jobsService.update(id, req.user.userId, updateJobDto);
+    return this.jobsService.update(id, req.user.userId, req.user.role, updateJobDto);
   }
 }

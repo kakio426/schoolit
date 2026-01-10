@@ -71,9 +71,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
 
         return [
-            ...(user.role !== 'SCHOOL' && user.role !== 'TEACHER' && user.role !== 'BUSINESS'
-                ? [{ label: '대시보드', href: '/dashboard', icon: '🏠' }]
-                : []),
+            { label: '대시보드', href: '/dashboard', icon: '🏠' },
             ...commonItems,
             ...roleItems,
             { label: '커뮤니티', href: '/dashboard/community', icon: '💭' },
