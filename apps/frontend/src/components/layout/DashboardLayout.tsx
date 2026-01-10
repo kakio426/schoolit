@@ -10,6 +10,8 @@ import FooterDisclaimer from './FooterDisclaimer';
 import FeedbackButton from '../ui/FeedbackButton';
 import ComplianceModal from '../ui/ComplianceModal';
 import VerificationPendingView from '../auth/VerificationPendingView';
+import { api } from '@/lib/api';
+import { DASHBOARD_MENU } from '@/config/dashboard-menu';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout, refreshProfile } = useAuth();
@@ -28,54 +30,37 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     // [Optimization] 메뉴 아이템 계산 비용 줄이기 (useMemo)
     const navItems = useMemo(() => {
         if (!user) return [];
-
-        const commonItems = [];
-        // PENDING 상태 처리
         if (user.role === 'PENDING') return [];
 
         if (user.role === 'ADMIN') {
-            return [
-                { label: '대시보드', href: '/dashboard', icon: '🏠' },
-                { label: '인증 관리', href: '/dashboard/admin', icon: '🛡️' },
-                { label: '사용자 관리', href: '/dashboard/admin/users', icon: '👥' },
-                { label: '리뷰 관리', href: '/dashboard/admin/reviews', icon: '⭐' },
-                { label: '공지 발송', href: '/dashboard/admin/notifications', icon: '📣' },
-                { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' },
-                { label: '설정', href: '/dashboard/settings', icon: '⚙️' }
-            ];
+            return DASHBOARD_MENU.ADMIN;
         }
 
-        commonItems.push({ label: '메시지', href: '/dashboard/messages', icon: '💬' });
+        const roleItems = DASHBOARD_MENU[user.role] || [];
+        const commonItems = DASHBOARD_MENU.COMMON.filter(item => item.label !== '메시지'); // '메시지'는 별도 처리 위함이나, 여기선 구조상 COMMON에 포함되어 있음.
 
-        let roleItems: { label: string; href: string; icon: string }[] = [];
+        // 재조립: 대시보드 -> 메시지 -> 역할별 메뉴 -> 커뮤니티 -> 설정
+        // 기존 로직:
+        // 1. 대시보드
+        // 2. 메시지
+        // 3. 역할별 아이템
+        // 4. 커뮤니티
+        // 5. 설정
 
-        if (user.role === 'SCHOOL') {
-            roleItems = [
-                { label: '학교 프로필', href: '/dashboard/school/profile', icon: '🏫' },
-                { label: '채용 공고 관리', href: '/dashboard/jobs', icon: '📋' },
-                { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
-                { label: '인재 찾기', href: '/dashboard/teachers', icon: '🔎' },
-            ];
-        } else if (user.role === 'TEACHER') {
-            roleItems = [
-                { label: '채용 공고 찾기', href: '/dashboard/jobs', icon: '📋' },
-                { label: '지원 현황', href: '/dashboard/applications', icon: '📨' },
-                { label: '프로필 관리', href: '/dashboard/profile', icon: '👤' },
-            ];
-        } else if (user.role === 'BUSINESS') {
-            roleItems = [
-                { label: '행사 공고/입찰', href: '/dashboard/jobs', icon: '🏢' },
-                { label: '견적/계약 관리', href: '/dashboard/applications', icon: '📄' },
-                { label: '업체 정보 수정', href: '/dashboard/profile', icon: '🛠️' },
-            ];
-        }
+        // DASHBOARD_MENU.COMMON에는 대시보드, 메시지, 커뮤니티, 설정이 다 들어있음.
+        // 이를 분리해서 조립해야 함.
+
+        const dashboardItem = DASHBOARD_MENU.COMMON.find(i => i.label === '대시보드')!;
+        const messageItem = DASHBOARD_MENU.COMMON.find(i => i.label === '메시지')!;
+        const communityItem = DASHBOARD_MENU.COMMON.find(i => i.label === '커뮤니티')!;
+        const settingsItem = DASHBOARD_MENU.COMMON.find(i => i.label === '설정')!;
 
         return [
-            { label: '대시보드', href: '/dashboard', icon: '🏠' },
-            ...commonItems,
+            dashboardItem,
+            messageItem,
             ...roleItems,
-            { label: '커뮤니티', href: '/dashboard/community', icon: '💭' },
-            { label: '설정', href: '/dashboard/settings', icon: '⚙️' },
+            communityItem,
+            settingsItem
         ];
     }, [user]);
 

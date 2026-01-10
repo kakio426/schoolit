@@ -9,55 +9,57 @@ datasource db {
 }
 
 model User {
-  id             Int              @id @default(autoincrement())
-  email          String           @unique
-  password       String?          // Nullable for social login users
-  name           String?
-  role           Role
-  provider       Provider         @default(LOCAL)
-  snsId          String?          @map("sns_id") // ID from Social Provider (e.g. Kakao ID)
-  phone          String?          // Contact info, revealed only upon acceptance
-  isBanned       Boolean          @default(false) @map("is_banned")
-  
+  id       Int      @id @default(autoincrement())
+  email    String   @unique
+  password String? // Nullable for social login users
+  name     String?
+  role     Role
+  provider Provider @default(LOCAL)
+  snsId    String?  @map("sns_id") // ID from Social Provider (e.g. Kakao ID)
+  phone    String? // Contact info, revealed only upon acceptance
+  isBanned Boolean  @default(false) @map("is_banned")
+
   // Soft Delete Fields
-  isDeleted      Boolean          @default(false) @map("is_deleted")
-  deletedAt      DateTime?        @map("deleted_at")
-  
+  isDeleted Boolean   @default(false) @map("is_deleted")
+  deletedAt DateTime? @map("deleted_at")
+
   // Storage Abstraction: imageId instead of URL
-  avatarImageId  String?          @map("avatar_image_id")
-  
-  createdAt      DateTime         @default(now()) @map("created_at")
-  updatedAt      DateTime         @updatedAt @map("updated_at")
+  avatarImageId String? @map("avatar_image_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Gamification Fields
-  trustTier       TrustTier     @default(NEW) @map("trust_tier")
-  reputationScore Int           @default(365) @map("reputation_score") // 36.5 deg * 10
+  trustTier       TrustTier   @default(NEW) @map("trust_tier")
+  reputationScore Int         @default(365) @map("reputation_score") // 36.5 deg * 10
   badges          UserBadge[]
 
-  teacherProfile TeacherProfile?
-  schoolProfile  SchoolProfile?
-  applications   JobApplication[]
-  chatRooms      ChatRoom[]
-  messagesSent   ChatMessage[]
-  reviewsSent    Review[]       @relation("ReviewsSent")
-  reviewsReceived Review[]      @relation("ReviewsReceived")
+  teacherProfile  TeacherProfile?
+  schoolProfile   SchoolProfile?
+  applications    JobApplication[]
+  chatRooms       ChatRoom[]
+  messagesSent    ChatMessage[]
+  reviewsSent     Review[]         @relation("ReviewsSent")
+  reviewsReceived Review[]         @relation("ReviewsReceived")
 
   businessProfile BusinessProfile?
 
-  notifications Notification[]
-  feedbacks     Feedback[]
-  notificationSettings Json?  @map("notification_settings") // { newMatch: boolean, messages: boolean, marketing: boolean }
-  
+  notifications        Notification[]
+  feedbacks            Feedback[]
+  notificationSettings Json?          @map("notification_settings") // { newMatch: boolean, messages: boolean, marketing: boolean }
+
   // Email Verification Fields -> for School/Business Step 1
-  verificationCode    String?  @map("verification_code")
+  verificationCode    String?   @map("verification_code")
   verificationExpires DateTime? @map("verification_expires")
-  
+
   // Community Board Relations
-  posts         Post[]
-  comments      Comment[]
-  postLikes     PostLike[]
+  posts     Post[]
+  comments  Comment[]
+  postLikes PostLike[]
 
   @@unique([provider, snsId])
+  @@index([role])
+  @@index([createdAt])
   @@map("users")
 }
 
@@ -65,42 +67,43 @@ model Notification {
   id        Int      @id @default(autoincrement())
   userId    Int      @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      String   // MATCH, APPLICATION, MESSAGE, SYSTEM
+  type      String // MATCH, APPLICATION, MESSAGE, SYSTEM
   title     String
   content   String
   isRead    Boolean  @default(false) @map("is_read")
   link      String?
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   @@map("notifications")
 }
 
 model SchoolProfile {
-  id          Int          @id @default(autoincrement())
-  userId      Int          @unique @map("user_id")
-  user        User         @relation(fields: [userId], references: [id])
-  schoolName  String?      @map("school_name")
-  
+  id         Int     @id @default(autoincrement())
+  userId     Int     @unique @map("user_id")
+  user       User    @relation(fields: [userId], references: [id])
+  schoolName String? @map("school_name")
+
   // New Fields 
-  schoolType  String?      @default("ELEMENTARY") @map("school_type") // ELEMENTARY, MIDDLE, HIGH, SPECIAL, ALTERNATIVE
-  address     String?
-  detailAddress String?    @map("detail_address")
-  phoneNumber String?      @map("phone_number")
-  website     String?
-  homepage    String?      // Alias or alternative link
-  description String?
-  
-  studentCount Int?        @map("student_count") // Approximate number of students
-  logoImage   String?      @map("logo_image")
-  
-  tags        String[]     @default([])
-  isVerified  Boolean      @default(false) @map("is_verified") // <--- ADDED: Phase 1 Security Gate
-  
+  schoolType    String? @default("ELEMENTARY") @map("school_type") // ELEMENTARY, MIDDLE, HIGH, SPECIAL, ALTERNATIVE
+  address       String?
+  detailAddress String? @map("detail_address")
+  phoneNumber   String? @map("phone_number")
+  website       String?
+  homepage      String? // Alias or alternative link
+  description   String?
+
+  studentCount Int?    @map("student_count") // Approximate number of students
+  logoImage    String? @map("logo_image")
+
+  tags       String[] @default([])
+  isVerified Boolean  @default(false) @map("is_verified") // <--- ADDED: Phase 1 Security Gate
+
   jobListings JobListing[]
-  
-  createdAt   DateTime     @default(now()) @map("created_at")
-  updatedAt   DateTime     @updatedAt @map("updated_at")
-  
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([schoolName])
   @@map("school_profiles")
 }
 
@@ -116,81 +119,82 @@ enum JobStatus {
 
 // 2025 Compliance: Workflow Status for Hiring Process
 enum HiringWorkflowStatus {
-  DRAFT           // 초안 작성 중
-  PLAN_APPROVED   // 내부결재 승인 (서식 1 완료)
-  PUBLISHED       // 공고 게시 완료
-  RECEIVING       // 지원서 접수 중
-  SCREENING       // 1차 서류 심사
-  INTERVIEW       // 2차 면접 심사
-  DEMONSTRATION   // 3차 수업 실연 (선택)
-  FINALIZING      // 최종 심사 및 결격사유 조회
-  CONTRACTED      // 계약 완료
-  CANCELLED       // 채용 취소
+  DRAFT // 초안 작성 중
+  PLAN_APPROVED // 내부결재 승인 (서식 1 완료)
+  PUBLISHED // 공고 게시 완료
+  RECEIVING // 지원서 접수 중
+  SCREENING // 1차 서류 심사
+  INTERVIEW // 2차 면접 심사
+  DEMONSTRATION // 3차 수업 실연 (선택)
+  FINALIZING // 최종 심사 및 결격사유 조회
+  CONTRACTED // 계약 완료
+  CANCELLED // 채용 취소
 }
 
 // 2025 Compliance: Hiring Reasons per Guidelines
 enum HiringReason {
-  LEAVE           // 일반 휴직
-  SICK_LEAVE      // 병가
-  MATERNITY       // 출산휴가/육아휴직
-  DISPATCH        // 파견
-  STUDY           // 연수
-  VACANCY         // 결원
-  SEASONAL        // 계절학기
-  OTHER           // 기타
+  LEAVE // 일반 휴직
+  SICK_LEAVE // 병가
+  MATERNITY // 출산휴가/육아휴직
+  DISPATCH // 파견
+  STUDY // 연수
+  VACANCY // 결원
+  SEASONAL // 계절학기
+  OTHER // 기타
 }
 
 model JobListing {
-  id              Int              @id @default(autoincrement())
-  schoolProfileId Int?             @map("school_profile_id")
-  schoolProfile   SchoolProfile?   @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
-  
+  id              Int            @id @default(autoincrement())
+  schoolProfileId Int?           @map("school_profile_id")
+  schoolProfile   SchoolProfile? @relation(fields: [schoolProfileId], references: [id], onDelete: Cascade)
+
   teacherProfileId Int?            @map("teacher_profile_id")
   teacherProfile   TeacherProfile? @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  
-  jobType         JobType          @default(TEACHER_HIRING) @map("job_type")
-  title           String
-  description     String
-  subjects        String[]
-  regions         String[]
-  budget          Int?             @default(0)
-  active          Boolean          @default(true)
-  status          JobStatus        @default(OPEN)
-  
-  // Teacher-specific fields
-  contractPeriod  String?          @map("contract_period")  // "2024.03.01 ~ 2024.08.31"
-  gradeLevel      String[]         @default([]) @map("grade_level")      // ["초등", "중등", "고등"]
-  teachingHours   Int?             @map("teaching_hours")   // 주당 수업 시수
-  
-  // === 2025 COMPLIANCE FIELDS (Gyeonggi-do Guidelines) ===
-  hiringReason       HiringReason?           @map("hiring_reason")       // 채용 사유
-  workflowStatus     HiringWorkflowStatus    @default(DRAFT) @map("workflow_status") // 채용 진행 상태
-  salaryStepLimit    Int?                    @default(14) @map("salary_step_limit")  // 호봉 상한 (명예퇴직자 등 14호봉 제한)
-  originalTeacherName String?                @map("original_teacher_name") // 휴직 교사명 (서식 1용)
-  contractStartDate  DateTime?               @map("contract_start_date")   // 계약 시작일 (정확한 날짜)
-  contractEndDate    DateTime?               @map("contract_end_date")     // 계약 종료일 (정확한 날짜)
-  draftDocumentNumber String?                @map("draft_document_number") // 기안 문서 번호
-  
-  // Evaluation Relations
-  evaluations     Evaluation[]
-  // === END COMPLIANCE FIELDS ===
-  
-  // Event-specific fields
-  eventType       String?          @map("event_type")        // "진로체험", "스포츠데이", "찾아오는 체험학습"
-  eventDuration   String?          @map("event_duration")    // "4교시", "1일", "2일"
-  participantCount String?         @map("participant_count") // "30-50명", "100명 이상"
-  equipmentProvided Boolean?       @default(false) @map("equipment_provided")
-  certifications  String[]         @default([])              // ["교육부 인증", "청소년수련활동 인증"]
-  
-  applications    JobApplication[]
-  internalChecklist Json?      @map("internal_checklist") // { planningCompleted: boolean, announcementPosted: boolean, etc. }
-  
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
 
+  jobType     JobType   @default(TEACHER_HIRING) @map("job_type")
+  title       String
+  description String
+  subjects    String[]
+  regions     String[]
+  budget      Int?      @default(0)
+  active      Boolean   @default(true)
+  status      JobStatus @default(OPEN)
+
+  // Teacher-specific fields
+  contractPeriod String?  @map("contract_period") // "2024.03.01 ~ 2024.08.31"
+  gradeLevel     String[] @default([]) @map("grade_level") // ["초등", "중등", "고등"]
+  teachingHours  Int?     @map("teaching_hours") // 주당 수업 시수
+
+  // === 2025 COMPLIANCE FIELDS (Gyeonggi-do Guidelines) ===
+  hiringReason        HiringReason?        @map("hiring_reason") // 채용 사유
+  workflowStatus      HiringWorkflowStatus @default(DRAFT) @map("workflow_status") // 채용 진행 상태
+  salaryStepLimit     Int?                 @default(14) @map("salary_step_limit") // 호봉 상한 (명예퇴직자 등 14호봉 제한)
+  originalTeacherName String?              @map("original_teacher_name") // 휴직 교사명 (서식 1용)
+  contractStartDate   DateTime?            @map("contract_start_date") // 계약 시작일 (정확한 날짜)
+  contractEndDate     DateTime?            @map("contract_end_date") // 계약 종료일 (정확한 날짜)
+  draftDocumentNumber String?              @map("draft_document_number") // 기안 문서 번호
+
+  // Evaluation Relations
+  evaluations Evaluation[]
+  // === END COMPLIANCE FIELDS ===
+
+  // Event-specific fields
+  eventType         String?  @map("event_type") // "진로체험", "스포츠데이", "찾아오는 체험학습"
+  eventDuration     String?  @map("event_duration") // "4교시", "1일", "2일"
+  participantCount  String?  @map("participant_count") // "30-50명", "100명 이상"
+  equipmentProvided Boolean? @default(false) @map("equipment_provided")
+  certifications    String[] @default([]) // ["교육부 인증", "청소년수련활동 인증"]
+
+  applications      JobApplication[]
+  internalChecklist Json?            @map("internal_checklist") // { planningCompleted: boolean, announcementPosted: boolean, etc. }
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([active, status])
+  @@index([jobType])
   @@map("job_listings")
 }
-
 
 enum CertStatus {
   PENDING
@@ -199,154 +203,154 @@ enum CertStatus {
 }
 
 model TeacherProfile {
-  id             Int             @id @default(autoincrement())
-  userId         Int             @unique @map("user_id")
-  user           User            @relation(fields: [userId], references: [id])
-  bio            String?
-  profileImage   String?         @map("profile_image")
-  subjects       String[]
-  regions        String[]
-  isVerified     Boolean         @default(false) @map("is_verified")
-  
+  id           Int      @id @default(autoincrement())
+  userId       Int      @unique @map("user_id")
+  user         User     @relation(fields: [userId], references: [id])
+  bio          String?
+  profileImage String?  @map("profile_image")
+  subjects     String[]
+  regions      String[]
+  isVerified   Boolean  @default(false) @map("is_verified")
+
   // New Fields
-  teacherType    String?         @map("teacher_type") // REGULAR, FIXED_TERM, INSTRUCTOR, etc.
-  isSearchable   Boolean         @default(false) @map("is_searchable")
-  targetGrades   String[]        @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
-  bankAccount    String?         @map("bank_account")
-  
-  transientDocuments Json?       @map("transient_documents") // [{ type: 'BANK', url: '...', expiresAt: '...' }]
-  checklist          Json?       // { criminalRecord: boolean, drugTest: boolean }
-  
+  teacherType  String?  @map("teacher_type") // REGULAR, FIXED_TERM, INSTRUCTOR, etc.
+  isSearchable Boolean  @default(false) @map("is_searchable")
+  targetGrades String[] @default([]) @map("target_grades") // ELEMENTARY_LOW, ELEMENTARY_HIGH, MIDDLE, HIGH
+  bankAccount  String?  @map("bank_account")
+
+  transientDocuments Json? @map("transient_documents") // [{ type: 'BANK', url: '...', expiresAt: '...' }]
+  checklist          Json? // { criminalRecord: boolean, drugTest: boolean }
+
   // Relations
-  experiences    TeacherExperience[]
-  educations     TeacherEducation[]
-  links          TeacherLink[]
-  licenses       TeacherLicense[]
-  jobListings    JobListing[]
-  
-  createdAt      DateTime        @default(now()) @map("created_at")
-  updatedAt      DateTime        @updatedAt @map("updated_at")
+  experiences TeacherExperience[]
+  educations  TeacherEducation[]
+  links       TeacherLink[]
+  licenses    TeacherLicense[]
+  jobListings JobListing[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("teacher_profiles")
 }
 
 model TeacherExperience {
-  id              Int            @id @default(autoincrement())
-  teacherProfileId Int           @map("teacher_profile_id")
-  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  
-  title           String
-  organization    String
-  startDate       DateTime       @map("start_date")
-  endDate         DateTime?      @map("end_date")
-  isCurrent       Boolean        @default(false) @map("is_current")
-  description     String?
-  
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  
+  id               Int            @id @default(autoincrement())
+  teacherProfileId Int            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  title        String
+  organization String
+  startDate    DateTime  @map("start_date")
+  endDate      DateTime? @map("end_date")
+  isCurrent    Boolean   @default(false) @map("is_current")
+  description  String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("teacher_experiences")
 }
 
 model TeacherEducation {
-  id              Int            @id @default(autoincrement())
-  teacherProfileId Int           @map("teacher_profile_id")
-  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  
-  schoolName      String         @map("school_name")
-  degree          String         // Bachelor, Master, Doctor, HighSchool
-  major           String?
-  graduationStatus String        @default("GRADUATED") @map("graduation_status") // GRADUATED, ATTENDING, LEAVE
-  startDate       DateTime       @map("start_date")
-  endDate         DateTime?      @map("end_date")
-  
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  
+  id               Int            @id @default(autoincrement())
+  teacherProfileId Int            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  schoolName       String    @map("school_name")
+  degree           String // Bachelor, Master, Doctor, HighSchool
+  major            String?
+  graduationStatus String    @default("GRADUATED") @map("graduation_status") // GRADUATED, ATTENDING, LEAVE
+  startDate        DateTime  @map("start_date")
+  endDate          DateTime? @map("end_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("teacher_educations")
 }
 
 model TeacherLink {
-  id              Int            @id @default(autoincrement())
-  teacherProfileId Int           @map("teacher_profile_id")
-  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  
-  title           String         // Youtube, Blog, Portfolio
-  url             String
-  
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  
+  id               Int            @id @default(autoincrement())
+  teacherProfileId Int            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  title String // Youtube, Blog, Portfolio
+  url   String
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("teacher_links")
 }
 
 model TeacherLicense {
-  id              Int            @id @default(autoincrement())
-  teacherProfileId Int           @map("teacher_profile_id")
-  teacherProfile  TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
-  
-  name            String
-  issuer          String
-  date            String         // YYYY-MM or YYYY-MM-DD
-  
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
-  
+  id               Int            @id @default(autoincrement())
+  teacherProfileId Int            @map("teacher_profile_id")
+  teacherProfile   TeacherProfile @relation(fields: [teacherProfileId], references: [id], onDelete: Cascade)
+
+  name   String
+  issuer String
+  date   String // YYYY-MM or YYYY-MM-DD
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("teacher_licenses")
 }
 
 enum ApplicationStatus {
   PENDING
   DOCUMENT_SCREENING // 서류 심사
-  INTERVIEWING       // 면접/시연
-  VERIFICATION       // 결격 사유 조회/신원 대조
-  HIRED              // 최종 채용
-  REJECTED           // 탈락
-  
+  INTERVIEWING // 면접/시연
+  VERIFICATION // 결격 사유 조회/신원 대조
+  HIRED // 최종 채용
+  REJECTED // 탈락
+
   // Event/Procurement Specific
-  BIDDING            // 입찰/업체선정
-  CONTRACTING        // 계약체결
-  EXECUTING          // 행사/업무수행
-  PAYMENT_COMPLETED  // 대금지급완료
+  BIDDING // 입찰/업체선정
+  CONTRACTING // 계약체결
+  EXECUTING // 행사/업무수행
+  PAYMENT_COMPLETED // 대금지급완료
 }
 
 model JobApplication {
-  id         Int               @id @default(autoincrement())
-  jobId      Int               @map("job_id")
-  jobListing JobListing        @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  userId     Int               @map("user_id")
-  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status     ApplicationStatus @default(PENDING)
-  message    String?
-  isSuggestion Boolean         @default(false) @map("is_suggestion") // true if initiated by School
-  
-  createdAt  DateTime          @default(now()) @map("created_at")
-  updatedAt  DateTime          @updatedAt @map("updated_at")
+  id           Int               @id @default(autoincrement())
+  jobId        Int               @map("job_id")
+  jobListing   JobListing        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  userId       Int               @map("user_id")
+  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       ApplicationStatus @default(PENDING)
+  message      String?
+  isSuggestion Boolean           @default(false) @map("is_suggestion") // true if initiated by School
 
-  viewedAt     DateTime?         @map("viewed_at")
-  internalNote String?           @map("internal_note")
-  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  viewedAt     DateTime? @map("viewed_at")
+  internalNote String?   @map("internal_note")
+
   // Business/Bidding fields
-  cost         Int?              // 견적 금액
-  contactEmail String?           @map("contact_email")
-  contactPhone String?           @map("contact_phone")
-  attachmentUrl String?          @map("attachment_url") // 견적서 파일 경로
-  
+  cost          Int? // 견적 금액
+  contactEmail  String? @map("contact_email")
+  contactPhone  String? @map("contact_phone")
+  attachmentUrl String? @map("attachment_url") // 견적서 파일 경로
+
   // 2025 Compliance: Evaluations relation
-  evaluations  Evaluation[]
+  evaluations Evaluation[]
 
   @@unique([jobId, userId])
   @@map("job_applications")
 }
 
 model ChatRoom {
-  id        Int           @id @default(autoincrement())
-  jobId     Int?          @map("job_id") // Optional: link to a specific job context
-  users     User[]        // Implicit many-to-many
-  messages  ChatMessage[]
-  
-  createdAt DateTime      @default(now()) @map("created_at")
-  
+  id       Int           @id @default(autoincrement())
+  jobId    Int?          @map("job_id") // Optional: link to a specific job context
+  users    User[] // Implicit many-to-many
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
   // Custom identifying logic might be needed, e.g. room between user A and user B
   @@map("chat_rooms")
 }
@@ -360,7 +364,7 @@ model ChatMessage {
   content    String
   read       Boolean  @default(false)
 
-  createdAt  DateTime @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@map("chat_messages")
 }
@@ -380,25 +384,25 @@ enum Provider {
 }
 
 model Review {
-  id          Int      @id @default(autoincrement())
-  senderId    Int      @map("sender_id")
-  sender      User     @relation("ReviewsSent", fields: [senderId], references: [id])
-  receiverId  Int      @map("receiver_id")
-  receiver    User     @relation("ReviewsReceived", fields: [receiverId], references: [id])
-  jobId       Int?     @map("job_id") // Optional link to specific job context
-  rating      Int?     // 1-5, Optional (mostly for Company)
-  content     String?  // Text review
+  id            Int     @id @default(autoincrement())
+  senderId      Int     @map("sender_id")
+  sender        User    @relation("ReviewsSent", fields: [senderId], references: [id])
+  receiverId    Int     @map("receiver_id")
+  receiver      User    @relation("ReviewsReceived", fields: [receiverId], references: [id])
+  jobId         Int?    @map("job_id") // Optional link to specific job context
+  rating        Int? // 1-5, Optional (mostly for Company)
+  content       String? // Text review
   reMatchIntent Boolean @default(true) @map("re_match_intent") // "다시 일하고 싶어요"
-  
+
   // Storage Abstraction: imageIds instead of URLs
-  imageIds    String[] @default([]) @map("image_ids")
-  
-  keywords    ReviewKeyword[] // Many-to-many via implicit table or relation
+  imageIds String[] @default([]) @map("image_ids")
 
-  createdAt   DateTime @default(now()) @map("created_at")
+  keywords ReviewKeyword[] // Many-to-many via implicit table or relation
 
-  @@map("reviews")
+  createdAt DateTime @default(now()) @map("created_at")
+
   @@index([receiverId]) // Index for fetching profile reviews
+  @@map("reviews")
 }
 
 model ReviewKeyword {
@@ -410,40 +414,40 @@ model ReviewKeyword {
 }
 
 model BusinessProfile {
-  id               Int      @id @default(autoincrement())
-  userId           Int      @unique @map("user_id")
-  user             User     @relation(fields: [userId], references: [id])
-  companyName      String   @map("company_name")
-  registrationNum  String?  @map("registration_num")
-  s2bNumber        String?  @map("s2b_number")
-  registrationFile String?  @map("registration_file")
-  description      String?
-  website          String?
-  address          String?
-  canIssueTaxInvoice Boolean @default(false) @map("can_issue_tax_invoice")
-  categories       String[]
-  portfolios       BusinessPortfolio[]
-  
-  isVerified       Boolean  @default(false) @map("is_verified")
-  bankAccount      String?  @map("bank_account")
-  checklist        Json?    // Added checklist field
+  id                 Int                 @id @default(autoincrement())
+  userId             Int                 @unique @map("user_id")
+  user               User                @relation(fields: [userId], references: [id])
+  companyName        String              @map("company_name")
+  registrationNum    String?             @map("registration_num")
+  s2bNumber          String?             @map("s2b_number")
+  registrationFile   String?             @map("registration_file")
+  description        String?
+  website            String?
+  address            String?
+  canIssueTaxInvoice Boolean             @default(false) @map("can_issue_tax_invoice")
+  categories         String[]
+  portfolios         BusinessPortfolio[]
 
-  createdAt        DateTime @default(now()) @map("created_at")
-  updatedAt        DateTime @updatedAt @map("updated_at")
+  isVerified  Boolean @default(false) @map("is_verified")
+  bankAccount String? @map("bank_account")
+  checklist   Json? // Added checklist field
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("business_profiles")
 }
 
 model Feedback {
-  id        Int      @id @default(autoincrement())
-  userId    Int?     @map("user_id") // Nullable for anonymous or future extensions
-  user      User?    @relation(fields: [userId], references: [id])
-  
-  category  String   // 'PROPOSAL', 'BUG', 'PRAISE', 'INQUIRY'
-  content   String
-  reply     String?  // Admin's reply
-  status    String   @default("PENDING") // 'PENDING', 'ANSWERED'
-  
+  id     Int   @id @default(autoincrement())
+  userId Int?  @map("user_id") // Nullable for anonymous or future extensions
+  user   User? @relation(fields: [userId], references: [id])
+
+  category String // 'PROPOSAL', 'BUG', 'PRAISE', 'INQUIRY'
+  content  String
+  reply    String? // Admin's reply
+  status   String  @default("PENDING") // 'PENDING', 'ANSWERED'
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -457,9 +461,9 @@ model BusinessPortfolio {
   title             String
   description       String?
   images            String[]
-  
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("business_portfolios")
 }
@@ -469,73 +473,73 @@ model BusinessPortfolio {
 // ================================
 
 model Board {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String?
-  category    String   @unique // NOTICE, FREE, QNA, REVIEW_BOARD
-  isPublic    Boolean  @default(true) @map("is_public")
-  
-  posts       Post[]
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  category    String  @unique // NOTICE, FREE, QNA, REVIEW_BOARD
+  isPublic    Boolean @default(true) @map("is_public")
+
+  posts Post[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@map("boards")
 }
 
 model Post {
-  id        Int      @id @default(autoincrement())
-  boardId   Int      @map("board_id")
-  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  authorId  Int      @map("author_id")
-  author    User     @relation(fields: [authorId], references: [id])
-  
-  title     String
-  content   String
-  imageIds  String[] @default([]) @map("image_ids") // Storage abstraction: ID only
-  views     Int      @default(0)
-  isPinned  Boolean  @default(false) @map("is_pinned")
-  
-  comments  Comment[]
-  likes     PostLike[]
-  
+  id       Int   @id @default(autoincrement())
+  boardId  Int   @map("board_id")
+  board    Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  authorId Int   @map("author_id")
+  author   User  @relation(fields: [authorId], references: [id])
+
+  title    String
+  content  String
+  imageIds String[] @default([]) @map("image_ids") // Storage abstraction: ID only
+  views    Int      @default(0)
+  isPinned Boolean  @default(false) @map("is_pinned")
+
+  comments Comment[]
+  likes    PostLike[]
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  
-  @@map("posts")
+
   @@index([boardId])
   @@index([authorId])
+  @@map("posts")
 }
 
 model Comment {
-  id        Int       @id @default(autoincrement())
-  postId    Int       @map("post_id")
-  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  authorId  Int       @map("author_id")
-  author    User      @relation(fields: [authorId], references: [id])
-  
-  content   String
-  parentId  Int?      @map("parent_id") // For nested comments (replies)
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("CommentReplies")
-  
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  
-  @@map("comments")
+  id       Int  @id @default(autoincrement())
+  postId   Int  @map("post_id")
+  post     Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  authorId Int  @map("author_id")
+  author   User @relation(fields: [authorId], references: [id])
+
+  content  String
+  parentId Int?      @map("parent_id") // For nested comments (replies)
+  parent   Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@index([postId])
   @@index([authorId])
+  @@map("comments")
 }
 
 model PostLike {
-  id        Int      @id @default(autoincrement())
-  postId    Int      @map("post_id")
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id])
-  
+  id     Int  @id @default(autoincrement())
+  postId Int  @map("post_id")
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId Int  @map("user_id")
+  user   User @relation(fields: [userId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
-  
+
   @@unique([postId, userId]) // One like per user per post
   @@map("post_likes")
 }
@@ -545,40 +549,40 @@ model PostLike {
 // ============================================
 
 enum EvaluationType {
-  DOCUMENT       // 1차 서류 심사 (Seosik 12)
-  INTERVIEW      // 2차 면접 심사 (Seosik 13)
-  DEMONSTRATION  // 3차 수업 실연 (Seosik 14)
+  DOCUMENT // 1차 서류 심사 (Seosik 12)
+  INTERVIEW // 2차 면접 심사 (Seosik 13)
+  DEMONSTRATION // 3차 수업 실연 (Seosik 14)
 }
 
 model Evaluation {
-  id            Int             @id @default(autoincrement())
-  jobListingId  Int             @map("job_listing_id")
-  jobListing    JobListing      @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
-  
-  applicationId Int             @map("application_id")
-  application   JobApplication  @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  
-  evaluatorName String          @map("evaluator_name")  // 심사위원 이름 (익명 가능)
-  evaluatorRole String?         @map("evaluator_role")  // 교장, 교감, 외부 위원 등
-  
-  type          EvaluationType  // 심사 유형
-  totalScore    Float           @default(0) @map("total_score")  // 합계 점수
-  
+  id           Int        @id @default(autoincrement())
+  jobListingId Int        @map("job_listing_id")
+  jobListing   JobListing @relation(fields: [jobListingId], references: [id], onDelete: Cascade)
+
+  applicationId Int            @map("application_id")
+  application   JobApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  evaluatorName String  @map("evaluator_name") // 심사위원 이름 (익명 가능)
+  evaluatorRole String? @map("evaluator_role") // 교장, 교감, 외부 위원 등
+
+  type       EvaluationType // 심사 유형
+  totalScore Float          @default(0) @map("total_score") // 합계 점수
+
   // Detailed scores stored as JSON for flexibility
   // Example: { "전공": 6, "학위": 6, "경력": 5, "연수": 4, "자기소개서": 6 }
-  criteriaScores Json?          @map("criteria_scores")
-  
-  comment       String?         // 심사평
-  
+  criteriaScores Json? @map("criteria_scores")
+
+  comment String? // 심사평
+
   // National Merit Bonus (국가유공자 가산점)
-  meritBonus    Float           @default(0) @map("merit_bonus")
-  
-  createdAt     DateTime        @default(now()) @map("created_at")
-  updatedAt     DateTime        @updatedAt @map("updated_at")
-  
-  @@map("evaluations")
+  meritBonus Float @default(0) @map("merit_bonus")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@index([jobListingId])
   @@index([applicationId])
+  @@map("evaluations")
 }
 
 // ============================================
@@ -593,21 +597,21 @@ enum TrustTier {
 }
 
 enum BadgeType {
-  FAST_RESPONDER    // 빠른 응답
-  PROFILE_MASTER    // 프로필 100%
-  VETERAN           // 거래 다수
-  HIGH_RETURN       // 높은 재계약률/만족도
-  GOOD_PAYER        // (School) 결제 우수
-  S2B_CERTIFIED     // (Business) S2B 인증
+  FAST_RESPONDER // 빠른 응답
+  PROFILE_MASTER // 프로필 100%
+  VETERAN // 거래 다수
+  HIGH_RETURN // 높은 재계약률/만족도
+  GOOD_PAYER // (School) 결제 우수
+  S2B_CERTIFIED // (Business) S2B 인증
 }
 
 model UserBadge {
-  id        Int       @id @default(autoincrement())
-  userId    Int       @map("user_id")
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  type      BadgeType
-  earnedAt  DateTime  @default(now()) @map("earned_at")
-  
+  id       Int       @id @default(autoincrement())
+  userId   Int       @map("user_id")
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type     BadgeType
+  earnedAt DateTime  @default(now()) @map("earned_at")
+
   @@unique([userId, type])
   @@map("user_badges")
 }

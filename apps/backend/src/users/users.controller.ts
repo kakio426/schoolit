@@ -13,6 +13,8 @@ import {
   Param,
   ParseIntPipe,
   Delete,
+  Query,
+  DefaultValuePipe,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -192,8 +194,11 @@ export class UserController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)
   @Get('admin/all-users')
-  async getAllUsers() {
-    return this.userService.getAllUsers();
+  async getAllUsers(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+  ) {
+    return this.userService.getAllUsers(page, limit);
   }
 
   // Admin-only: Reset any user by ID

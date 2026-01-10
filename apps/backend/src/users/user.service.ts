@@ -457,21 +457,35 @@ export class UserService {
     });
   }
 
-  async getAllUsers() {
-    return this.prisma.user.findMany({
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        provider: true,
-        phone: true,
-        createdAt: true,
-        schoolProfile: { select: { schoolName: true } },
-        businessProfile: { select: { companyName: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+  async getAllUsers(page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        skip,
+        take: limit,
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          provider: true,
+          phone: true,
+          createdAt: true,
+          schoolProfile: { select: { schoolName: true } },
+          businessProfile: { select: { companyName: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.user.count(),
+    ]);
+
+    return {
+      data,
+      total,
+      page,
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
   async resetTestUser(userId: number) {
