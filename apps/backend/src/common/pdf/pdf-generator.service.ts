@@ -167,12 +167,37 @@ export class PdfGeneratorService {
       font: customFont,
     });
 
-    page.drawText('서명: _____________', {
-      x: margin + (width - 2 * margin) / 2 + 30,
-      y: yPos - 50,
-      size: 9,
-      font: customFont,
-    });
+    // 🚀 서명 이미지 임베딩 로직 (Signature Image Embedding)
+    if (data.signatureImage && data.signatureImage.startsWith('data:image')) {
+      try {
+        // "data:image/png;base64,..." 형식을 버퍼로 변환
+        const imageBytes = Buffer.from(data.signatureImage.split(',')[1], 'base64');
+        const embeddedImage = await pdfDoc.embedPng(imageBytes);
+
+        // 서명란 위치에 이미지 그리기 (좌표 조정)
+        const sigWidth = 80;
+        const sigHeight = 40;
+
+        page.drawImage(embeddedImage, {
+          x: margin + (width - 2 * margin) / 2 + 50, // 서명란 X 좌표
+          y: yPos - 60,                              // 서명란 Y 좌표
+          width: sigWidth,
+          height: sigHeight,
+        });
+      } catch (e) {
+        console.error("서명 이미지 처리 실패:", e);
+        // 실패 시 대체 텍스트 표시
+        page.drawText('(서명 이미지 오류)', { x: margin + (width - 2 * margin) / 2 + 30, y: yPos - 50, size: 8, font: customFont, color: rgb(1, 0, 0) });
+      }
+    } else {
+      // 이미지가 없으면 밑줄 유지 (서명 대기 상태)
+      page.drawText('서명: _____________', {
+        x: margin + (width - 2 * margin) / 2 + 30,
+        y: yPos - 50,
+        size: 9,
+        font: customFont,
+      });
+    }
 
     yPos -= 100;
 

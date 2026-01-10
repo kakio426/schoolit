@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { FileText, Check, X, Download, PenTool, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import { FileText, Check, X, Download, AlertTriangle, ChevronLeft, ChevronRight } from 'lucide-react';
+import SignaturePad from '@/components/ui/SignaturePad';
 
 interface ContractSignViewProps {
     contractId: string;
@@ -26,25 +27,23 @@ export default function ContractSignView({
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages] = useState(3); // Mock - In real app, get from PDF
     const [isAgreed, setIsAgreed] = useState(false);
-    const [signatureName, setSignatureName] = useState('');
+    const [signatureData, setSignatureData] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [showSignatureModal, setShowSignatureModal] = useState(false);
 
     const handleSubmitSignature = async () => {
         if (!isAgreed) {
             alert('계약 내용에 동의해주세요.');
             return;
         }
-        if (!signatureName.trim()) {
-            alert('서명자 성명을 입력해주세요.');
+        if (!signatureData) {
+            alert('서명 패드에 서명을 완료해주세요.');
             return;
         }
 
         setIsSubmitting(true);
         try {
-            // In a real app, you might use a canvas signature
-            // For mobile simplicity, we use a typed signature + checkbox
-            await onSign(`TYPED_SIGNATURE:${signatureName}`, new Date());
+            // Pass the base64 signature image data
+            await onSign(signatureData, new Date());
             alert('계약서 서명이 완료되었습니다!');
             onClose();
         } catch (e) {
@@ -143,28 +142,26 @@ export default function ContractSignView({
                     </span>
                 </label>
 
-                {/* Signature Input */}
-                <div className="space-y-2">
-                    <label className="text-xs font-bold text-foreground-muted uppercase">서명자 성명 (직접 입력)</label>
-                    <div className="relative">
-                        <input
-                            type="text"
-                            value={signatureName}
-                            onChange={(e) => setSignatureName(e.target.value)}
-                            placeholder="본인 이름을 정확히 입력해주세요"
-                            className="w-full px-4 py-4 bg-background border border-border rounded-xl outline-none focus:ring-2 focus:ring-primary/20 font-bold text-lg text-center"
+                {/* Signature Input (Real Signature Pad) */}
+                <div className="space-y-3">
+                    <label className="text-xs font-bold text-foreground-muted uppercase">서명 (Signature)</label>
+                    <div className="border border-slate-300 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm bg-white">
+                        <SignaturePad
+                            onSave={(dataUrl) => setSignatureData(dataUrl)}
+                            onClear={() => setSignatureData(null)}
                         />
-                        <PenTool className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-foreground-muted" />
                     </div>
-                    <p className="text-xs text-foreground-muted text-center">
-                        전자서명법에 따라 타이핑 서명도 법적 효력이 있습니다.
+
+                    <p className="text-xs text-foreground-muted text-center flex items-center justify-center gap-1">
+                        <AlertTriangle className="w-3 h-3 text-amber-500" />
+                        위 영역에 정자로 서명해주세요. (전자서명법 효력 인정)
                     </p>
                 </div>
 
                 {/* Submit Button */}
                 <button
                     onClick={handleSubmitSignature}
-                    disabled={isSubmitting || !isAgreed || !signatureName.trim()}
+                    disabled={isSubmitting || !isAgreed || !signatureData}
                     className="w-full py-5 bg-primary text-white rounded-2xl font-black text-lg shadow-xl shadow-primary/30 hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                     {isSubmitting ? (
