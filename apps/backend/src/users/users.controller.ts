@@ -31,15 +31,33 @@ import { extname, join } from 'path';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { GamificationService } from './gamification.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private gamificationService: GamificationService,
+  ) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
   async getProfile(@Request() req) {
-    return this.userService.getProfileWithStats(req.user.userId, req.user.userId);
+    // 1. Get Profile with Stats
+    const user = await this.userService.getProfileWithStats(req.user.userId, req.user.userId);
+
+    if (!user) return null;
+
+    // 2. Calculate Gamification Data
+    const completeness = await this.gamificationService.calculateProfileCompleteness(req.user.userId);
+    const tier = await this.gamificationService.updateTrustTier(req.user.userId); // Auto-update tier
+
+    // 3. Merge
+    return {
+      ...user,
+      profileCompleteness: completeness,
+      trustTier: tier,
+    };
   }
 
   @UseGuards(AuthGuard('jwt'))

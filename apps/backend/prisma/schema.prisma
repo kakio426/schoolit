@@ -29,6 +29,11 @@ model User {
   createdAt      DateTime         @default(now()) @map("created_at")
   updatedAt      DateTime         @updatedAt @map("updated_at")
 
+  // Gamification Fields
+  trustTier       TrustTier     @default(NEW) @map("trust_tier")
+  reputationScore Int           @default(365) @map("reputation_score") // 36.5 deg * 10
+  badges          UserBadge[]
+
   teacherProfile TeacherProfile?
   schoolProfile  SchoolProfile?
   applications   JobApplication[]
@@ -574,4 +579,35 @@ model Evaluation {
   @@map("evaluations")
   @@index([jobListingId])
   @@index([applicationId])
+}
+
+// ============================================
+// GAMIFICATION SYSTEM
+// ============================================
+
+enum TrustTier {
+  NEW
+  VERIFIED
+  TRUSTED
+  TOP_RATED
+}
+
+enum BadgeType {
+  FAST_RESPONDER    // 빠른 응답
+  PROFILE_MASTER    // 프로필 100%
+  VETERAN           // 거래 다수
+  HIGH_RETURN       // 높은 재계약률/만족도
+  GOOD_PAYER        // (School) 결제 우수
+  S2B_CERTIFIED     // (Business) S2B 인증
+}
+
+model UserBadge {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      BadgeType
+  earnedAt  DateTime  @default(now()) @map("earned_at")
+  
+  @@unique([userId, type])
+  @@map("user_badges")
 }

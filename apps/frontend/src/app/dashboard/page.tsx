@@ -6,6 +6,8 @@ import StatsSection from './components/StatsSection';
 import RecentActivitySection from './components/RecentActivitySection';
 import DashboardHeader from './components/DashboardHeader';
 
+import GamificationSideWidget from './components/GamificationSideWidget';
+
 export const metadata: Metadata = {
     title: 'Dashboard | Schoolit',
     description: '스쿨잇 대시보드 - 채용 및 매칭 관리',
@@ -56,6 +58,9 @@ export default function DashboardPage() {
 
                     {/* Side Widgets (Static/Cached Content) */}
                     <div className="space-y-6">
+                        {/* Gamification Widget */}
+                        <GamificationSideWidget />
+
                         <h2 className="text-xl font-bold text-slate-900 dark:text-white">
                             알림 & 공지
                         </h2>

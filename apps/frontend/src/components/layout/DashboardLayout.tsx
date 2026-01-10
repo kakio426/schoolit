@@ -120,8 +120,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             key={item.label}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${isActive
-                                    ? 'bg-primary text-white shadow-md shadow-primary/20 font-semibold'
-                                    : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900/50 hover:text-slate-900 dark:hover:text-white'
+                                ? 'bg-primary text-white shadow-md shadow-primary/20 font-semibold'
+                                : 'text-slate-600 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-zinc-900/50 hover:text-slate-900 dark:hover:text-white'
                                 }`}
                         >
                             <span className={`text-xl ${isActive ? '' : 'opacity-70 group-hover:opacity-100 grayscale group-hover:grayscale-0'}`}>
@@ -251,22 +251,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </header>
 
                 <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    {user.role === 'SCHOOL' && !user.schoolProfile?.isVerified && !user.verificationCode ? (
-                        <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
-                            <div className="text-6xl mb-4 grayscale opacity-80">🏫</div>
-                            <h2 className="text-2xl font-bold">학교 인증이 필요합니다</h2>
-                            <p className="text-slate-500 dark:text-zinc-400 max-w-md">
-                                신뢰할 수 있는 매칭을 위해 학교 이메일 인증을 완료해주세요.
-                            </p>
-                            <button
-                                onClick={() => router.push('/onboarding/email-verify')}
-                                className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20"
-                            >
-                                이메일 인증하러 가기
-                            </button>
-                        </div>
-                    ) : user.role === 'SCHOOL' && !user.schoolProfile?.isVerified && user.verificationCode ? (
-                        <VerificationPendingView />
+                    {/* Bypass verification for test accounts */}
+                    {(user.role === 'SCHOOL' && !user.schoolProfile?.isVerified && user.email !== 'school@test.com') ? (
+                        !user.verificationCode ? (
+                            <div className="flex flex-col items-center justify-center h-[60vh] text-center space-y-4">
+                                <div className="text-6xl mb-4 grayscale opacity-80">🏫</div>
+                                <h2 className="text-2xl font-bold">학교 인증이 필요합니다</h2>
+                                <p className="text-slate-500 dark:text-zinc-400 max-w-md">
+                                    신뢰할 수 있는 매칭을 위해 학교 이메일 인증을 완료해주세요.
+                                </p>
+                                <button
+                                    onClick={() => router.push('/onboarding/email-verify')}
+                                    className="px-6 py-3 bg-primary text-white rounded-xl font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20"
+                                >
+                                    이메일 인증하러 가기
+                                </button>
+                            </div>
+                        ) : (
+                            <VerificationPendingView />
+                        )
                     ) : (
                         children
                     )}

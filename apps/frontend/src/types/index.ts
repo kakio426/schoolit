@@ -116,6 +116,29 @@ export interface User {
     schoolProfile?: SchoolProfile;
     createdAt?: string;
     updatedAt?: string;
+    // Gamification
+    trustTier?: 'NEW' | 'VERIFIED' | 'TRUSTED' | 'TOP_RATED';
+    reputationScore?: number;
+    profileCompleteness?: {
+        percentage: number;
+        missingFields: string[];
+    };
+    badges?: UserBadge[];
+}
+
+export type BadgeType =
+    | 'FAST_RESPONDER'
+    | 'PROFILE_MASTER'
+    | 'VETERAN'
+    | 'HIGH_RETURN'
+    | 'GOOD_PAYER'
+    | 'S2B_CERTIFIED';
+
+export interface UserBadge {
+    id: number;
+    userId: number;
+    type: BadgeType;
+    earnedAt: string;
 }
 
 export interface ChatRoom {

@@ -64,9 +64,6 @@ export default function SettingsPage() {
                                     </div>
                                 </div>
                             </div>
-                            <button className="px-6 py-3 bg-primary/10 text-primary font-bold rounded-xl hover:bg-primary/20 transition-all text-xs">
-                                비밀번호 변경하기
-                            </button>
                         </div>
                     </section>
 
@@ -149,7 +146,7 @@ export default function SettingsPage() {
                         </div>
                     </section>
                 </div>
-            </div>
-        </DashboardLayout>
+            </div >
+        </DashboardLayout >
     );
 }

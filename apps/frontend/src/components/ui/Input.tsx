@@ -21,11 +21,11 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
                     id={inputId}
                     ref={ref}
                     className={`
-            flex w-full rounded-xl border bg-white px-4 py-3 text-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-slate-400 
-            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-slate-900 dark:text-white
+            flex w-full rounded-xl border border-input bg-background px-4 py-3 text-sm transition-all file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground 
+            focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50
             ${error
-                            ? 'border-red-500 focus-visible:ring-red-500/50'
-                            : 'border-slate-200 dark:border-slate-700 focus-visible:border-primary focus-visible:ring-primary/30'}
+                            ? 'border-error focus-visible:ring-error/50'
+                            : ''}
             ${className}
           `}
                     {...props}

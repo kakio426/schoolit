@@ -4,6 +4,8 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 
+import { TrustBadge } from '@/components/gamification/TrustBadge';
+
 export default function DashboardHeader() {
     const { user } = useAuth();
     const router = useRouter();
@@ -20,10 +22,13 @@ export default function DashboardHeader() {
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                    대시보드
-                </h1>
-                <p className="text-slate-500 dark:text-slate-400 mt-1">
+                <div className="flex items-center gap-3 mb-1">
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">
+                        반갑습니다, {user?.name}님
+                    </h1>
+                    {user?.trustTier && <TrustBadge tier={user.trustTier} showLabel />}
+                </div>
+                <p className="text-muted-foreground">
                     {getWelcomeMessage()}
                 </p>
             </div>
