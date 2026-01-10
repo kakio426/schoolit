@@ -4,6 +4,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
+  console.log(`[Bootstrap] Starting app in ${process.env.NODE_ENV} mode...`);
 
   const app = await NestFactory.create(AppModule);
 
@@ -11,13 +12,14 @@ async function bootstrap() {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (isProduction) {
+    const frontendUrl = process.env.FRONTEND_URL || 'https://schoolit.shop';
     app.enableCors({
-      origin: process.env.FRONTEND_URL || 'https://schoolit.shop',
+      origin: [frontendUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'],
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       allowedHeaders: 'Content-Type, Accept, Authorization',
     });
-    console.log(`CORS enabled for production: ${process.env.FRONTEND_URL}`);
+    console.log(`CORS enabled for production: ${frontendUrl} and localhost`);
   } else {
     // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
     app.enableCors({
