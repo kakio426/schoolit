@@ -14,12 +14,22 @@ async function bootstrap() {
   if (isProduction) {
     const frontendUrl = process.env.FRONTEND_URL || 'https://schoolit.shop';
     app.enableCors({
-      origin: [frontendUrl, 'http://localhost:3000', 'http://127.0.0.1:3000'],
+      origin: (requestOrigin, callback) => {
+        const allowedOrigins = [frontendUrl, 'https://schoolit.shop', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+
+        // !requestOrigin은 Postman이나 서버 간 통신일 때 등 Origin 헤더가 없을 경우 허용
+        if (!requestOrigin || allowedOrigins.includes(requestOrigin)) {
+          callback(null, true);
+        } else {
+          console.warn(`[CORS Blocked] Request Origin: ${requestOrigin}`);
+          callback(null, false); // Block
+        }
+      },
       credentials: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
       allowedHeaders: 'Content-Type, Accept, Authorization',
     });
-    console.log(`CORS enabled for production: ${frontendUrl} and localhost`);
+    console.log(`[Bootstrap] CORS enabled for production with whitelist`);
   } else {
     // Failsafe: Allow ANY origin and disable credentials (cookies) since we use Bearer tokens.
     app.enableCors({
