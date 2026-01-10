@@ -37,7 +37,7 @@ export class JobsController {
   @Roles(Role.SCHOOL, Role.TEACHER)
   @Delete(':id')
   async delete(@Request() req, @Param('id', ParseIntPipe) id: number) {
-    return this.jobsService.remove(id, req.user.userId);
+    return this.jobsService.deleteJob(req.user.userId, id);
   }
 
   @Get(':id')

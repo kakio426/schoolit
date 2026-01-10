@@ -124,38 +124,43 @@ export class JobsService {
     return job;
   }
 
+  // [Fix] 누락되었던 update 메서드 복구 및 권한 체크 추가
   async update(id: number, userId: number, data: any) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id },
-      include: { schoolProfile: true, teacherProfile: true },
+      select: { schoolProfile: { select: { userId: true } }, teacherProfile: { select: { userId: true } } },
     });
 
-    if (!job) throw new NotFoundException('해당 공고를 찾을 수 없습니다.');
+    if (!job) throw new NotFoundException('공고를 찾을 수 없습니다.');
 
     const isOwner =
-      (job.schoolProfile && job.schoolProfile.userId === userId) ||
-      (job.teacherProfile && job.teacherProfile.userId === userId);
+      job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
 
-    if (!isOwner) throw new ForbiddenException('본인의 공고만 수정할 수 있습니다.');
+    if (!isOwner) throw new ForbiddenException('수정 권한이 없습니다.');
 
-    return this.prisma.jobListing.update({ where: { id }, data });
+    return this.prisma.jobListing.update({
+      where: { id },
+      data,
+    });
   }
 
-  async remove(id: number, userId: number) {
+  // [Fix] 빌드 에러 원인: deleteJob 메서드 복구
+  async deleteJob(userId: number, jobId: number) {
     const job = await this.prisma.jobListing.findUnique({
-      where: { id },
-      include: { schoolProfile: true, teacherProfile: true },
+      where: { id: jobId },
+      select: { schoolProfile: { select: { userId: true } }, teacherProfile: { select: { userId: true } } },
     });
 
-    if (!job) throw new NotFoundException('해당 공고를 찾을 수 없습니다.');
+    if (!job) throw new NotFoundException('공고를 찾을 수 없습니다.');
 
     const isOwner =
-      (job.schoolProfile && job.schoolProfile.userId === userId) ||
-      (job.teacherProfile && job.teacherProfile.userId === userId);
+      job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
 
-    if (!isOwner) throw new ForbiddenException('본인의 공고만 삭제할 수 있습니다.');
+    if (!isOwner) throw new ForbiddenException('삭제 권한이 없습니다.');
 
-    return this.prisma.jobListing.delete({ where: { id } });
+    return this.prisma.jobListing.delete({
+      where: { id: jobId },
+    });
   }
 
   async findMyJobs(userId: number, role: string) {
