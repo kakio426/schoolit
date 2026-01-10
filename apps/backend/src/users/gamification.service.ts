@@ -82,7 +82,7 @@ export class GamificationService {
 
         if (!user) return;
 
-        let currentTier = TrustTier.NEW;
+        let currentTier: TrustTier = TrustTier.NEW;
 
         // Lv.2 Verified: Valid phone number
         if (user.phone) {

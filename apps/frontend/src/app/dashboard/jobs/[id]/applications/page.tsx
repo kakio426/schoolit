@@ -12,7 +12,6 @@ import UserProfileModal from '@/components/profile/UserProfileModal';
 import ChecklistPopover from '@/components/applications/ChecklistPopover';
 import InternalMemo from '@/components/applications/InternalMemo';
 import PDFDownloadButton from '@/components/documents/PDFDownloadButton';
-import Seosik1_HiringPlan from '@/lib/documents/Seosik1_HiringPlan';
 import KanbanBoard from '@/components/applications/KanbanBoard';
 import EvaluationModal from '@/components/applications/EvaluationModal';
 import { api } from '@/lib/api';
@@ -281,22 +280,24 @@ export default function JobApplicantsPage() {
                             {/* Download & Preview buttons */}
                             {job && (job as any).jobType === 'TEACHER_HIRING' && (
                                 <PDFDownloadButton
+                                    type="hiring-plan"
                                     label="채용계획서(서식1) 받기"
-                                    fileName={`hiring_plan_${job.id}.pdf`}
-                                    document={
-                                        <Seosik1_HiringPlan
-                                            data={{
-                                                schoolName: job.schoolProfile?.schoolName || '본교',
-                                                draftNumber: (job as any).draftDocumentNumber || '미정',
-                                                draftDate: job.createdAt ? new Date(job.createdAt).toLocaleDateString() : '-',
-                                                hiringReason: (job as any).hiringReason || '결원',
-                                                originalTeacherName: (job as any).originalTeacherName || '미입력',
-                                                subject: (job as any).subjects?.[0] || '전과목',
-                                                contractStart: (job as any).contractStartDate || '2025-03-01',
-                                                contractEnd: (job as any).contractEndDate || '2025-08-31',
-                                            }}
-                                        />
-                                    }
+                                    fileName={`채용계획서_${job.title}.pdf`}
+                                    data={{
+                                        documentNumber: (job as any).draftDocumentNumber || '미정',
+                                        schoolName: job.schoolProfile?.schoolName || '본교',
+                                        schoolAddress: job.schoolProfile?.address || '',
+                                        adminName: user?.name || '담당자',
+                                        adminPhone: job.schoolProfile?.phoneNumber || '',
+                                        teacherName: (job as any).originalTeacherName || '',
+                                        subject: (job as any).subjects?.[0] || '전과목',
+                                        contractPeriod: `${(job as any).contractStartDate || ''} ~ ${(job as any).contractEndDate || ''}`,
+                                        teachingHours: (job as any).teachingHoursPerWeek || 0,
+                                        salary: (job as any).salary,
+                                        jobTitle: job.title,
+                                        enforcementDate: new Date().toISOString().split('T')[0],
+                                        reason: (job as any).hiringReason || '결원 대체',
+                                    }}
                                 />
                             )}
 
