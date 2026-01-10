@@ -9,6 +9,7 @@ import {
     User, MapPin, BookOpen, GraduationCap, Briefcase, Link as LinkIcon,
     Plus, Trash2, X, Save, Upload, CheckCircle, Award, AlertTriangle
 } from 'lucide-react';
+import { SUBJECT_GROUPS, KOREA_REGIONS, MAJOR_CITIES } from '@/lib/data';
 
 interface TeacherProfileFormProps {
     user: any;
@@ -383,19 +384,32 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         <div>
                             <label className="block text-sm font-bold text-foreground mb-2">가능 과목</label>
                             <div className="flex gap-2 mb-2">
-                                <input
+                                <select
                                     value={inputs.subject}
                                     onChange={e => setInputs(p => ({ ...p, subject: e.target.value }))}
-                                    onKeyPress={e => e.key === 'Enter' && addSubject()}
-                                    className="flex-1 px-3 py-2 bg-input-bg border border-input-border rounded-lg text-sm text-foreground"
-                                    placeholder="예: 코딩, 드론"
-                                />
-                                <button type="button" onClick={addSubject} className="bg-surface-hover px-3 rounded-lg font-bold text-sm text-foreground">+</button>
+                                    className="flex-1 px-3 py-2 bg-zinc-900 border border-white/[0.08] rounded-xl text-sm text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/20"
+                                >
+                                    <option value="">과목 선택</option>
+                                    {SUBJECT_GROUPS.map((group) => (
+                                        <optgroup key={group.name} label={group.name}>
+                                            {group.subjects.map((s) => (
+                                                <option key={s} value={s}>{s}</option>
+                                            ))}
+                                        </optgroup>
+                                    ))}
+                                </select>
+                                <button
+                                    type="button"
+                                    onClick={addSubject}
+                                    className="bg-blue-600 hover:bg-blue-500 text-white px-4 rounded-xl font-black text-lg transition-all active:scale-95"
+                                >
+                                    +
+                                </button>
                             </div>
                             <div className="flex flex-wrap gap-2">
                                 {basicInfo.subjects.map((s, i) => (
-                                    <span key={i} className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold rounded-md flex items-center gap-1">
-                                        {s} <button onClick={() => removeSubject(i)}>×</button>
+                                    <span key={i} className="px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-lg flex items-center gap-2">
+                                        {s} <button onClick={() => removeSubject(i)} className="hover:text-white transition-colors">×</button>
                                     </span>
                                 ))}
                             </div>
@@ -403,20 +417,45 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
 
                         <div>
                             <label className="block text-sm font-bold text-foreground mb-2">활동 지역</label>
-                            <div className="flex gap-2 mb-2">
-                                <input
-                                    value={inputs.region}
-                                    onChange={e => setInputs(p => ({ ...p, region: e.target.value }))}
-                                    onKeyPress={e => e.key === 'Enter' && addRegion()}
-                                    className="flex-1 px-3 py-2 bg-input-bg border border-input-border rounded-lg text-sm text-foreground"
-                                    placeholder="예: 서울 강남구"
-                                />
-                                <button type="button" onClick={addRegion} className="bg-surface-hover px-3 rounded-lg font-bold text-sm text-foreground">+</button>
+                            <div className="flex flex-col gap-2 mb-2">
+                                <div className="flex gap-2">
+                                    <select
+                                        value={inputs.region.split(' ')[0] || ''}
+                                        onChange={e => setInputs(p => ({ ...p, region: e.target.value }))}
+                                        className="flex-1 px-3 py-2 bg-zinc-900 border border-white/[0.08] rounded-xl text-sm text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/20"
+                                    >
+                                        <option value="">시/도</option>
+                                        {MAJOR_CITIES.map(city => (
+                                            <option key={city} value={city}>{city}</option>
+                                        ))}
+                                    </select>
+                                    <select
+                                        value={inputs.region.split(' ')[1] || ''}
+                                        onChange={e => {
+                                            const sido = inputs.region.split(' ')[0];
+                                            setInputs(p => ({ ...p, region: `${sido} ${e.target.value}` }));
+                                        }}
+                                        disabled={!inputs.region.split(' ')[0]}
+                                        className="flex-1 px-3 py-2 bg-zinc-900 border border-white/[0.08] rounded-xl text-sm text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/20 disabled:opacity-30"
+                                    >
+                                        <option value="">시/군/구</option>
+                                        {inputs.region.split(' ')[0] && KOREA_REGIONS[inputs.region.split(' ')[0]]?.map(gu => (
+                                            <option key={gu} value={gu}>{gu}</option>
+                                        ))}
+                                    </select>
+                                    <button
+                                        type="button"
+                                        onClick={addRegion}
+                                        className="bg-emerald-600 hover:bg-emerald-500 text-white px-4 rounded-xl font-black text-lg transition-all active:scale-95"
+                                    >
+                                        +
+                                    </button>
+                                </div>
                             </div>
                             <div className="flex flex-wrap gap-2">
-                                {basicInfo.regions.map((s, i) => (
-                                    <span key={i} className="px-2 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold rounded-md flex items-center gap-1">
-                                        {s} <button onClick={() => removeRegion(i)}>×</button>
+                                {basicInfo.regions.map((r, i) => (
+                                    <span key={i} className="px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg flex items-center gap-2">
+                                        {r} <button onClick={() => removeRegion(i)} className="hover:text-white transition-colors">×</button>
                                     </span>
                                 ))}
                             </div>

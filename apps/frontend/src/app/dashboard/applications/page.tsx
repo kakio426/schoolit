@@ -98,34 +98,32 @@ export default function MyApplicationsPage() {
                 </div>
 
                 {/* Filter Sidebar & Search Integration */}
-                <StandardCard className="p-2" noPadding>
-                    <div className="flex flex-col md:flex-row gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-foreground-muted" />
-                            <input
-                                type="text"
-                                placeholder="공고명 또는 지원자/학교 검색..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-11 pr-4 py-3 bg-transparent font-medium text-sm outline-none"
-                            />
-                        </div>
-                        <div className="flex gap-2 p-2 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-border/50">
-                            <select
-                                value={statusFilter}
-                                onChange={(e) => setStatusFilter(e.target.value)}
-                                className="bg-transparent text-sm font-bold px-4 py-1 outline-none cursor-pointer"
-                            >
-                                <option value="ALL">전체 상태</option>
-                                <option value={ApplicationStatus.PENDING}>대기 중</option>
-                                <option value={ApplicationStatus.DOCUMENT_SCREENING}>서류 심사</option>
-                                <option value={ApplicationStatus.INTERVIEWING}>면접/시연</option>
-                                <option value={ApplicationStatus.HIRED}>채용 완료</option>
-                                <option value={ApplicationStatus.REJECTED}>불합격/거절</option>
-                            </select>
-                        </div>
+                <div className="bg-gray-950/80 border border-white/[0.05] rounded-3xl p-1.5 flex flex-col md:flex-row gap-2 shadow-2xl backdrop-blur-md">
+                    <div className="relative flex-1 group">
+                        <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-blue-500 transition-colors" />
+                        <input
+                            type="text"
+                            placeholder="공고명 또는 지원자/학교 검색..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="w-full pl-12 pr-4 py-3.5 bg-transparent font-semibold text-[13px] text-zinc-200 outline-none placeholder:text-zinc-600"
+                        />
                     </div>
-                </StandardCard>
+                    <div className="flex gap-2 p-1 bg-white/[0.03] rounded-[20px] border border-white/[0.05]">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="bg-transparent text-[12px] font-black text-zinc-400 px-5 py-2 outline-none cursor-pointer hover:text-white transition-colors"
+                        >
+                            <option value="ALL">전체 상태</option>
+                            <option value={ApplicationStatus.PENDING}>대기 중</option>
+                            <option value={ApplicationStatus.DOCUMENT_SCREENING}>서류 심사</option>
+                            <option value={ApplicationStatus.INTERVIEWING}>면접/시연</option>
+                            <option value={ApplicationStatus.HIRED}>채용 완료</option>
+                            <option value={ApplicationStatus.REJECTED}>불합격/거절</option>
+                        </select>
+                    </div>
+                </div>
 
                 {/* Content List */}
                 {isLoading ? (
@@ -147,46 +145,47 @@ export default function MyApplicationsPage() {
                             >
                                 <div className="flex flex-col lg:flex-row">
                                     {/* Main Content Info */}
-                                    <div className="flex-1 p-6 md:p-8 space-y-5">
-                                        <div className="flex flex-wrap items-center gap-2">
+                                    <div className="flex-1 p-8 md:p-10 space-y-6">
+                                        <div className="flex flex-wrap items-center gap-3">
                                             {getAppStatusBadge(app)}
-                                            <span className="text-foreground-muted text-xs font-bold border-l border-border pl-2 flex items-center gap-1">
-                                                <Calendar className="w-3 h-3" /> {new Date(app.createdAt).toLocaleDateString()} {app.isSuggestion ? '제안' : '지원'}
+                                            <span className="text-zinc-500 text-[10px] font-black uppercase tracking-widest pl-3 border-l border-white/[0.08] flex items-center gap-1.5">
+                                                <Calendar className="w-3.5 h-3.5 opacity-60" />
+                                                {new Date(app.createdAt).toLocaleDateString()} {app.isSuggestion ? 'SUGGESTION' : 'APPLICATION'}
                                             </span>
                                         </div>
 
-                                        <div className="space-y-1">
-                                            <Link href={`/dashboard/jobs/${app.jobId}`} className="text-xl md:text-2xl font-black text-foreground hover:text-primary transition-colors block leading-tight">
+                                        <div className="space-y-2">
+                                            <Link href={`/dashboard/jobs/${app.jobId}`} className="text-2xl md:text-3xl font-black text-white hover:text-blue-500 transition-all block leading-tight tracking-tight">
                                                 {app.jobListing?.title}
                                             </Link>
-                                            <div className="flex items-center gap-1.5 text-sm text-foreground-muted font-bold">
+                                            <div className="flex items-center gap-2 text-[13px] font-bold text-zinc-400">
                                                 {user.role === 'SCHOOL' || app.userId !== user.id ? (
-                                                    <><div className="w-5 h-5 bg-primary/10 rounded-full flex items-center justify-center text-[10px] text-primary">👤</div> {app.user?.name} 전문가</>
+                                                    <><div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div> {app.user?.name} 전문가</>
                                                 ) : (
-                                                    <><div className="w-5 h-5 bg-indigo-500/10 rounded-full flex items-center justify-center text-[10px] text-indigo-500">🏫</div> {app.jobListing?.schoolProfile?.schoolName || '정보 없음'}</>
+                                                    <><div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div> {app.jobListing?.schoolProfile?.schoolName || '정보 없음'}</>
                                                 )}
                                             </div>
                                         </div>
 
                                         {/* Cost / Message Snippet */}
-                                        <div className="bg-slate-50 dark:bg-slate-800/80 rounded-[28px] p-6 border border-border/50 relative overflow-hidden">
+                                        <div className="bg-zinc-900/40 rounded-2xl p-6 border border-white/[0.03] space-y-4">
                                             {app.cost && (
-                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4 border-b border-border/50 pb-4">
-                                                    <div className="flex items-center gap-2 text-primary">
-                                                        <StandardBadge variant="primary" className="text-[10px]">계약 단가</StandardBadge>
-                                                        <span className="text-xl font-black">{app.cost.toLocaleString()}원</span>
+                                                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4">
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-[10px] font-black text-blue-500 bg-blue-500/10 px-2 py-0.5 rounded uppercase">Bidding Cost</span>
+                                                        <span className="text-2xl font-black text-white">{app.cost.toLocaleString()}원</span>
                                                     </div>
-                                                    {app.contactPhone && <div className="text-xs font-bold text-foreground-muted">연락처: {app.contactPhone}</div>}
+                                                    {app.contactPhone && <div className="text-[11px] font-bold text-zinc-500">Contact: {app.contactPhone}</div>}
                                                 </div>
                                             )}
-                                            <div className="flex items-start gap-3">
-                                                <div className="p-2 bg-white dark:bg-slate-700 rounded-xl shadow-sm"><FileText className="w-4 h-4 text-foreground-muted" /></div>
-                                                <div className="text-sm font-medium leading-relaxed italic text-foreground/80">
+                                            <blockquote className="border-l-2 border-zinc-700 pl-4 py-1 italic relative group/quote">
+                                                <p className="text-[14px] leading-relaxed text-zinc-300 font-medium">
                                                     "{app.message || '작성된 메시지가 없습니다.'}"
+                                                </p>
+                                                <div className="absolute -left-2 top-0 opacity-0 group-hover/quote:opacity-100 transition-opacity">
+                                                    <FileText className="w-4 h-4 text-blue-500/50" />
                                                 </div>
-                                            </div>
-                                            {/* Watermark icon */}
-                                            <Briefcase className="absolute -right-6 -bottom-6 w-24 h-24 opacity-[0.03] rotate-12" />
+                                            </blockquote>
                                         </div>
 
                                         {/* Recruitment Progress Dots */}
@@ -195,41 +194,41 @@ export default function MyApplicationsPage() {
                                         </div>
 
                                         {user.role === 'SCHOOL' && (
-                                            <div className="pt-2">
+                                            <div className="pt-4">
                                                 <InternalMemo applicationId={app.id} initialMemo={app.internalNote} />
                                             </div>
                                         )}
                                     </div>
 
                                     {/* Action Column */}
-                                    <div className="lg:w-72 bg-slate-50/50 dark:bg-slate-800/20 border-t lg:border-t-0 lg:border-l border-border p-6 flex flex-col justify-center gap-3">
+                                    <div className="lg:w-80 bg-zinc-950/20 lg:border-l border-white/[0.05] p-8 flex flex-col justify-center items-center gap-4">
                                         {/* Suggestion Response (Candidate Side) */}
                                         {app.isSuggestion && app.status === ApplicationStatus.PENDING && user.role !== 'SCHOOL' ? (
-                                            <div className="space-y-3">
-                                                <div className="text-center mb-4">
-                                                    <div className="text-xs font-black text-indigo-600 dark:text-indigo-400 mb-1">제안이 도착했습니다!</div>
-                                                    <p className="text-[10px] text-foreground-muted">학교의 제안을 수락하시겠습니까?</p>
+                                            <div className="w-full space-y-3">
+                                                <div className="text-center mb-6">
+                                                    <div className="text-[11px] font-black tracking-widest text-blue-500 uppercase mb-2">New Suggestion</div>
+                                                    <p className="text-[12px] text-zinc-500 font-bold leading-snug tracking-tight">학교의 제안을 수락하시겠습니까?</p>
                                                 </div>
                                                 <button
                                                     onClick={() => updateStatus(app.id, ApplicationStatus.INTERVIEWING)}
-                                                    className="w-full py-3 bg-primary text-white font-black rounded-xl text-sm shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+                                                    className="w-full py-4 bg-blue-600 text-white font-black rounded-2xl text-[13px] shadow-xl shadow-blue-600/20 hover:bg-blue-500 active:scale-[0.98] transition-all"
                                                 >
                                                     수락 및 대화하기
                                                 </button>
                                                 <button
                                                     onClick={() => updateStatus(app.id, ApplicationStatus.REJECTED)}
-                                                    className="w-full py-3 bg-white border border-red-200 text-red-500 font-bold rounded-xl text-xs hover:bg-red-50 transition-all"
+                                                    className="w-full py-4 bg-zinc-900 border border-white/5 text-zinc-500 font-bold rounded-2xl text-[12px] hover:text-red-400 hover:border-red-400/20 transition-all"
                                                 >
                                                     거절하기
                                                 </button>
                                             </div>
                                         ) : (
-                                            <div className="space-y-3">
+                                            <div className="w-full space-y-4">
                                                 {/* Chat always active for non-rejected/pending */}
                                                 {!['PENDING', 'REJECTED'].includes(app.status) && (
                                                     <Link
                                                         href="/dashboard/messages"
-                                                        className="w-full py-3.5 bg-white dark:bg-slate-800 border border-primary/20 text-primary rounded-xl font-black text-sm text-center flex items-center justify-center gap-2 shadow-sm hover:bg-primary hover:text-white transition-all group"
+                                                        className="w-full py-4 bg-zinc-900 border border-white/[0.05] text-zinc-300 rounded-2xl font-black text-[13px] text-center flex items-center justify-center gap-2.5 shadow-sm hover:bg-white hover:text-black transition-all group"
                                                     >
                                                         <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" /> 대화하기
                                                     </Link>
@@ -237,25 +236,31 @@ export default function MyApplicationsPage() {
 
                                                 {/* Contract Signing (Hired status) */}
                                                 {app.status === ApplicationStatus.HIRED && (
-                                                    <>
+                                                    <div className="space-y-2 w-full">
                                                         <Link
                                                             href={`/dashboard/contracts/${app.id}`}
-                                                            className="w-full py-3.5 bg-indigo-600 text-white rounded-xl font-black text-sm text-center flex items-center justify-center gap-2 shadow-xl shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+                                                            className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-[13px] text-center flex items-center justify-center gap-2.5 shadow-xl shadow-blue-600/20 hover:bg-blue-500 active:scale-95 transition-all"
                                                         >
-                                                            <PenTool className="w-4 h-4" /> 계약서 날인하기
+                                                            <PenTool className="w-4 h-4" /> 계약서 날인
                                                         </Link>
                                                         <button
                                                             onClick={() => api.downloadFile(`/applications/${app.id}/contract`, `contract_${app.id}.pdf`)}
-                                                            className="w-full py-2 bg-emerald-500/10 text-emerald-600 rounded-xl font-bold text-[10px] flex items-center justify-center gap-1.5 hover:bg-emerald-500 hover:text-white transition-all border border-emerald-500/20"
+                                                            className="w-full py-2.5 bg-zinc-900 text-zinc-500 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 hover:text-green-400 transition-all border border-white/[0.03]"
                                                         >
-                                                            <Download className="w-3 h-3" /> 최종 계약서 (PDF)
+                                                            <Download className="w-3.5 h-3.5" /> 최종 계약서 (PDF)
                                                         </button>
-                                                    </>
+                                                    </div>
                                                 )}
 
-                                                <div className="pt-4 flex flex-col items-center">
-                                                    <p className="text-[10px] text-foreground-muted font-black uppercase tracking-widest leading-none mb-1">상태</p>
-                                                    <div className="text-sm font-bold text-foreground">{getStatusBadgeText(app.status)}</div>
+                                                <div className="pt-6 flex flex-col items-center border-t border-white/[0.03] w-full">
+                                                    <p className="text-[10px] text-zinc-600 font-black uppercase tracking-[3px] mb-2 scale-90">Status</p>
+                                                    <div className="flex items-center gap-2 bg-white/[0.03] px-5 py-2.5 rounded-full border border-white/[0.05]">
+                                                        <div className={`w-1.5 h-1.5 rounded-full animate-pulse ${app.status === 'HIRED' ? 'bg-green-500' :
+                                                                app.status === 'REJECTED' ? 'bg-red-500' :
+                                                                    app.status === 'PENDING' ? 'bg-amber-500' : 'bg-blue-500'
+                                                            }`}></div>
+                                                        <span className="text-[13px] font-black text-zinc-300">{getStatusBadgeText(app.status)}</span>
+                                                    </div>
                                                 </div>
                                             </div>
                                         )}

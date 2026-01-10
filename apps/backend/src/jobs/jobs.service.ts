@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/commo
 import { PrismaService } from '../prisma.service';
 import { CreateJobDto, UpdateJobDto } from './dtos/create-job.dto';
 import { UserService } from '../users/user.service';
+import { HiringWorkflowStatus } from '@prisma/client';
 
 @Injectable()
 export class JobsService {
@@ -13,11 +14,19 @@ export class JobsService {
   async createJob(userId: number, data: CreateJobDto) {
     // Try finding School Profile
     const schoolProfile = await this.prisma.schoolProfile.findUnique({ where: { userId } });
+
+    // Determine initial workflow status
+    let initialStatus: HiringWorkflowStatus = HiringWorkflowStatus.DRAFT;
+    if (data.internalChecklist && data.internalChecklist['planningApproved'] === true) {
+      initialStatus = HiringWorkflowStatus.PLAN_APPROVED;
+    }
+
     if (schoolProfile) {
       return this.prisma.jobListing.create({
         data: {
           schoolProfileId: schoolProfile.id,
           ...data,
+          workflowStatus: initialStatus,
         },
       });
     }
