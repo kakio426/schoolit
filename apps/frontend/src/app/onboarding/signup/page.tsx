@@ -21,6 +21,13 @@ function SignupOnboardingContent() {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // 🔍 Phase 1: Component mount 시 role 파라미터 로깅
+    useEffect(() => {
+        console.log('[Signup] Component mounted');
+        console.log('[Signup] URL role parameter:', role);
+        console.log('[Signup] User:', user);
+    }, [role, user]);
+
     useEffect(() => {
         if (user) {
             setFormData({
@@ -43,9 +50,23 @@ function SignupOnboardingContent() {
             return;
         }
 
+        // 🔍 Phase 1: role 파라미터 검증 및 상세 로깅
+        if (!role) {
+            console.error('[Signup] Role parameter is missing!');
+            alert('역할 정보가 없습니다. 다시 시도해 주세요.');
+            router.push('/onboarding/role');
+            return;
+        }
+
+        console.log('[Signup] Starting signup process');
+        console.log('[Signup] Role value:', role);
+        console.log('[Signup] Role type:', typeof role);
+        console.log('[Signup] Is SCHOOL?', role === 'SCHOOL');
+        console.log('[Signup] Form data:', { name: formData.name, phone: formData.phone });
+
         setIsSubmitting(true);
         try {
-            console.log('[Signup] Submitting with role:', role);
+            console.log('[Signup] Submitting to API with role:', role);
 
             // Using the api helper for consistency and automatic token handling
             const response = await api.post<{ accessToken: string }>('/auth/social/finish-signup', {
@@ -54,32 +75,51 @@ function SignupOnboardingContent() {
                 phone: formData.phone,
             });
 
-            console.log('[Signup] Response received:', response);
+            console.log('[Signup] API Response received:', response);
+            console.log('[Signup] Response has accessToken?', !!response.accessToken);
 
             // 🔑 새로운 토큰 저장 (역할이 업데이트되었으므로)
             if (response.accessToken) {
                 localStorage.setItem('token', response.accessToken);
-                console.log('[Signup] New token saved');
+                console.log('[Signup] New token saved to localStorage');
+            } else {
+                console.warn('[Signup] No accessToken in response!');
             }
 
             // 프로필 새로고침
+            console.log('[Signup] Calling refreshProfile...');
             await refreshProfile();
-            console.log('[Signup] Profile refreshed');
+            console.log('[Signup] Profile refreshed successfully');
 
-            // 역할에 따라 리다이렉트
+            // 🔍 Phase 1: 리다이렉트 전 상세 로그
+            console.log('[Signup] Preparing redirect...');
+            console.log('[Signup] Current role value:', role);
+            console.log('[Signup] Checking redirect condition: role === "SCHOOL":', role === 'SCHOOL');
+
+            // 🔧 Phase 2: 강제 페이지 이동 (router.push가 작동하지 않는 문제 해결)
             if (role === 'SCHOOL') {
-                console.log('[Signup] Redirecting to email verification');
-                router.push('/onboarding/email-verify');
+                console.log('[Signup] ✅ Condition matched: Redirecting to email verification');
+                console.log('[Signup] Using window.location.href for navigation');
+                window.location.href = '/onboarding/email-verify';
             } else {
-                console.log('[Signup] Redirecting to dashboard');
-                router.push('/dashboard');
+                console.log('[Signup] ✅ Condition not matched: Redirecting to dashboard');
+                console.log('[Signup] Using window.location.href for navigation');
+                window.location.href = '/dashboard';
             }
         } catch (error: any) {
-            console.error('[Signup] Failed to finish signup:', error);
+            // 🔍 Phase 1: 에러 상세 정보 로깅
+            console.error('[Signup] ❌ Error occurred during signup');
+            console.error('[Signup] Error type:', error.constructor.name);
+            console.error('[Signup] Error message:', error.message);
+            console.error('[Signup] Error response:', error.response);
+            console.error('[Signup] Full error object:', error);
+            console.error('[Signup] Error stack:', error.stack);
+
             const errorMessage = error.response?.data?.message || error.message || '알 수 없는 오류';
-            alert(`가입 처리 중 오류가 발생했습니다:\n${errorMessage}`);
+            alert(`가입 처리 중 오류가 발생했습니다:\n${errorMessage}\n\n자세한 내용은 콘솔을 확인해 주세요.`);
         } finally {
             setIsSubmitting(false);
+            console.log('[Signup] Signup process completed');
         }
     };
 
