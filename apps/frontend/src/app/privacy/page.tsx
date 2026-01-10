@@ -82,8 +82,35 @@ export default function PrivacyPage() {
                     </section>
 
                     <section>
-                        <h2 className="text-lg font-bold text-slate-900 mb-3">제8조 (고지의 의무)</h2>
-                        <p className="mb-4">현 개인정보처리방침은 2026년 1월 3일부터 적용됩니다. 내용의 추가, 삭제 및 수정이 있을 시에는 개정 최소 7일 전부터 홈페이지의 '공지사항'을 통해 고지할 것입니다.</p>
+                        <h2 className="text-lg font-bold text-slate-900 mb-3">제8조 (개인정보의 국외 이전)</h2>
+                        <p className="mb-2">회사는 안정적인 서비스 제공을 위해 아래와 같이 개인정보를 국외로 이전하여 보관합니다.</p>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse border border-slate-200">
+                                <thead className="bg-slate-50">
+                                    <tr>
+                                        <th className="border border-slate-200 p-2">이전받는 자</th>
+                                        <th className="border border-slate-200 p-2">국가</th>
+                                        <th className="border border-slate-200 p-2">항목</th>
+                                        <th className="border border-slate-200 p-2">일시 및 방법</th>
+                                        <th className="border border-slate-200 p-2">목적 및 기간</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td className="border border-slate-200 p-2">Railway Corp.</td>
+                                        <td className="border border-slate-200 p-2">미국 (US)</td>
+                                        <td className="border border-slate-200 p-2">서비스 이용 기록 및 저장 데이터 일체</td>
+                                        <td className="border border-slate-200 p-2">네트워크를 통한 실시간 전송</td>
+                                        <td className="border border-slate-200 p-2">시스템 운영 및 데이터 백업 (회원 탈퇴 시까지)</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-lg font-bold text-slate-900 mb-3">제9조 (고지의 의무)</h2>
+                        <p className="mb-4">현 개인정보처리방침은 2026년 1월 10일부터 적용됩니다. 내용의 추가, 삭제 및 수정이 있을 시에는 개정 최소 7일 전부터 홈페이지의 '공지사항'을 통해 고지할 것입니다.</p>
                         <div className="text-slate-500">
                             <p>사업장 주소: 경기 용인시 수지구 용구대로 2729-5 A동 에듀핀</p>
                         </div>

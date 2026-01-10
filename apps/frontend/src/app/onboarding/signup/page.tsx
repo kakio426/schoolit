@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { api } from '@/lib/api';
+import TermsAgreement from '@/components/auth/TermsAgreement';
 
 function SignupOnboardingContent() {
     const { user, token, refreshProfile } = useAuth();
@@ -110,22 +111,9 @@ function SignupOnboardingContent() {
                         </p>
                     </div>
 
-                    {/* Legal Disclaimer Checkbox */}
-                    <div className="flex items-start gap-3 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                        <input
-                            type="checkbox"
-                            id="legal-agree"
-                            className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
-                            onChange={(e) => {
-                                // Logic handled in submit or state if needed, but for now just visual or simple validation
-                                // Ideally should be state driven.
-                                setFormData(prev => ({ ...prev, legalAgreed: e.target.checked }));
-                            }}
-                        />
-                        <label htmlFor="legal-agree" className="text-xs text-foreground leading-relaxed cursor-pointer select-none">
-                            <span className="font-bold text-primary">[필수]</span> 본 서비스는 <span className="font-bold">행정 절차 지원 및 시장 조사 도구</span>이며,
-                            모든 계약과 지출 행위는 학교/기관의 행정 시스템(S2B, 에듀파인 등)을 통해 적법하게 진행해야 함을 확인합니다.
-                        </label>
+                    {/* Legal Dictionary Agreement Component */}
+                    <div className="pt-2">
+                        <TermsAgreement onAgreementChange={(agreed) => setFormData(prev => ({ ...prev, legalAgreed: agreed }))} />
                     </div>
 
                     {/* Finish Button */}
@@ -138,7 +126,7 @@ function SignupOnboardingContent() {
                     </button>
 
                     <p className="text-[11px] text-center text-foreground-muted leading-relaxed">
-                        '가입 완료하기'를 누르면 <span className="underline decoration-border">이용약관</span> 및 <span className="underline decoration-border">개인정보 처리방침</span>에 동의하는 것으로 간주됩니다.
+                        '가입 완료하기'를 누르면 상기 약관에 모두 동의한 것으로 간주됩니다.
                     </p>
                 </div>
             </div>
