@@ -96,6 +96,11 @@ export class JobsService {
     const where: Prisma.JobListingWhereInput = {
       active: true,
       status: JobStatus.OPEN, // 기본적으로 모집 중인 공고만 노출
+      // [Fix] 워크플로우 상태가 'PUBLISHED' 이거나, 과거 데이터(null)인 경우만 노출
+      OR: [
+        { workflowStatus: HiringWorkflowStatus.PUBLISHED },
+        { workflowStatus: null }
+      ]
     };
 
     if (filters?.jobType) {
@@ -246,6 +251,11 @@ export class JobsService {
     const where: Prisma.JobListingWhereInput = {
       active: true,
       status: JobStatus.OPEN,
+      // [Fix] 검색에서도 게시된 공고만 노출
+      OR: [
+        { workflowStatus: HiringWorkflowStatus.PUBLISHED },
+        { workflowStatus: null }
+      ]
     };
 
     if (filters.subject) {

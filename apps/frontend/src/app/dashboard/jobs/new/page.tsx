@@ -22,6 +22,30 @@ export default function NewJobPage() {
         return <DashboardLayout><div className="text-center py-20 text-foreground-muted">접근 권한이 없습니다.<br />공고 등록은 학교/업무 담당 교사만 가능합니다.</div></DashboardLayout>
     }
 
+    // 🚨 프로필 유무 체크 (학교 프로필이 없으면 공고 등록 불가)
+    if (!user?.schoolProfile) {
+        return (
+            <DashboardLayout>
+                <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="text-6xl mb-2">🏫</div>
+                    <div className="space-y-2">
+                        <h2 className="text-2xl font-bold text-white">잠깐! 학교 프로필이 필요해요</h2>
+                        <p className="text-zinc-400 max-w-md mx-auto leading-relaxed">
+                            공고를 등록하려면 먼저 <strong>학교 정보(학교명, 주소 등)</strong>가 등록되어 있어야 합니다.<br />
+                            신뢰할 수 있는 매칭을 위해 프로필을 먼저 완성해주세요.
+                        </p>
+                    </div>
+                    <a
+                        href="/dashboard/profile/edit"
+                        className="px-8 py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all flex items-center gap-2"
+                    >
+                        학교 프로필 등록하러 가기 →
+                    </a>
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout>
             <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500 py-8">
