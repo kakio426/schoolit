@@ -37,7 +37,7 @@ export class JobsController {
   @Roles(Role.SCHOOL, Role.TEACHER)
   @Delete(':id')
   async delete(@Request() req, @Param('id', ParseIntPipe) id: number) {
-    return this.jobsService.deleteJob(req.user.userId, id);
+    return this.jobsService.remove(id, req.user.userId);
   }
 
   @Get(':id')
@@ -60,6 +60,6 @@ export class JobsController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateJobDto: UpdateJobDto,
   ) {
-    return this.jobsService.updateJob(req.user.userId, id, updateJobDto);
+    return this.jobsService.update(id, req.user.userId, updateJobDto);
   }
 }

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 interface ComplianceModalProps {
     userRole: Role;
-    onAccept: () => void;
+    onAccept?: () => void;
 }
 
 export default function ComplianceModal({ userRole, onAccept }: ComplianceModalProps) {
@@ -23,7 +23,7 @@ export default function ComplianceModal({ userRole, onAccept }: ComplianceModalP
     const handleAccept = () => {
         sessionStorage.setItem('complianceAccepted', 'true');
         setIsOpen(false);
-        onAccept();
+        if (onAccept) onAccept();
     };
 
     if (!isOpen) return null;

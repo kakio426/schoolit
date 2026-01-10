@@ -4,7 +4,7 @@ import { Role, Prisma } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getStats(userId: number, role: Role) {
     const stats: any = {};
@@ -90,5 +90,14 @@ export class DashboardService {
       orderBy: { createdAt: 'desc' },
       take: 5,
     });
+  }
+
+  async getSummary(userId: number, role: Role) {
+    const [stats, activity] = await Promise.all([
+      this.getStats(userId, role),
+      this.getRecentActivity(userId),
+    ]);
+
+    return { stats, activity };
   }
 }

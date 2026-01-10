@@ -102,6 +102,7 @@ export interface User {
     role: Role;
     phone?: string;
     isBanned?: boolean;
+    verificationCode?: string;
     teacherProfile?: TeacherProfile;
     businessProfile?: BusinessProfile;
     notificationSettings?: any;

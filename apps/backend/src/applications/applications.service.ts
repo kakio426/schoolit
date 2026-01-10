@@ -25,35 +25,34 @@ export class ApplicationsService {
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     try {
-      // Check if job exists and is OPEN
+      // 1. 공고 유효성 검사 (필요한 필드만 조회)
       const job = await this.prisma.jobListing.findUnique({
         where: { id: jobId },
-        include: { schoolProfile: true },
-      });
-
-      if (!job) {
-        throw new NotFoundException('Job not found');
-      }
-
-      if (job.status !== 'OPEN' || !job.active) {
-        throw new BadRequestException('Job is closed or inactive');
-      }
-
-      // Check duplicate
-      const existing = await this.prisma.jobApplication.findUnique({
-        where: {
-          jobId_userId: {
-            jobId,
-            userId,
-          },
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          active: true,
+          schoolProfile: { select: { userId: true } },
+          teacherProfile: { select: { userId: true } },
         },
       });
 
-      if (existing) {
-        throw new BadRequestException('이미 지원하신 공고입니다.');
+      if (!job) throw new NotFoundException('공고를 찾을 수 없습니다.');
+      if (job.status !== 'OPEN' || !job.active) {
+        throw new BadRequestException('마감되었거나 비활성화된 공고입니다.');
       }
 
-      // Create application
+      // 2. 중복 지원 체크
+      const existing = await this.prisma.jobApplication.findUnique({
+        where: {
+          jobId_userId: { jobId, userId },
+        },
+      });
+
+      if (existing) throw new BadRequestException('이미 지원하신 공고입니다.');
+
+      // 3. 지원서 생성
       const app = await this.prisma.jobApplication.create({
         data: {
           jobId,
@@ -67,208 +66,141 @@ export class ApplicationsService {
         },
       });
 
-      // Notify Job Owner Safely
-      // Use schoolProfile first, then fall back to teacherProfile or any owner record
-      const ownerId = job.schoolProfile?.userId || (job as any).teacherProfile?.userId || (job as any).userId;
-
+      // 4. 알림 발송 (비동기 처리로 메인 로직 방해 금지)
+      const ownerId = job.schoolProfile?.userId || job.teacherProfile?.userId;
       if (ownerId) {
-        try {
-          await this.notificationsService.create({
+        this.notificationsService
+          .create({
             userId: ownerId,
             type: 'APPLICATION',
             title: '새로운 지원서 도착',
             content: `'${job.title}' 공고에 새로운 지원자가 있습니다.`,
             link: `/dashboard/jobs/${job.id}`,
-          });
-        } catch (notifError) {
-          console.error('Failed to send notification upon application', notifError);
-          // Don't fail the whole request if only notification fails
-        }
+          })
+          .catch((e) => console.error('Notification failed:', e));
       }
 
       return app;
     } catch (e: any) {
-      console.error('CRITICAL: Job Application Failure', e);
       if (e instanceof BadRequestException || e instanceof NotFoundException) throw e;
-      throw new BadRequestException(e.message || '지원서 제출 중 예기치 못한 서버 오류가 발생했습니다.');
+      throw new BadRequestException('지원서 제출 중 오류가 발생했습니다.');
     }
   }
 
+  // [Refactor] N+1 문제 해결 및 보안 강화 (select 사용)
   async getMyApplications(userId: number, role?: string) {
+    // 1. 학교가 받은 지원서 조회
     if (role === 'SCHOOL') {
       const applications = await this.prisma.jobApplication.findMany({
         where: {
-          jobListing: {
-            schoolProfile: {
-              userId: userId,
-            },
-          },
+          jobListing: { schoolProfile: { userId } },
         },
-        include: {
-          jobListing: true,
+        select: {
+          id: true,
+          status: true,
+          createdAt: true,
+          message: true,
+          jobListing: {
+            select: { id: true, title: true },
+          },
           user: {
-            include: {
-              teacherProfile: true,
-              businessProfile: true,
+            select: {
+              id: true,
+              name: true,
+              email: true, // 초기 단계에서는 이메일 정도만 노출
+              avatarImageId: true,
+              teacherProfile: {
+                select: {
+                  id: true,
+                  subjects: true,
+                  regions: true,
+                  profileImage: true,
+                },
+              },
+              businessProfile: {
+                select: { id: true, companyName: true },
+              },
             },
           },
         },
         orderBy: { createdAt: 'desc' },
       });
 
-      // Mark as viewed (Background task-ish or just run it)
-      await this.prisma.jobApplication.updateMany({
-        where: {
-          jobListing: { schoolProfile: { userId } },
-          viewedAt: null,
-        },
-        data: { viewedAt: new Date() },
-      });
-
-      const REVEALED_STATUSES = [
-        'INTERVIEWING',
-        'VERIFICATION',
-        'HIRED',
-        'CONTRACTING',
-        'EXECUTING',
-        'PAYMENT_COMPLETED',
-      ];
-
-      return applications.map((app) => {
-        const isRevealed = REVEALED_STATUSES.includes(app.status);
-
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password, ...safeUser } = app.user;
-
-        if (!isRevealed) {
-          safeUser.phone = null;
-          if (safeUser.teacherProfile) safeUser.teacherProfile.bankAccount = null;
-          if (safeUser.businessProfile) safeUser.businessProfile.bankAccount = null;
-        }
-
-        return { ...app, user: safeUser };
-      });
+      return applications;
     }
 
-    const sentApps = await this.prisma.jobApplication.findMany({
+    // 2. 내가 보낸 지원서 조회 (학교 외 유저)
+    return this.prisma.jobApplication.findMany({
       where: { userId },
-      include: {
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
         jobListing: {
-          include: {
-            schoolProfile: true,
-            teacherProfile: { include: { user: { select: { name: true } } } },
+          select: {
+            id: true,
+            title: true,
+            status: true,
+            schoolProfile: {
+              select: { schoolName: true, logoImage: true },
+            },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
-    });
-
-    const receivedApps = await this.prisma.jobApplication.findMany({
-      where: {
-        jobListing: {
-          teacherProfile: { userId },
-        },
-      },
-      include: {
-        jobListing: {
-          include: {
-            schoolProfile: true,
-            teacherProfile: true,
-          },
-        },
-        user: {
-          include: {
-            teacherProfile: { include: { experiences: true } },
-            businessProfile: true,
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    const allApps = [...sentApps, ...receivedApps].sort(
-      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
-    );
-
-    // Remove internalNote for teachers/businesses (only for sent apps? or both?)
-    // If I am the owner (received), I should see my internalNote?
-    // Schema has `internalNote`.
-    // Logic: If I am owner, keep it. If not, remove it.
-
-    return allApps.map((app) => {
-      const isOwner =
-        (app.jobListing.schoolProfile && app.jobListing.schoolProfile.userId === userId) ||
-        (app.jobListing.teacherProfile && app.jobListing.teacherProfile.userId === userId);
-
-      if (!isOwner) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { internalNote, ...rest } = app;
-        return rest;
-      }
-      return app;
     });
   }
 
   async getJobApplications(userId: number, jobId: number) {
-    // Check ownership
+    // 소유권 확인
     const job = await this.prisma.jobListing.findUnique({
       where: { id: jobId },
-      include: { schoolProfile: true, teacherProfile: true },
+      select: {
+        schoolProfile: { select: { userId: true } },
+        teacherProfile: { select: { userId: true } },
+      },
     });
 
-    if (!job) throw new NotFoundException('Job not found');
+    if (!job) throw new NotFoundException('공고를 찾을 수 없습니다.');
 
     const isOwner =
-      (job.schoolProfile && job.schoolProfile.userId === userId) ||
-      (job.teacherProfile && job.teacherProfile.userId === userId);
+      job.schoolProfile?.userId === userId || job.teacherProfile?.userId === userId;
 
-    if (!isOwner) {
-      throw new ForbiddenException('Not your job');
-    }
+    if (!isOwner) throw new ForbiddenException('권한이 없습니다.');
 
-    // Mark as viewed
-    await this.prisma.jobApplication.updateMany({
-      where: { jobId, viewedAt: null },
-      data: { viewedAt: new Date() },
-    });
-
-    // Return applicants
-    const applications = await this.prisma.jobApplication.findMany({
+    // 지원자 목록 조회 (최적화됨)
+    return this.prisma.jobApplication.findMany({
       where: { jobId },
-      include: {
+      select: {
+        id: true,
+        status: true,
+        createdAt: true,
+        message: true,
+        cost: true, // 견적가
         user: {
-          include: {
-            teacherProfile: { include: { experiences: true } },
-            businessProfile: true,
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            teacherProfile: {
+              select: {
+                id: true,
+                subjects: true,
+                experiences: { take: 3 }, // 경력은 최근 3개만 미리보기
+                isVerified: true,
+              },
+            },
+            businessProfile: {
+              select: {
+                id: true,
+                companyName: true,
+                registrationNum: true,
+              },
+            },
           },
         },
       },
       orderBy: { createdAt: 'desc' },
-    });
-
-    const REVEALED_STATUSES = [
-      'INTERVIEWING',
-      'VERIFICATION',
-      'HIRED',
-      'CONTRACTING',
-      'EXECUTING',
-      'PAYMENT_COMPLETED',
-    ];
-
-    // Filter sensitive info (phone) if not in active stages
-    return applications.map((app) => {
-      const isRevealed = REVEALED_STATUSES.includes(app.status);
-
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...safeUser } = app.user;
-
-      if (!isRevealed) {
-        safeUser.phone = null; // Hide phone
-        if (safeUser.teacherProfile) safeUser.teacherProfile.bankAccount = null;
-        if (safeUser.businessProfile) safeUser.businessProfile.bankAccount = null;
-      }
-
-      return { ...app, user: safeUser };
     });
   }
 
