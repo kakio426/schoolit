@@ -12,7 +12,7 @@ import ComplianceModal from '../ui/ComplianceModal';
 import VerificationPendingView from '../auth/VerificationPendingView';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-    const { user, isLoading, logout } = useAuth();
+    const { user, isLoading, logout, refreshProfile } = useAuth();
     const { unreadNotificationCount, notifications, markNotificationAsRead, unreadMessageCount } = useSocket();
     const router = useRouter();
     const pathname = usePathname();
@@ -264,6 +264,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 >
                                     이메일 인증하러 가기
                                 </button>
+                                <button
+                                    onClick={async () => {
+                                        await refreshProfile();
+                                        window.location.reload();
+                                    }}
+                                    className="text-sm text-slate-500 hover:text-primary underline mt-4"
+                                >
+                                    이미 인증을 완료하셨나요? (상태 새로고침)
+                                </button>
                             </div>
                         ) : (
                             <VerificationPendingView />
@@ -276,7 +285,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <FooterDisclaimer />
                 <FeedbackButton />
                 <ComplianceModal userRole={user.role} />
-            </div>
-        </div>
+            </div >
+        </div >
     );
 }

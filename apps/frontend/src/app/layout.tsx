@@ -34,14 +34,9 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               (function() {
-                function getTheme() {
-                  const stored = localStorage.getItem('theme');
-                  if (stored && stored !== 'system') return stored;
-                  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-                }
-                const theme = getTheme();
-                document.documentElement.classList.toggle('dark', theme === 'dark');
-                document.documentElement.style.colorScheme = theme;
+                // Force dark mode immediately to prevent flash
+                document.documentElement.classList.add('dark');
+                document.documentElement.style.colorScheme = 'dark';
               })();
             `,
           }}

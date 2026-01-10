@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 export default function EmailVerificationPage() {
     const router = useRouter();
-    const { user } = useAuth();
+    const { user, refreshProfile } = useAuth();
 
     // Steps: 'INPUT_EMAIL' -> 'INPUT_CODE'
     const [step, setStep] = useState<'INPUT_EMAIL' | 'INPUT_CODE'>('INPUT_EMAIL');
@@ -17,31 +17,7 @@ export default function EmailVerificationPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
-    const handleSendCode = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // Client-side validation for official domains
-        const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
-        const domain = email.split('@')[1];
-        const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
-
-        if (!isAllowed) {
-            setError('공직자 통합 메일(@korea.kr, @go.kr)만 사용 가능합니다.');
-            return;
-        }
-
-        setIsLoading(true);
-        setError('');
-
-        try {
-            await api.post('/auth/email/request', { email });
-            setStep('INPUT_CODE');
-        } catch (err: any) {
-            setError(err.message || '인증 코드를 전송하는데 실패했습니다. 이메일을 확인해주세요.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // ... (중략)
 
     const handleVerifyCode = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,7 +30,8 @@ export default function EmailVerificationPage() {
                 schoolName,
             });
             if (res.success) {
-                // Success! Proceed to dashboard (where "Pending" state will be shown)
+                // Success! Refresh profile to update verification status and proceed
+                await refreshProfile();
                 router.push('/dashboard');
             } else {
                 setError('인증 코드가 올바르지 않거나 만료되었습니다.');

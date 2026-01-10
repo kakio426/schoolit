@@ -12,38 +12,22 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-    const [theme, setThemeState] = useState<Theme>('system');
+    // 1. Force 'dark' as initial state
+    const [theme, setThemeState] = useState<Theme>('dark');
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
         setMounted(true);
-        const storedTheme = localStorage.getItem('theme') as Theme | null;
-        const initialTheme = storedTheme || 'system';
-        setThemeState(initialTheme);
-        applyTheme(initialTheme);
-
-        // Listen for system theme changes
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleChange = () => {
-            const currentTheme = localStorage.getItem('theme') as Theme | null;
-            if (!currentTheme || currentTheme === 'system') {
-                applyTheme('system');
-            }
-        };
-
-        mediaQuery.addEventListener('change', handleChange);
-        return () => mediaQuery.removeEventListener('change', handleChange);
+        // 2. Ignore localStorage and system settings, force dark mode on mount
+        setThemeState('dark');
+        applyTheme('dark');
     }, []);
 
     const applyTheme = (newTheme: Theme) => {
         const root = window.document.documentElement;
 
-        let isDark = false;
-        if (newTheme === 'system') {
-            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        } else {
-            isDark = newTheme === 'dark';
-        }
+        // 3. Force dark mode logic
+        const isDark = true;
 
         if (isDark) {
             root.classList.add('dark');
@@ -51,14 +35,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
             root.classList.remove('dark');
         }
 
-        // Update color scheme for browser elements (scrollbars, etc)
-        root.style.colorScheme = isDark ? 'dark' : 'light';
+        root.style.colorScheme = 'dark';
     };
 
     const setTheme = (newTheme: Theme) => {
-        setThemeState(newTheme);
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
+        // Prevent theme changes, or always set to dark
+        setThemeState('dark');
+        localStorage.setItem('theme', 'dark');
+        applyTheme('dark');
     };
 
     return (
