@@ -9,6 +9,7 @@ import RecommendedJobs from '@/components/jobs/RecommendedJobs';
 import { api } from '@/lib/api';
 import { JobListing } from '@/types';
 import { Plus, Trash2, UserCheck, Calendar, MapPin, Eye, Clock, AlertCircle, CheckCircle2, ChevronRight, Briefcase } from 'lucide-react';
+import { JobCardSkeleton } from '@/components/ui/Skeleton';
 
 export default function JobsPage() {
     const { user } = useAuth();
@@ -125,8 +126,10 @@ export default function JobsPage() {
 
                 {/* Job List */}
                 {isLoading ? (
-                    <div className="flex items-center justify-center py-20">
-                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-500" />
+                    <div className="space-y-3">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                            <JobCardSkeleton key={i} />
+                        ))}
                     </div>
                 ) : jobs.length === 0 ? (
                     <div className="text-center py-20 bg-slate-800/30 border border-slate-700 rounded-xl">
@@ -148,8 +151,8 @@ export default function JobsPage() {
                                         {/* Tags Row */}
                                         <div className="flex items-center gap-2 mb-3">
                                             <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${(job as any).jobType === 'EVENT_VENDOR'
-                                                    ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
-                                                    : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                                ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
+                                                : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
                                                 }`}>
                                                 {(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
                                             </span>

@@ -9,6 +9,7 @@ import Step2Compliance from './Step2Compliance';
 import Step3Preview from './Step3Preview';
 import { JobCreationPayload } from '@/types';
 import { WizardFormData } from './schema';
+import { useFormPersistence } from '@/hooks/useFormPersistence';
 
 interface HiringWizardProps {
     initialType?: JobType;
@@ -21,29 +22,30 @@ export default function HiringWizard({ initialType = JobType.TEACHER_HIRING }: H
     const [isLoading, setIsLoading] = useState(false);
 
     // Form State
-    const [formData, setFormData] = useState<WizardFormData>({
-        title: '',
-        description: '',
-        subjects: '',
-        regions: '',
-        budget: '',
-        internalChecklist: {
-            planningApproved: false,
-            budgetConfirmed: false,
-            vacancyConfirmed: false,
-        },
-        // Teacher
-        hiringReason: '',
-        contractPeriod: '',
-        gradeLevel: [],
-        teachingHours: '',
-        // Event
-        eventType: '',
-        eventDuration: '',
-        participantCount: '',
-        equipmentProvided: false,
-        certifications: [],
-    });
+    const { values: formData, setValues: setFormData, clearSavedData, isHydrated } =
+        useFormPersistence<WizardFormData>('teacher-hiring-wizard-v1', {
+            title: '',
+            description: '',
+            subjects: '',
+            regions: '',
+            budget: '',
+            internalChecklist: {
+                planningApproved: false,
+                budgetConfirmed: false,
+                vacancyConfirmed: false,
+            },
+            // Teacher
+            hiringReason: '',
+            contractPeriod: '',
+            gradeLevel: [],
+            teachingHours: '',
+            // Event
+            eventType: '',
+            eventDuration: '',
+            participantCount: '',
+            equipmentProvided: false,
+            certifications: [],
+        });
 
     const [isStandardSalary, setIsStandardSalary] = useState(true);
     const [isStep2Valid, setIsStep2Valid] = useState(false); // Validated by Step2 component
@@ -78,11 +80,13 @@ export default function HiringWizard({ initialType = JobType.TEACHER_HIRING }: H
 
             await api.post('/jobs', payload);
             alert('공고가 성공적으로 등록되었습니다! 🎉');
+            clearSavedData(); // Clear persistent storage on success
             router.push('/dashboard/jobs');
         } catch (e: any) {
             console.error(e);
             alert(e.message || '등록 실패');
-        } finally {
+        }
+        finally {
             setIsLoading(false);
         }
     };

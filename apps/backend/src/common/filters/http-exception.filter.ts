@@ -1,20 +1,31 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpException } from '@nestjs/common';
-import { Response } from 'express';
+import { ExceptionFilter, Catch, ArgumentsHost, HttpException, HttpStatus } from '@nestjs/common';
+import { Request, Response } from 'express';
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const status = exception.getStatus();
-    const exceptionResponse: any = exception.getResponse();
+    const request = ctx.getRequest<Request>();
+
+    const status =
+      exception instanceof HttpException
+        ? exception.getStatus()
+        : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    const errorResponse =
+      exception instanceof HttpException
+        ? exception.getResponse()
+        : { message: 'Internal Server Error' };
+
+    // 로그 남기기 (나중에 CloudWatch/Sentry 등으로 확장 가능)
+    console.error(`[${request.method}] ${request.url} - Status: ${status}`, exception);
 
     response.status(status).json({
       success: false,
-      statusCode: status,
       timestamp: new Date().toISOString(),
-      message: exceptionResponse.message || exception.message,
-      error: exceptionResponse.error || null,
+      path: request.url,
+      error: typeof errorResponse === 'string' ? { message: errorResponse } : errorResponse,
     });
   }
 }
