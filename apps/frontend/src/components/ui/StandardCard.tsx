@@ -22,24 +22,24 @@ export default function StandardCard({
     noPadding = false
 }: StandardCardProps) {
     return (
-        <div className={`bg-surface border border-border rounded-[32px] overflow-hidden shadow-sm hover:shadow-md transition-all ${className}`}>
+        <div className={`bg-surface border border-white/[0.05] rounded-xl overflow-hidden transition-all duration-200 ${className}`}>
             {(title || icon || extra) && (
-                <div className="px-6 py-5 border-b border-border flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/30">
-                    <div className="flex items-center gap-3">
+                <div className="px-5 py-3.5 border-b border-white/[0.05] flex items-center justify-between bg-zinc-900/30">
+                    <div className="flex items-center gap-2.5">
                         {icon && (
-                            <div className="p-2 bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-border">
-                                {typeof icon === 'string' ? <span className="text-xl">{icon}</span> : icon}
+                            <div className="flex items-center justify-center text-zinc-400">
+                                {typeof icon === 'string' ? <span className="text-lg">{icon}</span> : React.cloneElement(icon as React.ReactElement<any>, { size: 18 })}
                             </div>
                         )}
                         <div>
-                            {title && <h3 className="font-bold text-foreground">{title}</h3>}
-                            {subtitle && <p className="text-xs text-foreground-muted mt-0.5">{subtitle}</p>}
+                            {title && <h3 className="font-bold text-sm text-zinc-100">{title}</h3>}
+                            {subtitle && <p className="text-[11px] text-zinc-500 mt-0.5">{subtitle}</p>}
                         </div>
                     </div>
                     {extra && <div>{extra}</div>}
                 </div>
             )}
-            <div className={noPadding ? '' : 'p-6 md:p-8'}>
+            <div className={noPadding ? '' : 'p-5 md:p-6'}>
                 {children}
             </div>
         </div>

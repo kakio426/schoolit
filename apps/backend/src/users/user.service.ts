@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateUserDto } from './dtos/create-user.dto';
 import {
@@ -12,15 +12,11 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
-
-    let hashedPassword = null;
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
-    }
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : null;
 
     return this.prisma.user.create({
       data: {
@@ -41,10 +37,7 @@ export class UserService {
   async findUserBySnsId(provider: Provider, snsId: string) {
     return this.prisma.user.findUnique({
       where: {
-        provider_snsId: {
-          provider,
-          snsId,
-        },
+        provider_snsId: { provider, snsId },
       },
     });
   }
@@ -57,26 +50,19 @@ export class UserService {
     phone?: string,
   ) {
     // 1. snsId와 provider로 기존 유저 검색
-    let user = await this.findUserBySnsId(provider, snsId);
+    const existingUserBySns = await this.findUserBySnsId(provider, snsId);
+    if (existingUserBySns) return existingUserBySns;
 
-    if (user) {
-      return user;
-    }
-
-    // 2. snsId로 없으면 email로 기존 유저 검색 (연동 처리)
-    user = await this.findOne(email);
-    if (user) {
-      // 기존 계정에 소셜 정보 업데이트
+    // 2. snsId로 없으면 email로 기존 유저 검색 (계정 연동)
+    const existingUserByEmail = await this.findOne(email);
+    if (existingUserByEmail) {
       return this.prisma.user.update({
-        where: { id: user.id },
-        data: {
-          provider,
-          snsId,
-        },
+        where: { id: existingUserByEmail.id },
+        data: { provider, snsId },
       });
     }
 
-    // 3. 둘 다 없으면 신규 가입 (PENDING 역할 부여)
+    // 3. 신규 가입
     return this.create({
       email,
       name,
@@ -84,7 +70,7 @@ export class UserService {
       provider,
       snsId,
       phone,
-    } as any);
+    });
   }
 
   async getProfile(userId: number) {
@@ -95,34 +81,29 @@ export class UserService {
   }
 
   async updateProfile(userId: number, data: any) {
-    // Separate User fields (name, phone) from TeacherProfile fields
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { isVerified, phone, name, ...teacherData } = data;
 
-    // Update User table fields if provided
-    const userUpdates: any = {};
-    if (phone !== undefined) userUpdates.phone = phone;
-    if (name !== undefined) userUpdates.name = name;
-
-    if (Object.keys(userUpdates).length > 0) {
+    // User 테이블 업데이트
+    if (phone || name) {
       await this.prisma.user.update({
         where: { id: userId },
-        data: userUpdates,
+        data: {
+          ...(phone && { phone }),
+          ...(name && { name })
+        },
       });
     }
 
+    // TeacherProfile 업데이트
     return this.prisma.teacherProfile.upsert({
       where: { userId },
       create: {
         userId,
         ...teacherData,
-        isVerified: false, // Force default on create
+        isVerified: false,
       },
-      update: {
-        ...teacherData,
-        // isVerified is NOT updated here
-      },
-      // Ensure we see the isVerified status in response
+      update: { ...teacherData },
       select: {
         id: true,
         userId: true,
@@ -140,31 +121,7 @@ export class UserService {
     });
   }
 
-  async getTeacherProfile(userId: number) {
-    return this.prisma.teacherProfile.findUnique({
-      where: { userId },
-    });
-  }
-
-  async getSchoolProfile(userId: number) {
-    return this.prisma.schoolProfile.findUnique({
-      where: { userId },
-    });
-  }
-
-  async updateSchoolProfile(userId: number, data: any) {
-    return this.prisma.schoolProfile.upsert({
-      where: { userId },
-      create: {
-        userId,
-        ...data,
-      },
-      update: {
-        ...data,
-      },
-    });
-  }
-
+  // --- [Optimization] DB Aggregation for Stats ---
   async getProfileWithStats(userId: number, viewerId?: number) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -179,14 +136,7 @@ export class UserService {
         },
         schoolProfile: true,
         businessProfile: {
-          include: {
-            portfolios: true,
-          },
-        },
-        reviewsReceived: {
-          include: {
-            keywords: true,
-          },
+          include: { portfolios: true },
         },
       },
     });
@@ -197,42 +147,53 @@ export class UserService {
     const isOwner = viewerId === userId;
     if (!isOwner) {
       user.phone = null;
-      user.email = null; // Hide email from public
-      if (user.teacherProfile) {
-        user.teacherProfile.bankAccount = null;
-      }
+      user.email = null;
+      if (user.teacherProfile) user.teacherProfile.bankAccount = null;
       if (user.businessProfile) {
         user.businessProfile.bankAccount = null;
-        user.businessProfile.registrationNum = null; // Hide reg number
+        user.businessProfile.registrationNum = null;
       }
     }
 
-    const reviews = user.reviewsReceived || [];
-    const totalReviews = reviews.length;
+    // [Refactor] 성능 최적화: JS 계산 대신 DB Aggregation 사용
+    // 1. 평균 평점 및 전체 리뷰 수
+    const aggregations = await this.prisma.review.aggregate({
+      where: { receiverId: userId },
+      _avg: { rating: true },
+      _count: { _all: true },
+    });
 
-    // Calculate Average Rating (excluding null ratings)
-    const validRatings = reviews.filter((r) => r.rating !== null).map((r) => r.rating as number);
-    const averageRating =
-      validRatings.length > 0
-        ? validRatings.reduce((sum, r) => sum + r, 0) / validRatings.length
-        : 0;
+    const averageRating = aggregations._avg.rating || 0;
+    const totalReviews = aggregations._count._all;
 
-    // Aggregate Keywords
+    // 2. 재매칭 의사 (True인 개수만 카운트)
+    const reMatchCount = await this.prisma.review.count({
+      where: { receiverId: userId, reMatchIntent: true },
+    });
+    const reMatchRate = totalReviews > 0 ? (reMatchCount / totalReviews) * 100 : 100;
+
+    // 3. 키워드 집계
+    const reviewKeywords = await this.prisma.review.findMany({
+      where: { receiverId: userId },
+      select: {
+        keywords: {
+          select: { keyword: true }
+        }
+      },
+      take: 50, // 최근 50개 리뷰만 분석
+    });
+
     const keywordCounts: Record<string, number> = {};
-    reviews.forEach((review) => {
-      review.keywords.forEach((kw) => {
-        keywordCounts[kw.keyword] = (keywordCounts[kw.keyword] || 0) + 1;
+    reviewKeywords.forEach((r) => {
+      r.keywords.forEach((k) => {
+        keywordCounts[k.keyword] = (keywordCounts[k.keyword] || 0) + 1;
       });
     });
 
     const topKeywords = Object.entries(keywordCounts)
       .map(([keyword, count]) => ({ keyword, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5); // Take top 5
-
-    // Calculate Re-match Rate
-    const reMatchCount = reviews.filter((r) => r.reMatchIntent === true).length;
-    const reMatchRate = totalReviews > 0 ? (reMatchCount / totalReviews) * 100 : 100;
+      .slice(0, 5);
 
     return {
       ...user,
@@ -247,23 +208,24 @@ export class UserService {
   }
 
   async updateRole(userId: number, role: Role) {
-    // Upsert the corresponding profile
+    const profileData = { userId, isVerified: false };
+
     if (role === Role.SCHOOL) {
       await this.prisma.schoolProfile.upsert({
         where: { userId },
-        create: { userId, isVerified: false },
+        create: profileData,
         update: {},
       });
     } else if (role === Role.TEACHER) {
       await this.prisma.teacherProfile.upsert({
         where: { userId },
-        create: { userId, isVerified: false },
+        create: profileData,
         update: {},
       });
     } else if (role === Role.BUSINESS) {
       await this.prisma.businessProfile.upsert({
         where: { userId },
-        create: { userId, companyName: 'New Company', isVerified: false, categories: [] },
+        create: { ...profileData, companyName: 'New Company', categories: [] },
         update: {},
       });
     }
@@ -271,13 +233,50 @@ export class UserService {
     return this.prisma.user.update({
       where: { id: userId },
       data: { role },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-      },
-      // Note: We don't include profile here because frontend will fetch it separately via /profile
+      select: { id: true, email: true, name: true, role: true },
+    });
+  }
+
+  // --- [New] Transactional Signup Completion ---
+  async completeSignupTransaction(
+    userId: number,
+    data: { role: Role; name: string; phone: string; profileData?: any },
+  ) {
+    return this.prisma.$transaction(async (tx) => {
+      // 1. 기본 정보 업데이트
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: { name: data.name, phone: data.phone, role: data.role },
+      });
+
+      // 2. 역할별 프로필 생성 및 업데이트
+      if (data.role === Role.TEACHER) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { isVerified, ...tData } = data.profileData || {};
+        await tx.teacherProfile.upsert({
+          where: { userId },
+          create: { userId, isVerified: false, ...tData },
+          update: { ...tData },
+        });
+      } else if (data.role === Role.SCHOOL) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { isVerified, ...sData } = data.profileData || {};
+        await tx.schoolProfile.upsert({
+          where: { userId },
+          create: { userId, isVerified: false, ...sData },
+          update: { ...sData },
+        });
+      } else if (data.role === Role.BUSINESS) {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { isVerified, ...bData } = data.profileData || {};
+        await tx.businessProfile.upsert({
+          where: { userId },
+          create: { userId, isVerified: false, companyName: bData.companyName || 'New Company', categories: [] },
+          update: { ...bData },
+        });
+      }
+
+      return updatedUser;
     });
   }
 
@@ -290,22 +289,15 @@ export class UserService {
   }
 
   async addExperience(userId: number, dto: CreateTeacherExperienceDto) {
-    const profile = await this.prisma.teacherProfile.upsert({
-      where: { userId },
-      create: { userId, isVerified: false },
-      update: {},
-    });
-
-    // Robust Date Parsing
-    const startDate = new Date(dto.startDate);
-    const endDate = dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null;
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException("Teacher profile not found");
 
     return this.prisma.teacherExperience.create({
       data: {
         teacherProfileId: profile.id,
         ...dto,
-        startDate,
-        endDate,
+        startDate: new Date(dto.startDate),
+        endDate: dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null,
       },
     });
   }
@@ -321,22 +313,15 @@ export class UserService {
   }
 
   async addEducation(userId: number, dto: CreateTeacherEducationDto) {
-    const profile = await this.prisma.teacherProfile.upsert({
-      where: { userId },
-      create: { userId, isVerified: false },
-      update: {},
-    });
-
-    // Robust Date Parsing
-    const startDate = new Date(dto.startDate);
-    const endDate = dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null;
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException("Teacher profile not found");
 
     return this.prisma.teacherEducation.create({
       data: {
         teacherProfileId: profile.id,
         ...dto,
-        startDate,
-        endDate,
+        startDate: new Date(dto.startDate),
+        endDate: dto.endDate && dto.endDate !== '' ? new Date(dto.endDate) : null,
       },
     });
   }
@@ -352,11 +337,9 @@ export class UserService {
   }
 
   async addLink(userId: number, dto: CreateTeacherLinkDto) {
-    const profile = await this.prisma.teacherProfile.upsert({
-      where: { userId },
-      create: { userId, isVerified: false },
-      update: {},
-    });
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException("Teacher profile not found");
+
     return this.prisma.teacherLink.create({
       data: { teacherProfileId: profile.id, ...dto },
     });
@@ -373,11 +356,9 @@ export class UserService {
   }
 
   async addLicense(userId: number, dto: CreateTeacherLicenseDto) {
-    const profile = await this.prisma.teacherProfile.upsert({
-      where: { userId },
-      create: { userId, isVerified: false },
-      update: {},
-    });
+    const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
+    if (!profile) throw new NotFoundException("Teacher profile not found");
+
     return this.prisma.teacherLicense.create({
       data: { teacherProfileId: profile.id, ...dto },
     });
@@ -393,27 +374,18 @@ export class UserService {
     return this.prisma.teacherLicense.delete({ where: { id } });
   }
 
-  // --- Email Verification Code Management ---
   async saveVerificationCode(userId: number, code: string, email?: string) {
     const expires = new Date();
-    expires.setMinutes(expires.getMinutes() + 5); // 5 minutes validity
-
-    // Store as "123456|email@addr.com" if email provided, else just code
+    expires.setMinutes(expires.getMinutes() + 5);
     const valueToStore = email ? `${code}|${email}` : code;
 
     return this.prisma.user.update({
       where: { id: userId },
-      data: {
-        verificationCode: valueToStore,
-        verificationExpires: expires,
-      },
+      data: { verificationCode: valueToStore, verificationExpires: expires },
     });
   }
 
-  async validateVerificationCode(
-    userId: number,
-    code: string,
-  ): Promise<{ valid: boolean; email?: string }> {
+  async validateVerificationCode(userId: number, code: string): Promise<{ valid: boolean; email?: string }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { verificationCode: true, verificationExpires: true },
@@ -422,20 +394,35 @@ export class UserService {
     if (!user || !user.verificationCode) return { valid: false };
 
     const [storedCode, storedEmail] = user.verificationCode.split('|');
-
     if (storedCode !== code) return { valid: false };
     if (!user.verificationExpires || new Date() > user.verificationExpires) return { valid: false };
 
-    // Clear code after successful validation
     await this.prisma.user.update({
       where: { id: userId },
-      data: {
-        verificationCode: null,
-        verificationExpires: null,
-      },
+      data: { verificationCode: null, verificationExpires: null },
     });
 
     return { valid: true, email: storedEmail };
+  }
+
+  async updateSchoolProfile(userId: number, data: any) {
+    return this.prisma.schoolProfile.upsert({
+      where: { userId },
+      create: { userId, ...data },
+      update: { ...data },
+    });
+  }
+
+  async getTeacherProfile(userId: number) {
+    return this.prisma.teacherProfile.findUnique({
+      where: { userId },
+    });
+  }
+
+  async getSchoolProfile(userId: number) {
+    return this.prisma.schoolProfile.findUnique({
+      where: { userId },
+    });
   }
 
   async getAllUsers() {
@@ -448,76 +435,40 @@ export class UserService {
         provider: true,
         phone: true,
         createdAt: true,
-        schoolProfile: {
-          select: { schoolName: true },
-        },
-        businessProfile: {
-          select: { companyName: true },
-        },
+        schoolProfile: { select: { schoolName: true } },
+        businessProfile: { select: { companyName: true } },
       },
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async resetTestUser(userId: number) {
+    const protectedEmails = ['admin@schoolit.com', 'school@test.com', 'teacher@test.com', 'business@test.com'];
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (user && protectedEmails.includes(user.email)) throw new ForbiddenException('기본 테스트 계정은 초기화할 수 없습니다.');
 
-    // Protect core test accounts from being reset
-    const protectedEmails = [
-      'admin@schoolit.com',
-      'school@test.com',
-      'teacher@test.com',
-      'business@test.com',
-    ];
+    await Promise.all([
+      this.prisma.teacherProfile.deleteMany({ where: { userId } }),
+      this.prisma.schoolProfile.deleteMany({ where: { userId } }),
+      this.prisma.businessProfile.deleteMany({ where: { userId } }),
+    ]);
 
-    if (user && protectedEmails.includes(user.email)) {
-      throw new ForbiddenException('기본 테스트 계정은 초기화할 수 없습니다.');
-    }
-
-    // Delete all linked profiles
-    await this.prisma.teacherProfile.deleteMany({ where: { userId } });
-    await this.prisma.schoolProfile.deleteMany({ where: { userId } });
-    await this.prisma.businessProfile.deleteMany({ where: { userId } });
-
-    // Reset User metadata
     return this.prisma.user.update({
       where: { id: userId },
-      data: {
-        role: 'PENDING',
-        phone: null,
-        verificationCode: null,
-        verificationExpires: null,
-      },
+      data: { role: 'PENDING', phone: null, verificationCode: null, verificationExpires: null },
     });
   }
 
-  // ============================================
-  // Account Deletion (Soft Delete) - 개인정보보호법 준수
-  // ============================================
-
-  /**
-   * 회원 탈퇴 (Soft Delete)
-   * - isDeleted = true로 설정하고 개인정보를 마스킹합니다
-   * - 6개월 뒤 스케줄러에 의해 완전 삭제됩니다
-   */
   async deleteAccount(userId: number): Promise<{ success: boolean; message: string }> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('사용자를 찾을 수 없습니다.');
+    if (user.isDeleted) throw new ForbiddenException('이미 탈퇴한 계정입니다.');
 
-    if (!user) {
-      throw new NotFoundException('사용자를 찾을 수 없습니다.');
-    }
-
-    if (user.isDeleted) {
-      throw new ForbiddenException('이미 탈퇴한 계정입니다.');
-    }
-
-    // Soft delete with personal data masking
     await this.prisma.user.update({
       where: { id: userId },
       data: {
         isDeleted: true,
         deletedAt: new Date(),
-        // 개인정보 마스킹 (복구 가능하도록 ID 유지)
         email: `deleted_${userId}_${Date.now()}@deleted.edupin.com`,
         phone: null,
         name: '탈퇴한 사용자',
@@ -529,55 +480,25 @@ export class UserService {
       },
     });
 
-    // 프로필 비공개 처리
-    await this.prisma.teacherProfile.updateMany({
-      where: { userId },
-      data: { isVerified: false, bio: null, bankAccount: null },
-    });
+    await Promise.all([
+      this.prisma.teacherProfile.updateMany({ where: { userId }, data: { isVerified: false, bio: null, bankAccount: null } }),
+      this.prisma.schoolProfile.updateMany({ where: { userId }, data: { isVerified: false, description: null, phoneNumber: null } }),
+      this.prisma.businessProfile.updateMany({ where: { userId }, data: { isVerified: false, description: null, bankAccount: null, registrationNum: null } })
+    ]);
 
-    await this.prisma.schoolProfile.updateMany({
-      where: { userId },
-      data: { isVerified: false, description: null, phoneNumber: null },
-    });
-
-    await this.prisma.businessProfile.updateMany({
-      where: { userId },
-      data: {
-        isVerified: false,
-        description: null,
-        bankAccount: null,
-        registrationNum: null,
-      },
-    });
-
-    return {
-      success: true,
-      message: '회원 탈퇴가 완료되었습니다. 개인정보는 6개월 후 완전히 삭제됩니다.',
-    };
+    return { success: true, message: '회원 탈퇴가 완료되었습니다.' };
   }
 
-  /**
-   * 활성 사용자만 조회 (탈퇴하지 않은 사용자)
-   */
   async findActiveById(id: number) {
     const user = await this.prisma.user.findUnique({ where: { id } });
-
-    if (!user || user.isDeleted) {
-      return null;
-    }
-
-    return user;
+    return (!user || user.isDeleted) ? null : user;
   }
 
-  /**
-   * 탈퇴한 사용자인지 확인
-   */
   async isDeletedUser(userId: number): Promise<boolean> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: { isDeleted: true },
     });
-
     return user?.isDeleted ?? false;
   }
 }

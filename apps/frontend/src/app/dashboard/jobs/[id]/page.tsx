@@ -78,71 +78,71 @@ export default function JobDetailPage() {
     if (isLoading) return <DashboardLayout><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div></div></DashboardLayout>;
     if (!job) return <DashboardLayout><div className="text-center py-20">공고를 찾을 수 없습니다.</div></DashboardLayout>;
 
-    const isTeacherHiring = (job as any).jobType === 'TEACHER_HIRING';
-    const isEventVendor = (job as any).jobType === 'EVENT_VENDOR';
+    const isTeacherHiring = job.jobType === 'TEACHER_HIRING';
+    const isEventVendor = job.jobType === 'EVENT_VENDOR';
 
     return (
         <DashboardLayout>
-            <div className="max-w-6xl mx-auto pb-24">
-                {/* Header Navigation */}
-                <div className="flex items-center justify-between mb-8 animate-in fade-in slide-in-from-left-4 duration-300">
+            <div className="max-w-6xl mx-auto pb-20 px-4">
+                {/* Header Navigation - More compact */}
+                <div className="flex items-center justify-between mb-6 animate-in fade-in slide-in-from-left-4 duration-300">
                     <button
                         onClick={() => router.back()}
-                        className="flex items-center gap-2 text-foreground-muted hover:text-foreground transition-colors font-medium"
+                        className="flex items-center gap-1.5 text-zinc-400 hover:text-white transition-colors text-sm font-semibold group"
                     >
-                        <ChevronLeft className="w-5 h-5" /> 뒤로 가기
+                        <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" /> 뒤로 가기
                     </button>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1.5">
                         {job.active ? (
-                            <StandardBadge variant="primary" className="animate-pulse">모집 중</StandardBadge>
+                            <StandardBadge variant="success" className="px-2 py-0.5 text-[10px]">모집 중</StandardBadge>
                         ) : (
-                            <StandardBadge variant="error">모집 완료</StandardBadge>
+                            <StandardBadge variant="error" className="px-2 py-0.5 text-[10px]">모집 완료</StandardBadge>
                         )}
-                        <StandardBadge variant="indigo">{(job as any).jobType === 'EVENT_VENDOR' ? '🏢 행사/입찰' : '🎓 교사 채용'}</StandardBadge>
+                        <StandardBadge variant="indigo" className="px-2 py-0.5 text-[10px]">{job.jobType === 'EVENT_VENDOR' ? '🏢 행사/입찰' : '🎓 교사 채용'}</StandardBadge>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    {/* Left Column: Main Content */}
-                    <div className="lg:col-span-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Title Section */}
-                        <div className="space-y-4">
-                            <div className="flex flex-wrap gap-2">
-                                {job.subjects?.map(s => <StandardBadge key={s} variant="primary">{s}</StandardBadge>)}
-                                {job.regions?.map(r => <StandardBadge key={r} variant="indigo">{r}</StandardBadge>)}
+                <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
+                    {/* Left Column: Main Content (70%) */}
+                    <div className="lg:col-span-7 space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        {/* Title Section - Tighter and smaller */}
+                        <div className="space-y-3">
+                            <div className="flex flex-wrap gap-1.5">
+                                {job.subjects?.map(s => <span key={s} className="px-2 py-0.5 bg-blue-500/10 text-blue-400 text-[10px] font-bold rounded-md border border-blue-500/20">{s}</span>)}
+                                {job.regions?.map(r => <span key={r} className="px-2 py-0.5 bg-zinc-800 text-zinc-400 text-[10px] font-bold rounded-md border border-white/5">{r}</span>)}
                             </div>
-                            <h1 className="text-3xl md:text-4xl font-black text-foreground leading-[1.2]">{job.title}</h1>
-                            <div className="flex items-center gap-4 text-foreground-muted text-sm">
-                                <span className="flex items-center gap-1.5"><Calendar className="w-4 h-4" /> {new Date(job.createdAt).toLocaleDateString()} 등록</span>
-                                <span className="flex items-center gap-1.5"><Clock className="w-4 h-4" /> 조회수 124</span>
+                            <h1 className="text-2xl md:text-3xl font-black text-white tracking-tight leading-tight">{job.title}</h1>
+                            <div className="flex items-center gap-3.5 text-zinc-500 text-[12px] font-medium">
+                                <span className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5" /> {new Date(job.createdAt).toLocaleDateString()}</span>
+                                <span className="flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> 조회수 124</span>
                             </div>
                         </div>
 
                         {/* Description Card */}
-                        <StandardCard title="공고 상세 내용" icon={<FileText className="w-5 h-5 text-primary" />}>
-                            <div className="text-foreground leading-relaxed whitespace-pre-wrap text-[17px]">
+                        <StandardCard title="공고 상세 내용" icon={<FileText className="w-4 h-4" />}>
+                            <div className="text-zinc-300 leading-relaxed whitespace-pre-wrap text-[15px]">
                                 {job.description}
                             </div>
                         </StandardCard>
 
-                        {/* Detailed Requirements Card */}
-                        <StandardCard title="상세 요건" icon={<BookOpen className="w-5 h-5 text-indigo-500" />}>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+                        {/* Detailed Requirements Card - Horizontal layout for compact info */}
+                        <StandardCard title="상세 요건" icon={<BookOpen className="w-4 h-4" />}>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {isTeacherHiring && (
                                     <>
-                                        <div className="space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">계약 기간</div>
-                                            <div className="text-lg font-black text-foreground">{(job as any).contractPeriod || '협의'}</div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight">계약 기간</span>
+                                            <span className="text-[14px] font-black text-zinc-200">{job.contractPeriod || '협의'}</span>
                                         </div>
-                                        <div className="space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">주당 수업 시수</div>
-                                            <div className="text-lg font-black text-foreground">{(job as any).teachingHours ? `${(job as any).teachingHours}시간` : '협의'}</div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight">주당 수업 시수</span>
+                                            <span className="text-[14px] font-black text-zinc-200">{job.teachingHours ? `${job.teachingHours}시간` : '협의'}</span>
                                         </div>
-                                        <div className="md:col-span-2 space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">담당 학년</div>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {(job as any).gradeLevel?.map((lvl: string) => (
-                                                    <span key={lvl} className="px-3 py-1 bg-background border border-border rounded-lg text-sm font-bold text-foreground">{lvl}</span>
+                                        <div className="sm:col-span-2 p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight mb-2">담당 학년</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {job.gradeLevel?.map((lvl: string) => (
+                                                    <span key={lvl} className="px-2.5 py-0.5 bg-zinc-800 border border-white/5 rounded-md text-[11px] font-bold text-zinc-300">{lvl}</span>
                                                 ))}
                                             </div>
                                         </div>
@@ -150,23 +150,19 @@ export default function JobDetailPage() {
                                 )}
                                 {isEventVendor && (
                                     <>
-                                        <div className="space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">행사 종류</div>
-                                            <div className="text-lg font-black text-foreground">{(job as any).eventType || '전체'}</div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight">행사 종류</span>
+                                            <span className="text-[14px] font-black text-zinc-200">{job.eventType || '전체'}</span>
                                         </div>
-                                        <div className="space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">참가 예상 인원</div>
-                                            <div className="text-lg font-black text-foreground">{(job as any).participantCount || '미정'}</div>
+                                        <div className="flex items-center justify-between p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight">참가 인원</span>
+                                            <span className="text-[14px] font-black text-zinc-200">{job.participantCount || '미정'}</span>
                                         </div>
-                                        <div className="space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">장비/교구 제공</div>
-                                            <div className="text-lg font-black text-foreground">{(job as any).equipmentProvided ? '업체 지참 권장' : '학교 측 제공'}</div>
-                                        </div>
-                                        <div className="md:col-span-2 space-y-1">
-                                            <div className="text-xs font-bold text-foreground-muted uppercase tracking-wider">필수 자격 요건</div>
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {(job as any).certifications?.map((cert: string) => (
-                                                    <span key={cert} className="px-3 py-1 bg-purple-500/10 text-purple-500 border border-purple-500/20 rounded-lg text-sm font-bold">{cert}</span>
+                                        <div className="sm:col-span-2 p-3 rounded-xl bg-zinc-900/50 border border-white/[0.03]">
+                                            <div className="text-[11px] font-bold text-zinc-500 uppercase tracking-tight mb-2">필수 자격 요건</div>
+                                            <div className="flex flex-wrap gap-1.5">
+                                                {job.certifications?.map((cert: string) => (
+                                                    <span key={cert} className="px-2.5 py-0.5 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-md text-[11px] font-bold">{cert}</span>
                                                 ))}
                                             </div>
                                         </div>
@@ -175,23 +171,25 @@ export default function JobDetailPage() {
                             </div>
                         </StandardCard>
 
-                        {/* Poster Info Card */}
+                        {/* Poster Info Card - More compact */}
                         <StandardCard
                             title={job.schoolProfile ? '학교 정보' : '요청자 정보'}
-                            icon={job.schoolProfile ? <Building className="w-5 h-5 text-emerald-500" /> : <User className="w-5 h-5 text-orange-500" />}
-                            extra={job.schoolProfile?.website && (
-                                <a href={job.schoolProfile.website} target="_blank" rel="noreferrer" className="text-primary flex items-center gap-1 text-sm font-bold hover:underline">
-                                    홈페이지 <ExternalLink className="w-3 h-3" />
-                                </a>
-                            )}
+                            icon={job.schoolProfile ? <Building className="w-4 h-4 text-emerald-500" /> : <User className="w-4 h-4 text-orange-500" />}
                         >
-                            <div className="flex items-center gap-5 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-border/50">
-                                <div className="w-14 h-14 bg-white dark:bg-slate-700 rounded-xl flex items-center justify-center text-3xl shadow-sm border border-border">
+                            <div className="flex items-center gap-4">
+                                <div className="w-10 h-10 bg-zinc-900 rounded-lg flex items-center justify-center text-xl border border-white/[0.05]">
                                     {job.schoolProfile ? '🏫' : '👤'}
                                 </div>
-                                <div>
-                                    <h4 className="font-black text-xl text-foreground">{job.schoolProfile?.schoolName || (job as any).teacherProfile?.user?.name || '정보 없음'}</h4>
-                                    <p className="text-sm text-foreground-muted flex items-center gap-1.5 mt-1">
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <h4 className="font-bold text-zinc-100 truncate">{job.schoolProfile?.schoolName || (job as any).teacherProfile?.user?.name || '정보 없음'}</h4>
+                                        {job.schoolProfile?.website && (
+                                            <a href={job.schoolProfile.website} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-400 transition-colors">
+                                                <ExternalLink className="w-3.5 h-3.5" />
+                                            </a>
+                                        )}
+                                    </div>
+                                    <p className="text-[12px] text-zinc-500 flex items-center gap-1 mt-0.5 truncate">
                                         <MapPin className="w-3 h-3" /> {job.schoolProfile?.address || '위치 정보 협의'}
                                     </p>
                                 </div>
@@ -199,119 +197,92 @@ export default function JobDetailPage() {
                         </StandardCard>
                     </div>
 
-                    {/* Right Column: Sticky Sidebar */}
-                    <div className="lg:col-span-4 space-y-6">
-                        <div className="sticky top-24 space-y-6">
-                            <StandardCard className="border-t-4 border-t-primary">
-                                <div className="space-y-6">
+                    {/* Right Column: Sticky Sidebar (30%) */}
+                    <div className="lg:col-span-3 space-y-5">
+                        <div className="sticky top-24 space-y-5">
+                            <StandardCard className="border-t-2 border-t-blue-600 bg-zinc-900/20">
+                                <div className="space-y-4">
                                     <div>
-                                        <div className="text-xs font-bold text-foreground-muted uppercase mb-1">상태</div>
-                                        {/* Compliance Workflow Status */}
-                                        {(job as any).workflowStatus && (job as any).workflowStatus !== 'PUBLISHED' ? (
+                                        <div className="text-[10px] font-black text-zinc-500 uppercase mb-2 tracking-widest">실시간 상태</div>
+                                        {job.workflowStatus && job.workflowStatus !== 'PUBLISHED' ? (
                                             <div className="space-y-3">
-                                                <div className="text-xl font-black text-amber-500 flex items-center gap-2">
-                                                    {(job as any).workflowStatus === 'DRAFT' ? '기안 작성 중' :
-                                                        (job as any).workflowStatus === 'PLAN_APPROVED' ? '결재 승인됨' :
+                                                <div className="text-lg font-black text-amber-500 flex items-center gap-2">
+                                                    {job.workflowStatus === 'DRAFT' ? '기안 작성 중' :
+                                                        job.workflowStatus === 'PLAN_APPROVED' ? '결재 승인됨' :
                                                             '내부 결재 진행 중'}
-                                                    <span className="w-2.5 h-2.5 bg-amber-500 rounded-full animate-pulse" />
+                                                    <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
                                                 </div>
-                                                <p className="text-xs text-foreground-muted">
-                                                    현재 이 공고는 외부에 노출되지 않습니다.<br />
-                                                    아래 버튼을 눌러 다음 단계로 진행하세요.
-                                                </p>
 
-
-                                                {/* 학교 관리자 전용 워크플로우 버튼 */}
                                                 {user?.role === 'SCHOOL' && (
-                                                    <div className="space-y-2 pt-2">
-                                                        {/* DRAFT or PLAN_DRAFT -> PLAN_APPROVED */}
-                                                        {((job as any).workflowStatus === 'DRAFT' || (job as any).workflowStatus === 'PLAN_DRAFT') && (
+                                                    <div className="space-y-2">
+                                                        {(job.workflowStatus === 'DRAFT' || job.workflowStatus === 'PLAN_DRAFT') && (
                                                             <button
                                                                 onClick={async () => {
-                                                                    if (!confirm('결재를 승인하시겠습니까? 이후 게시 단계로 넘어갑니다.')) return;
+                                                                    if (!confirm('결재를 승인하시겠습니까?')) return;
                                                                     try {
                                                                         await api.put(`/compliance/jobs/${job.id}/workflow`, { status: 'PLAN_APPROVED' });
-                                                                        alert('결재가 승인되었습니다.');
                                                                         fetchJob();
-                                                                    } catch (e: any) {
-                                                                        alert(e.message || '오류가 발생했습니다.');
-                                                                    }
+                                                                    } catch (e: any) { alert(e.message); }
                                                                 }}
-                                                                className="w-full py-2.5 bg-amber-500 text-white font-bold rounded-xl text-sm hover:bg-amber-600 transition-colors"
+                                                                className="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-lg text-xs transition-colors"
                                                             >
-                                                                ✅ 결재 승인하기
+                                                                승인하기
                                                             </button>
                                                         )}
-
-                                                        {/* PLAN_APPROVED -> PUBLISHED */}
-                                                        {(job as any).workflowStatus === 'PLAN_APPROVED' && (
+                                                        {job.workflowStatus === 'PLAN_APPROVED' && (
                                                             <button
                                                                 onClick={async () => {
-                                                                    if (!confirm('공고를 게시하시겠습니까? 외부에 공개됩니다.')) return;
+                                                                    if (!confirm('공고를 게시하시겠습니까?')) return;
                                                                     try {
                                                                         await api.put(`/compliance/jobs/${job.id}/workflow`, { status: 'PUBLISHED' });
-                                                                        alert('공고가 게시되었습니다!');
+                                                                        alert('공고 게시 완료!');
                                                                         fetchJob();
-                                                                    } catch (e: any) {
-                                                                        alert(e.message || '오류가 발생했습니다.');
-                                                                    }
+                                                                    } catch (e: any) { alert(e.message); }
                                                                 }}
-                                                                className="w-full py-2.5 bg-emerald-500 text-white font-bold rounded-xl text-sm hover:bg-emerald-600 transition-colors"
+                                                                className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition-colors shadow-lg shadow-emerald-600/20"
                                                             >
-                                                                🚀 공고 게시하기
+                                                                공고 게시하기
                                                             </button>
-                                                        )}
-
-                                                        {/* Debug: Show current status if no button matched */}
-                                                        {!['DRAFT', 'PLAN_DRAFT', 'PLAN_APPROVED'].includes((job as any).workflowStatus) && (
-                                                            <p className="text-[10px] text-slate-500">현재 상태: {(job as any).workflowStatus}</p>
                                                         )}
                                                     </div>
                                                 )}
                                             </div>
                                         ) : (
-                                            <div className="text-2xl font-black text-foreground flex items-center gap-2">
-                                                {job.active ? '지원 가능' : '마감된 공고'}
-                                                {job.active && <span className="w-2.5 h-2.5 bg-success rounded-full animate-bounce" />}
+                                            <div className="text-lg font-black text-white flex items-center gap-2">
+                                                {job.active ? '지원 가능' : '모집 완료'}
+                                                {job.active && <span className="w-2 h-2 bg-emerald-500 rounded-full animate-bounce" />}
                                             </div>
                                         )}
                                     </div>
 
-                                    <div className="pt-6 border-t border-border">
+                                    <div className="pt-4 border-t border-white/5">
                                         {hasApplied ? (
-                                            <div className="space-y-4">
-                                                <div className="flex flex-col items-center justify-center p-6 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl text-center">
-                                                    <CheckCircle className="w-10 h-10 text-emerald-500 mb-3" />
-                                                    <div className="font-black text-emerald-600 dark:text-emerald-400">지원 완료</div>
-                                                    <p className="text-xs text-foreground-muted mt-1">담당자가 확인 중입니다.</p>
+                                            <div className="space-y-3">
+                                                <div className="py-3 bg-emerald-500/5 border border-emerald-500/10 rounded-xl text-center">
+                                                    <div className="text-xs font-black text-emerald-500">지원 완료</div>
                                                 </div>
                                                 <Link
                                                     href="/dashboard/applications"
-                                                    className="w-full py-4 bg-emerald-500 text-white font-black rounded-2xl text-center block shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all"
+                                                    className="w-full py-2.5 bg-zinc-800 text-white font-bold rounded-lg text-xs text-center block hover:bg-zinc-700 transition-colors"
                                                 >
-                                                    지원 현황 확인하기
+                                                    내 지원 현황
                                                 </Link>
                                             </div>
                                         ) : (
-                                            <div className="space-y-4">
-                                                {/* Role Permission Check */}
+                                            <div className="space-y-3">
                                                 {((isEventVendor && user?.role !== 'BUSINESS') || (isTeacherHiring && user?.role !== 'TEACHER')) ? (
-                                                    <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-600 dark:text-amber-400 text-xs leading-relaxed text-center font-bold">
-                                                        ⚠️ 이 공고의 자격 요건(역할)과<br />사용자 계정 정보가 일치하지 않습니다.
+                                                    <div className="p-3 bg-zinc-900 border border-white/5 rounded-lg text-[10px] text-zinc-500 text-center font-bold">
+                                                        역할이 일치하지 않습니다.
                                                     </div>
                                                 ) : (
                                                     <>
                                                         <button
                                                             onClick={handleApplyClick}
                                                             disabled={isApplying || !job.active}
-                                                            className="w-full py-5 bg-primary text-white font-black rounded-2xl shadow-xl shadow-primary/30 hover:bg-primary/90 active:scale-[0.98] transition-all disabled:opacity-50 text-lg flex items-center justify-center gap-2"
+                                                            className="w-full py-3 bg-blue-600 text-white font-black rounded-lg shadow-lg shadow-blue-600/10 hover:bg-blue-500 active:scale-[0.98] transition-all disabled:opacity-30 text-sm flex items-center justify-center gap-2"
                                                         >
-                                                            <Send className="w-5 h-5" /> 간편 지원하기
+                                                            <Send className="w-3.5 h-3.5" /> 간편 지원하기
                                                         </button>
-                                                        <p className="text-center text-[11px] text-foreground-muted font-medium">
-                                                            * 프로필 정보가 자동으로 전송됩니다.<br />
-                                                            * 승인 후에는 담당자와 채팅이 가능합니다.
-                                                        </p>
                                                     </>
                                                 )}
                                             </div>
@@ -320,27 +291,29 @@ export default function JobDetailPage() {
                                 </div>
                             </StandardCard>
 
-                            {/* Info Card Snippet */}
-                            <div className="bg-indigo-600 rounded-[32px] p-8 text-white shadow-xl shadow-indigo-600/20 relative overflow-hidden">
-                                <div className="relative z-10">
-                                    <h5 className="font-bold text-indigo-100 text-xs mb-4">공고 요약</h5>
-                                    <div className="space-y-4">
-                                        <div className="flex justify-between items-center border-b border-indigo-500/50 pb-3">
-                                            <span className="text-sm opacity-80">과목/분야</span>
-                                            <span className="font-bold">{job.subjects?.[0] || '전체'}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center border-b border-indigo-500/50 pb-3">
-                                            <span className="text-sm opacity-80">지역</span>
-                                            <span className="font-bold">{job.regions?.[0] || '전체'}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center">
-                                            <span className="text-sm opacity-80">모집 인원</span>
-                                            <span className="font-bold">1명</span>
-                                        </div>
+                            {/* Job Summary Card - Redesigned as requested */}
+                            <div className="bg-zinc-900/40 border border-white/[0.05] rounded-xl p-5 relative overflow-hidden">
+                                <h5 className="font-black text-zinc-500 text-[10px] uppercase tracking-widest mb-4">공고 요약</h5>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-[12px]">
+                                        <span className="text-zinc-500">과목/분야</span>
+                                        <span className="font-bold text-zinc-200">{job.subjects?.[0] || '전체'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[12px]">
+                                        <span className="text-zinc-500">지역</span>
+                                        <span className="font-bold text-zinc-200">{job.regions?.[0] || '전체'}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[12px]">
+                                        <span className="text-zinc-500">모집 인원</span>
+                                        <span className="font-bold text-zinc-200">1명</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[12px]">
+                                        <span className="text-zinc-500">예산 규모</span>
+                                        <span className="font-bold text-blue-400">
+                                            {job.budget === '0' || !job.budget ? '교육청 지침' : `${Number(job.budget).toLocaleString()}원`}
+                                        </span>
                                     </div>
                                 </div>
-                                {/* Subtle Background Pattern */}
-                                <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
                             </div>
                         </div>
                     </div>
@@ -363,7 +336,7 @@ export default function JobDetailPage() {
                 isOpen={isApplyModalOpen}
                 onClose={() => setIsApplyModalOpen(false)}
                 onSubmit={handleApplySubmit}
-                jobType={(job as any).jobType || 'TEACHER_HIRING'}
+                jobType={(job.jobType || 'TEACHER_HIRING') as 'TEACHER_HIRING' | 'EVENT_VENDOR'}
                 jobTitle={job.title}
             />
         </DashboardLayout>

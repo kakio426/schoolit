@@ -1,4 +1,4 @@
-import { Role, ApplicationStatus, CertStatus } from '../lib/constants';
+import { Role, ApplicationStatus, CertStatus, JobType } from '../lib/constants';
 
 export interface TeacherExperience {
     id: number;
@@ -145,7 +145,16 @@ export interface JobListing {
     regions: string[];
     status: 'OPEN' | 'CLOSED';
     active: boolean;
-    jobType?: string;
+    jobType?: JobType;
+    budget?: string | number;
+    contractPeriod?: string;
+    teachingHours?: number;
+    gradeLevel?: string[];
+    eventType?: string;
+    participantCount?: string;
+    equipmentProvided?: boolean;
+    certifications?: string[];
+    workflowStatus?: string;
     internalChecklist?: any;
     createdAt: string;
     schoolProfile?: SchoolProfile;

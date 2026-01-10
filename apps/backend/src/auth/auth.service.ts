@@ -1,10 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { UserService } from '../users/user.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
 import { Provider, Role } from '@prisma/client';
-
 import { EmailService } from '../email/email.service';
 import { SmsService } from '../sms/sms.service';
 
@@ -20,14 +19,13 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
 
-    // 탈퇴한 계정 차단
     if (user && (user as any).isDeleted) {
       return { isDeleted: true, message: '탈퇴한 계정입니다.' };
     }
 
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
-      const result = { ...user };
-      delete result.password;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
       return result;
     }
     return null;
@@ -47,8 +45,8 @@ export class AuthService {
 
   async signup(createUserDto: CreateUserDto) {
     const user = await this.userService.create(createUserDto);
-    const result = { ...user };
-    delete result.password;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password, ...result } = user;
     return result;
   }
 
@@ -61,7 +59,7 @@ export class AuthService {
         email: testEmail,
         name: '테스트 사용자',
         role: (options?.role as any) || 'TEACHER',
-      } as any);
+      });
     }
 
     return {
@@ -71,12 +69,10 @@ export class AuthService {
       role: user.role,
     };
   }
+
   async requestEmailVerification(userId: number, email: string) {
-    // 1. Generate OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    // 2. Save code with email
     await this.userService.saveVerificationCode(userId, code, email);
-    // 3. Send Email
     await this.emailService.sendVerificationCode(email, code);
     return { sent: true, email };
   }
@@ -91,14 +87,13 @@ export class AuthService {
 
     // Update School Profile if data provided
     if (schoolData) {
-      // Auto-verify if email is from korea.kr or go.kr
       const isTrustedEmail = email?.endsWith('.kr') || email?.endsWith('.go.kr');
 
       await this.userService.updateSchoolProfile(userId, {
         schoolName: schoolData.schoolName,
         phoneNumber: schoolData.phoneNumber,
         description: email ? `[Verified Email: ${email}]` : undefined,
-        isVerified: isTrustedEmail, // Automatically mark as verified for official emails
+        isVerified: !!isTrustedEmail,
       });
     }
 
@@ -107,8 +102,6 @@ export class AuthService {
 
   async requestPhoneVerification(userId: number, phone: string) {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    // Re-use verification code storage (or specify phone version if needed)
-    // For simplicity, we use the same verification code field but prefix it
     await this.userService.saveVerificationCode(userId, `PHONE|${code}`, phone);
     await this.smsService.sendVerificationCode(phone, code);
     return { sent: true, phone };
@@ -121,9 +114,7 @@ export class AuthService {
     );
     if (!valid) return { success: false };
 
-    // Update user phone number
     await this.userService.updateProfile(userId, { phone });
-
     return { success: true };
   }
 
@@ -131,38 +122,18 @@ export class AuthService {
     userId: number,
     data: { role: Role; name: string; phone: string; profileData?: any },
   ) {
-    console.log(`[FinishSignup] Starting for user ${userId} with role ${data.role}`);
     try {
-      // 1. Update Name and Phone
-      console.log(`[FinishSignup] Updating name and phone...`);
-      await this.userService.updateProfile(userId, { name: data.name, phone: data.phone });
+      // Use atomic transaction for signup completion
+      const updatedUser = await this.userService.completeSignupTransaction(userId, data);
 
-      // 2. Update Role and create specific profile
-      console.log(`[FinishSignup] Updating role to ${data.role}...`);
-      await this.userService.updateRole(userId, data.role);
-
-      // 3. Update specific profile data if exists
-      if (data.profileData) {
-        console.log(`[FinishSignup] Updating specific profile data...`);
-        if (data.role === Role.TEACHER) {
-          await this.userService.updateProfile(userId, data.profileData);
-        } else if (data.role === Role.SCHOOL) {
-          await this.userService.updateSchoolProfile(userId, data.profileData);
-        } else if (data.role === Role.BUSINESS) {
-          // Business Profile update logic
-          await this.userService.updateRole(userId, Role.BUSINESS); // Role update logic handles profile creation
-        }
-      }
-
-      // Return new token because role changed
-      console.log(`[FinishSignup] Generating new token for user ${userId}...`);
-      const updatedUser = await this.userService.findById(userId);
       if (!updatedUser) {
-        throw new Error('Updated user not found');
+        throw new InternalServerErrorException('Failed to complete signup');
       }
+
+      // Return new token because role has changed
       return this.login(updatedUser);
     } catch (error) {
-      console.error(`[FinishSignup] Error during signup completion:`, error);
+      console.error(`[FinishSignup] Error:`, error);
       throw error;
     }
   }
