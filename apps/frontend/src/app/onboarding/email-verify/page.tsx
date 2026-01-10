@@ -17,7 +17,31 @@ export default function EmailVerificationPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
 
-    // ... (중략)
+    const handleSendCode = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        // Client-side validation for official domains
+        const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
+        const domain = email.split('@')[1];
+        const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
+
+        if (!isAllowed) {
+            setError('공직자 통합 메일(@korea.kr, @go.kr)만 사용 가능합니다.');
+            return;
+        }
+
+        setIsLoading(true);
+        setError('');
+
+        try {
+            await api.post('/auth/email/request', { email });
+            setStep('INPUT_CODE');
+        } catch (err: any) {
+            setError(err.message || '인증 코드를 전송하는데 실패했습니다. 이메일을 확인해주세요.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const handleVerifyCode = async (e: React.FormEvent) => {
         e.preventDefault();
