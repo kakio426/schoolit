@@ -106,6 +106,32 @@ export default function DocumentGenerationModal({ type, prefillData, onClose }: 
         }
     };
 
+    const handleDownloadPdf = async () => {
+        setIsLoading(true);
+        setError(null);
+        try {
+            const blob = await api.postBlob('/documents/generate/hiring-plan', {
+                subject: prefillData.subject || '',
+                reason: '교육과정 운영을 위한 전공 인력 채용',
+                startDate: prefillData.contractPeriod?.split('~')[0]?.trim() || '',
+                endDate: prefillData.contractPeriod?.split('~')[1]?.trim() || '',
+                authorName: adminName,
+                // ... other data from form
+            });
+
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `채용계획서_${prefillData.subject || '공통'}_${new Date().toISOString().split('T')[0]}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        } catch (err: any) {
+            setError(err.message || 'PDF 생성 실패');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Overlay */}
@@ -260,20 +286,25 @@ export default function DocumentGenerationModal({ type, prefillData, onClose }: 
                                 </div>
                             )}
 
-                            <button
-                                onClick={handleGenerate}
-                                disabled={isLoading || !documentNumber}
-                                className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                            >
-                                {isLoading ? (
-                                    <>
-                                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
-                                        AI 생성 중...
-                                    </>
-                                ) : (
-                                    <>🤖 공문 생성하기</>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={handleGenerate}
+                                    disabled={isLoading || !documentNumber}
+                                    className="w-full py-3 bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900 rounded-xl font-bold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                >
+                                    {isLoading ? 'AI 생성 중...' : '🤖 텍스트 공문 생성'}
+                                </button>
+
+                                {type === 'hiring' && (
+                                    <button
+                                        onClick={handleDownloadPdf}
+                                        disabled={isLoading || !documentNumber}
+                                        className="w-full py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2"
+                                    >
+                                        📄 고퀄리티 PDF 생성 (Puppeteer)
+                                    </button>
                                 )}
-                            </button>
+                            </div>
                         </div>
                     ) : (
                         <div className="space-y-4">
@@ -294,13 +325,19 @@ export default function DocumentGenerationModal({ type, prefillData, onClose }: 
                                     onClick={handleCopy}
                                     className="flex-1 py-3 bg-blue-500 text-white rounded-xl font-bold hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
                                 >
-                                    📋 클립보드 복사
+                                    📋 복사
                                 </button>
                                 <button
                                     onClick={handleDownload}
-                                    className="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 transition-all flex items-center justify-center gap-2"
+                                    className="flex-1 py-3 bg-slate-500 text-white rounded-xl font-bold hover:bg-slate-600 transition-all flex items-center justify-center gap-2"
                                 >
-                                    💾 파일 다운로드
+                                    💾 TXT 저장
+                                </button>
+                                <button
+                                    onClick={handleDownloadPdf}
+                                    className="flex-1 py-3 bg-primary text-white rounded-xl font-bold hover:bg-primary/90 transition-all shadow-lg"
+                                >
+                                    📄 PDF 저장
                                 </button>
                             </div>
 

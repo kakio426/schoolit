@@ -1,8 +1,14 @@
-# 1. 빌드 단계 (Builder stage)
-FROM node:20-alpine AS builder
 
-# 빌드 환경에서도 Prisma 엔진 호환을 위해 설치
-RUN apk add --no-cache openssl libc6-compat
+# 1. 빌드 단계 (Builder stage)
+FROM node:20-slim AS builder
+
+# 빌드 환경에 필요한 도구 설치
+RUN apt-get update && apt-get install -y \
+    openssl \
+    python3 \
+    make \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
@@ -20,10 +26,18 @@ RUN npx prisma generate
 RUN npm run build
 
 # 2. 실행 단계 (Runner stage)
-FROM node:20-alpine AS runner
+FROM node:20-slim AS runner
 
-# Prisma와 시스템 라이브러리 호환성을 위해 설치
-RUN apk add --no-cache openssl libc6-compat
+# Puppeteer 및 한글 폰트 설치
+RUN apt-get update && apt-get install -y \
+    chromium \
+    fonts-noto-cjk \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Puppeteer 환경 변수 설정
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 
 WORKDIR /app
 ENV NODE_ENV production
@@ -33,10 +47,10 @@ COPY --from=builder /app/apps/backend/package*.json ./
 COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/prisma ./prisma
 
-# 프로덕션 의존성만 깔끔하게 새로 설치 (경로 문제 해결)
+# 프로덕션 의존성만 설치
 RUN npm install --omit=dev
 
-# Prisma Client 및 Seed 생성
+# Prisma Client 생성
 RUN npx prisma generate
 
 # 포트 설정

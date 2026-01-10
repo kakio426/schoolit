@@ -107,4 +107,25 @@ export const api = {
         link.parentNode?.removeChild(link);
         window.URL.revokeObjectURL(downloadUrl);
     },
+
+    postBlob: async (endpoint: string, data: any): Promise<Blob> => {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        const url = `${API_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
+
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+            },
+            body: JSON.stringify(data),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || 'Download failed');
+        }
+
+        return await response.blob();
+    },
 };
