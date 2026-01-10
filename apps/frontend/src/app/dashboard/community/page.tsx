@@ -27,7 +27,7 @@ export default function CommunityDashboard() {
         const fetchBoards = async () => {
             try {
                 // 백엔드 API 호출 (경로 확인 필요: /board 또는 /boards)
-                const res = await api.get<Board[]>('/boards');
+                const res = await api.get<Board[]>('/api/boards');
                 setBoards(res);
             } catch (err) {
                 console.error("Failed to fetch boards:", err);
