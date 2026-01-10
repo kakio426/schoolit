@@ -20,6 +20,7 @@ export const metadata: Metadata = {
 import { AuthProvider } from "@/contexts/AuthContext";
 import { SocketProvider } from "@/contexts/SocketContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { ToastProvider } from "@/components/ui/Toast";
 
 export default function RootLayout({
   children,
@@ -34,7 +35,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <SocketProvider>
-              {children}
+              <ToastProvider>
+                {children}
+              </ToastProvider>
             </SocketProvider>
           </AuthProvider>
         </ThemeProvider>
