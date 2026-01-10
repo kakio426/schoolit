@@ -266,6 +266,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 </button>
                                 <button
                                     onClick={async () => {
+                                        try {
+                                            // 최신 권한/인증 정보가 담긴 토큰으로 갱신
+                                            const res = await api.get<{ accessToken: string }>('/auth/refresh-token');
+                                            if (res.accessToken) {
+                                                localStorage.setItem('accessToken', res.accessToken);
+                                            }
+                                        } catch (err) {
+                                            console.error('Failed to refresh token:', err);
+                                        }
                                         await refreshProfile();
                                         window.location.reload();
                                     }}

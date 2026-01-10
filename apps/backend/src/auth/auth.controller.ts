@@ -83,6 +83,14 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('refresh-token')
+  async refreshToken(@Request() req) {
+    // Fetch fresh user data to include updated roles/status in the new token
+    const user = await this.authService.getUserById(req.user.userId);
+    return this.authService.login(user);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Post('email/request')
   async requestEmailVerification(@Request() req, @Body('email') email: string) {
     if (!email) throw new BadRequestException('Email is required');

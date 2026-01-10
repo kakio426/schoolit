@@ -14,7 +14,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private smsService: SmsService,
-  ) {}
+  ) { }
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
@@ -97,7 +97,13 @@ export class AuthService {
       });
     }
 
-    return { success: true };
+    const updatedUser = await this.userService.findById(userId);
+    const tokenData = await this.login(updatedUser);
+
+    return {
+      success: true,
+      ...tokenData
+    };
   }
 
   async requestPhoneVerification(userId: number, phone: string) {
@@ -136,5 +142,8 @@ export class AuthService {
       console.error(`[FinishSignup] Error:`, error);
       throw error;
     }
+  }
+  async getUserById(userId: number) {
+    return this.userService.findById(userId);
   }
 }

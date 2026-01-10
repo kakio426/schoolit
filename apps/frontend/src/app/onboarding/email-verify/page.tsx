@@ -49,12 +49,15 @@ export default function EmailVerificationPage() {
         setError('');
 
         try {
-            const res = await api.post<{ success: boolean }>('/auth/email/verify', {
+            const res = await api.post<{ success: boolean; accessToken?: string }>('/auth/email/verify', {
                 code,
                 schoolName,
             });
             if (res.success) {
-                // Success! Refresh profile to update verification status and proceed
+                // Success! Update token and refresh profile
+                if (res.accessToken) {
+                    localStorage.setItem('accessToken', res.accessToken);
+                }
                 await refreshProfile();
                 router.push('/dashboard');
             } else {
