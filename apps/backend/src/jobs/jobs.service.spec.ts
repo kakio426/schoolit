@@ -77,7 +77,7 @@ describe('JobsService', () => {
     });
     mockPrismaService.jobListing.delete.mockResolvedValue({ id: jobId });
 
-    await service.deleteJob(userId, jobId);
+    await service.deleteJob(userId, 'SCHOOL', jobId);
 
     expect(prisma.jobListing.delete).toHaveBeenCalledWith({ where: { id: jobId } });
   });
@@ -92,7 +92,7 @@ describe('JobsService', () => {
       teacherProfile: null,
     });
 
-    await expect(service.deleteJob(userId, jobId)).rejects.toThrow();
+    await expect(service.deleteJob(userId, 'SCHOOL', jobId)).rejects.toThrow();
   });
 
   it('should create a job with CLOSED status by default', async () => {
