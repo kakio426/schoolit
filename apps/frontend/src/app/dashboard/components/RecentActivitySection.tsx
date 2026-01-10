@@ -2,7 +2,15 @@ import React from 'react';
 import { cookies } from 'next/headers';
 import StandardCard from '@/components/ui/StandardCard';
 
-async function getRecentActivities() {
+// 타입 정의
+interface Activity {
+    id?: number;
+    title?: string;
+    description?: string;
+    createdAt: string;
+}
+
+async function getRecentActivities(): Promise<Activity[]> {
     const cookieStore = await cookies();
     const token = cookieStore.get('accessToken')?.value;
     if (!token) return [];
@@ -31,8 +39,8 @@ export default async function RecentActivitySection() {
             </h2>
             {activities && activities.length > 0 ? (
                 <div className="space-y-4">
-                    {activities.map((activity: any, idx: number) => (
-                        <StandardCard key={idx} className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
+                    {activities.map((activity, idx) => (
+                        <StandardCard key={activity.id ?? idx} className="flex items-center gap-4 p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer">
                             <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-xl">
                                 📌
                             </div>
@@ -54,3 +62,4 @@ export default async function RecentActivitySection() {
         </div>
     );
 }
+
