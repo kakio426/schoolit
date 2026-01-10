@@ -36,6 +36,7 @@ export default function HiringWizard({ initialType = JobType.TEACHER_HIRING }: H
             },
             // Teacher
             hiringReason: '',
+            isEmergency: false,
             contractPeriod: '',
             gradeLevel: [],
             teachingHours: '',

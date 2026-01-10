@@ -38,7 +38,7 @@ export class UserController {
   constructor(
     private userService: UserService,
     private gamificationService: GamificationService,
-  ) {}
+  ) { }
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')
@@ -76,6 +76,14 @@ export class UserController {
   async updateSchoolProfile(@Request() req, @Body() dto: UpdateSchoolProfileDto) {
     const profile = await this.userService.updateSchoolProfile(req.user.userId, dto);
     return { schoolProfile: profile }; // Return wrapped to match test expectation
+  }
+
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.TEACHER)
+  @Get('teacher-profile/me')
+  async getTeacherProfile(@Request() req) {
+    const profile = await this.userService.getTeacherProfile(req.user.userId);
+    return profile || {}; // Return empty object if not found
   }
 
   @UseGuards(AuthGuard('jwt'))

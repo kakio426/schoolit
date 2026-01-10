@@ -59,18 +59,31 @@ export class JobsService {
 
     // 헬퍼 메서드로 프로필 연결 객체 생성
     const profileConnect = this.resolveProfileConnection(user);
-    const initialStatus = this.getInitialWorkflowStatus(data);
+
+    // 🚨 [긴급 헬프콜 로직]
+    let initialWorkflowStatus = this.getInitialWorkflowStatus(data);
+    if (data.isEmergency) {
+      // 긴급 건은 내부 결재 없이 즉시 노출 (1개월 미만임이 보장되었다고 가정)
+      initialWorkflowStatus = HiringWorkflowStatus.PLAN_APPROVED;
+    }
 
     try {
-      return await this.prisma.jobListing.create({
+      const job = await this.prisma.jobListing.create({
         data: {
           ...data,
           ...profileConnect,
           status: JobStatus.OPEN,
-          workflowStatus: initialStatus,
+          workflowStatus: initialWorkflowStatus,
           internalChecklist: data.internalChecklist ?? Prisma.JsonNull,
         },
       });
+
+      // 🚨 [긴급 알림 발송] 긴급 건인 경우, 조건에 맞는 교사에게 즉시 알림
+      if (data.isEmergency) {
+        this.sendEmergencyAlerts(job);
+      }
+
+      return job;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.error('Job Creation Error:', error);
@@ -258,5 +271,34 @@ export class JobsService {
       orderBy: { createdAt: 'desc' },
       take: 100,
     });
+  }
+
+  // 📡 매칭되는 선생님들에게 알림 발송 (비동기 처리 Mock)
+  private async sendEmergencyAlerts(job: any) {
+    if (!job.subjects || job.subjects.length === 0) return;
+
+    try {
+      // 1. 해당 과목(subjects)과 지역(regions)이 일치하는 '구직 중'인 선생님 찾기
+      const matchedTeachers = await this.prisma.teacherProfile.findMany({
+        where: {
+          AND: [
+            { isSearchable: true }, // 구직 중(공개 설정)인 선생님만
+            { subjects: { hasSome: job.subjects } }, // 과목 매칭
+            // { regions: { hasSome: job.regions } },   // 지역 매칭
+          ]
+        },
+        select: { userId: true, user: { select: { email: true, name: true } } }
+      });
+
+      console.log(`[Emergency Alert] Found ${matchedTeachers.length} candidates for job #${job.id} (${job.title})`);
+
+      // 실제 NotificationService 연동은 추후 진행, 현재는 로그로 대체
+      matchedTeachers.forEach(t => {
+        console.log(`[Notification] Sending Alert to ${t.user.name} (${t.user.email}): 🚨 긴급 대강 요청이 있습니다!`);
+      });
+
+    } catch (e) {
+      console.error('Failed to send emergency alerts', e);
+    }
   }
 }

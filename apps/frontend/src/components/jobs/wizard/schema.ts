@@ -9,6 +9,7 @@ export interface WizardFormData {
     internalChecklist: InternalChecklist;
     // Teacher
     hiringReason: string;
+    isEmergency: boolean; // 긴급 채용 여부
     contractPeriod: string;
     gradeLevel: string[];
     teachingHours: string;

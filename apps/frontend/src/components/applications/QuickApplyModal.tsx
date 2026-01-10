@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, FileUp, CheckCircle, Paperclip, User, Mail, Phone, Briefcase, Award } from 'lucide-react';
 import { api } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProfilePreview {
     name: string;
@@ -39,6 +40,8 @@ export default function QuickApplyModal({
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const { user } = useAuth(); // 사용자 정보 가져오기 (오류 방지용 Fallback)
+
     // Fetch user profile when modal opens
     useEffect(() => {
         if (isOpen) {
@@ -49,28 +52,42 @@ export default function QuickApplyModal({
     const fetchProfilePreview = async () => {
         setIsLoadingProfile(true);
         try {
-            const endpoint = jobType === 'TEACHER_HIRING' ? '/teacher-profile/me' : '/business-profile/me';
-            const data = await api.get<any>(endpoint);
-            if (jobType === 'TEACHER_HIRING') {
-                setProfile({
-                    name: data.user?.name || '(이름 없음)',
-                    email: data.user?.email || '',
-                    phone: data.user?.phone,
-                    subjects: data.subjects,
-                    experience: data.experience,
-                    certifications: data.certifications,
-                });
-            } else {
-                setProfile({
-                    name: data.user?.name || '(담당자명 없음)',
-                    email: data.user?.email || '',
-                    phone: data.user?.phone,
-                    companyName: data.companyName,
-                    s2bNumber: data.s2bNumber,
-                });
+            const endpoint = jobType === 'TEACHER_HIRING' ? '/users/teacher-profile/me' : '/business-profiles/me';
+
+            // 1. Try fetching detailed profile
+            try {
+                const data = await api.get<any>(endpoint);
+                if (jobType === 'TEACHER_HIRING') {
+                    setProfile({
+                        name: data.user?.name || user?.name || '(이름 없음)',
+                        email: data.user?.email || user?.email || '',
+                        phone: data.user?.phone || user?.phone,
+                        subjects: data.subjects,
+                        experience: data.experience,
+                        certifications: data.certifications,
+                    });
+                } else {
+                    setProfile({
+                        name: data.user?.name || user?.name || '(담당자명 없음)',
+                        email: data.user?.email || user?.email || '',
+                        phone: data.user?.phone || user?.phone,
+                        companyName: data.companyName,
+                        s2bNumber: data.s2bNumber,
+                    });
+                }
+            } catch (innerError) {
+                // 2. If detailed profile fetch fails, fallback to basic user info from Context
+                console.warn('Detailed profile fetch failed, using basic auth info', innerError);
+                if (user) {
+                    setProfile({
+                        name: user.name,
+                        email: user.email,
+                        phone: user.phone,
+                    });
+                }
             }
         } catch (e) {
-            console.error('Failed to fetch profile preview', e);
+            console.error('Failed to prepare profile preview', e);
         } finally {
             setIsLoadingProfile(false);
         }

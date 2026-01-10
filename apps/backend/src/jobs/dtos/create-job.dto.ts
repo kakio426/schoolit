@@ -79,6 +79,10 @@ export class CreateJobDto {
   @ValidateIf((o) => o.jobType === JobType.EVENT_VENDOR)
   certifications?: string[];
 
+  @IsBoolean()
+  @IsOptional()
+  isEmergency?: boolean; // 🚨 긴급 헬프콜 여부 플래그
+
   @IsOptional()
   internalChecklist?: any;
 }

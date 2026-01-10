@@ -17,7 +17,7 @@ import { Provider, Role } from '@prisma/client';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async create(data: CreateUserDto) {
     const { password, ...rest } = data;
@@ -298,6 +298,31 @@ export class UserService {
     });
   }
 
+  async getTeacherProfile(userId: number) {
+    const profile = await this.prisma.teacherProfile.findUnique({
+      where: { userId },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+        experiences: true,
+        educations: true,
+        links: true,
+        licenses: true,
+      },
+    });
+
+    if (!profile) {
+      throw new NotFoundException('Teacher profile not found');
+    }
+
+    return profile;
+  }
+
   async addExperience(userId: number, dto: CreateTeacherExperienceDto) {
     const profile = await this.prisma.teacherProfile.findUnique({ where: { userId } });
     if (!profile) throw new NotFoundException('Teacher profile not found');
@@ -423,12 +448,6 @@ export class UserService {
       where: { userId },
       create: { userId, ...data },
       update: { ...data },
-    });
-  }
-
-  async getTeacherProfile(userId: number) {
-    return this.prisma.teacherProfile.findUnique({
-      where: { userId },
     });
   }
 

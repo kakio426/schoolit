@@ -107,6 +107,31 @@ export default function Step2Compliance({ formData, setFormData, jobType, setIsV
                         {formData.hiringReason === 'SICK_LEAVE' && (
                             <p className="text-xs text-amber-600 mt-2 font-bold">⚠️ 병가 대체 교사는 진단서 확인 및 최소 30일 이상의 계약 기간이 필요합니다.</p>
                         )}
+                        {/* 긴급 헬프콜 UI (Emergency HelpCall) */}
+                        <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-800 rounded-xl">
+                            <label className="flex items-start gap-3 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    checked={formData.isEmergency}
+                                    onChange={(e) => handleChange('isEmergency', e.target.checked)}
+                                    className="mt-1 w-5 h-5 rounded border-red-400 text-red-600 focus:ring-red-500"
+                                />
+                                <div>
+                                    <span className="font-bold text-red-700 dark:text-red-400">🚨 긴급 채용 (1개월 미만 계약)</span>
+                                    <p className="text-xs text-red-600/80 mt-1 leading-relaxed">
+                                        계약 기간이 1개월 미만이거나, 2회 이상 공고 후 지원자가 없는 경우 <strong>3일 공고 의무가 면제</strong>되어 즉시 채용이 가능합니다.
+                                        단, 허위 사실일 경우 불이익이 있을 수 있습니다.
+                                    </p>
+                                </div>
+                            </label>
+                            {formData.isEmergency && (
+                                <div className="mt-3 pl-8">
+                                    <div className="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                                        <span>✅ 즉시 등록 가능 승인됨</span>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
                     <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-100 dark:border-blue-800 space-y-4">
