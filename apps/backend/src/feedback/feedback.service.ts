@@ -9,7 +9,7 @@ export class FeedbackService {
     private prisma: PrismaService,
     private discord: DiscordService,
     private notifications: NotificationsService,
-  ) {}
+  ) { }
 
   async create(data: { userId?: number; category: string; content: string }) {
     // 1. Save to Database
@@ -53,8 +53,8 @@ export class FeedbackService {
         userId: feedback.userId,
         type: 'SYSTEM',
         title: '관리자 답변 등록',
-        content: `보내주신 의견(${feedback.category})에 대한 답변이 등록되었습니다.`,
-        link: '/dashboard/profile',
+        content: `보내주신 의견(${feedback.category})에 대한 답변이 등록되었습니다: "${replyContent}"`,
+        link: '/dashboard/notifications',
       });
     }
 
