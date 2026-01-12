@@ -1,0 +1,2 @@
+﻿src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(51,13): error TS2353: Object literal may only specify known properties, and 'updateProfile' does not exist in type 'AuthContextType'.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(100,13): error TS2353: Object literal may only specify known properties, and 'updateProfile' does not exist in type 'AuthContextType'.

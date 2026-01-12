@@ -45,10 +45,11 @@ describe('Test 2.1: Apply Button Profile Completion', () => {
                     // Profile completion: 2/5 fields = 40%
                 } as any,
             } as any,
+            token: 'mock-token',
             isLoading: false,
             login: jest.fn(),
             logout: jest.fn(),
-            updateProfile: jest.fn(),
+            refreshProfile: jest.fn(),
         });
 
         // Mock API response for job details
@@ -92,12 +93,13 @@ describe('Test 2.1: Apply Button Profile Completion', () => {
                     educations: [{ schoolName: 'University', degree: 'Bachelor', graduationStatus: 'GRADUATED' }],
                     licenses: [{ name: 'Teaching License', issuer: 'MOE' }],
                     // Profile completion: 5/5 fields = 100%
-                },
-            },
+                } as any,
+            } as any,
+            token: 'mock-token',
             isLoading: false,
             login: jest.fn(),
             logout: jest.fn(),
-            updateProfile: jest.fn(),
+            refreshProfile: jest.fn(),
         });
 
         const mockApi = require('@/lib/api').api;

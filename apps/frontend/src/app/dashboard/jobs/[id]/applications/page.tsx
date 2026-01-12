@@ -246,7 +246,7 @@ export default function JobApplicantsPage() {
     const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list');
     const filteredApplicants = applicants.filter(a => a.status === activeTab || (activeTab === ApplicationStatus.PENDING && !a.status));
 
-    if (user?.role !== Role.SCHOOL && user?.role !== Role.TEACHER) {
+    if (user?.role !== Role.SCHOOL && user?.role !== Role.TEACHER && user?.role !== Role.BUSINESS) {
         return <DashboardLayout><div>권한이 없습니다.</div></DashboardLayout>;
     }
 

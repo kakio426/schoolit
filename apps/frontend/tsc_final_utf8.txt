@@ -1,0 +1,6 @@
+﻿src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(52,13): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(53,13): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(54,13): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(105,13): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(106,13): error TS1117: An object literal cannot have multiple properties with the same name.
+src/app/dashboard/jobs/[id]/__tests__/apply-button.test.tsx(107,13): error TS1117: An object literal cannot have multiple properties with the same name.
