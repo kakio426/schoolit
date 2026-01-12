@@ -13,7 +13,7 @@ import { CertStatus, API_BASE_URL } from '@/lib/constants';
 export default function AdminPage() {
     const { user, isLoading: authLoading } = useAuth();
     const [stats, setStats] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'JOBS' | 'CERTS' | 'BUSINESS' | 'SCHOOL'>('OVERVIEW');
+    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CERTS' | 'BUSINESS' | 'SCHOOL'>('OVERVIEW');
     const [pendingCerts, setPendingCerts] = useState<any[]>([]);
     const [pendingBusiness, setPendingBusiness] = useState<any[]>([]);
     const [pendingSchools, setPendingSchools] = useState<any[]>([]);
@@ -116,7 +116,6 @@ export default function AdminPage() {
                         {[
                             { id: 'OVERVIEW', label: '종합 개요' },
                             { id: 'USERS', label: '사용자 관리' },
-                            { id: 'JOBS', label: '공고 관리' },
                             { id: 'CERTS', label: '인증 승인', count: pendingCerts.length },
                             { id: 'BUSINESS', label: '기업 인증', count: pendingBusiness.length },
                             { id: 'SCHOOL', label: '학교 승인', count: pendingSchools.length }
@@ -147,7 +146,9 @@ export default function AdminPage() {
                     // ... existing overview
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <AdminStatsCard title="총 사용자" value={stats?.totalUsers || 0} icon="👥" description="이번 주 신규 등록" />
-                        <AdminStatsCard title="활성 공고" value={stats?.totalJobs || 0} icon="📢" description="실시간 채용 중" />
+                        <a href="/dashboard/admin/jobs" className="block transform transition-transform hover:scale-105 active:scale-95">
+                            <AdminStatsCard title="공고 관리" value={stats?.totalJobs || 0} icon="📢" description="실시간 채용 및 행사" />
+                        </a>
                         <AdminStatsCard
                             title="등록된 학교"
                             value={stats?.totalSchools || 0}
@@ -170,8 +171,6 @@ export default function AdminPage() {
                 )}
 
                 {activeTab === 'USERS' && <UserTable />}
-
-                {activeTab === 'JOBS' && <AdminJobsTable />}
 
                 {activeTab === 'CERTS' && (
                     <div className="bg-surface rounded-3xl border border-slate-200/50 dark:border-slate-700 shadow-sm overflow-hidden">
