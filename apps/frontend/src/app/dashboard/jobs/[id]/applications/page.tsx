@@ -61,7 +61,7 @@ export default function JobApplicantsPage() {
                 api.get<JobApplication[]>(`/applications/jobs/${id}`),
                 api.get<JobListing>(`/jobs/${id}`)
             ]);
-            setApplicants(appsData);
+            setApplicants(Array.isArray(appsData) ? appsData : []);
             setJob(jobData);
         } catch (err) {
             console.error(err);

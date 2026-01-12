@@ -29,7 +29,7 @@ export default function NotificationsPage() {
     const fetchNotifications = async () => {
         try {
             const data = await api.get<Notification[]>('/notifications');
-            setNotifications(data);
+            setNotifications(Array.isArray(data) ? data : []);
         } catch (e) {
             console.error('Failed to fetch notifications', e);
         } finally {

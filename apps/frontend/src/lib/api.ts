@@ -41,7 +41,7 @@ async function request<T>(method: HttpMethod, endpoint: string, options: Request
                 if (!window.location.pathname.includes('/auth/login')) {
                     alert('세션이 만료되었습니다. 다시 로그인해주세요.');
                     window.location.href = '/auth/login';
-                    return {} as T; // Stop further processing
+                    return null as any; // Return null so if(data) checks fail safely
                 }
             }
         }

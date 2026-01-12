@@ -185,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                             <h3 className="font-bold">알림</h3>
                                         </div>
                                         <div className="max-h-[400px] overflow-y-auto">
-                                            {notifications.length === 0 ? (
+                                            {(!Array.isArray(notifications) || notifications.length === 0) ? (
                                                 <div className="p-8 text-center text-slate-400 text-sm">알림이 없습니다.</div>
                                             ) : (
                                                 notifications.map((n: any) => (

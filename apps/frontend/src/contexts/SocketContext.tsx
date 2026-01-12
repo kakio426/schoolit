@@ -51,8 +51,9 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         // Fetch initial notifications count
         api.get<any[]>('/notifications')
             .then(data => {
-                setNotifications(data);
-                setUnreadNotificationCount(data.filter((n: any) => !n.isRead).length);
+                const notificationsArray = Array.isArray(data) ? data : [];
+                setNotifications(notificationsArray);
+                setUnreadNotificationCount(notificationsArray.filter((n: any) => !n.isRead).length);
             })
             .catch(console.error);
 
