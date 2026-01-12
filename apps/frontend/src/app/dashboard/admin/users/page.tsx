@@ -24,8 +24,8 @@ export default function AdminUsersPage() {
 
     const loadUsers = async () => {
         try {
-            const data = await api.get<User[]>('/users/admin/all-users');
-            setUsers(data);
+            const res = await api.get<{ data: User[] }>('/users/admin/all-users');
+            setUsers(res?.data || []);
         } catch (error) {
             console.error('Failed to load users:', error);
         } finally {

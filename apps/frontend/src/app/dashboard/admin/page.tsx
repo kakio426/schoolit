@@ -37,7 +37,7 @@ export default function AdminPage() {
     const fetchPending = async () => {
         try {
             const data = await api.get<any[]>('/admin/certifications/pending');
-            setPendingCerts(data);
+            setPendingCerts(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
         }
@@ -55,7 +55,7 @@ export default function AdminPage() {
     const fetchPendingBusiness = async () => {
         try {
             const data = await api.get<any[]>('/admin/business/pending');
-            setPendingBusiness(data);
+            setPendingBusiness(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
         }
@@ -73,7 +73,7 @@ export default function AdminPage() {
     const fetchPendingSchools = async () => {
         try {
             const data = await api.get<any[]>('/admin/school/pending');
-            setPendingSchools(data);
+            setPendingSchools(Array.isArray(data) ? data : []);
         } catch (err) {
             console.error(err);
         }

@@ -30,8 +30,8 @@ export default function AdminReviewsPage() {
         setIsLoading(true);
         try {
             const data = await api.get<{ data: Review[], total: number }>(`/admin/reviews?page=${page}&limit=20&search=${search}`);
-            setReviews(data.data);
-            setTotalPages(Math.ceil(data.total / 20));
+            setReviews(data?.data || []);
+            setTotalPages(Math.ceil((data?.total || 0) / 20));
         } catch (error) {
             console.error('Failed to fetch reviews', error);
         } finally {

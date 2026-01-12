@@ -37,7 +37,7 @@ export default function AdminFeedbackPage() {
     const fetchFeedbacks = async () => {
         try {
             const res = await api.get<FeedbackItem[]>('/feedback');
-            setFeedbacks(res);
+            setFeedbacks(Array.isArray(res) ? res : []);
         } catch (error) {
             console.error('Failed to fetch feedbacks', error);
         } finally {

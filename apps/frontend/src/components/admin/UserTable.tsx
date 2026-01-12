@@ -18,8 +18,8 @@ export const UserTable: React.FC = () => {
         setIsLoading(true);
         try {
             const data = await api.get<{ data: User[], total: number }>(`/admin/users?page=${page}&limit=10&search=${search}`);
-            setUsers(data.data);
-            setTotalPages(Math.ceil(data.total / 10));
+            setUsers(data?.data || []);
+            setTotalPages(Math.ceil((data?.total || 0) / 10));
         } catch (e) {
             console.error(e);
         } finally {
