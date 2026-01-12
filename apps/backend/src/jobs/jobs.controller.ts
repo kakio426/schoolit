@@ -68,4 +68,10 @@ export class JobsController {
   ) {
     return this.jobsService.update(id, req.user.userId, req.user.role, updateJobDto);
   }
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(Role.ADMIN)
+  @Get('admin/all')
+  async findAllAdmin(@Query('keyword') keyword?: string) {
+    return this.jobsService.findAllForAdmin({ keyword });
+  }
 }

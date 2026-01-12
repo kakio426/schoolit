@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import DashboardLayout from '@/components/layout/DashboardLayout';
 import { AdminStatsCard } from '@/components/admin/AdminStatsCard';
+import { AdminJobsTable } from '@/components/admin/AdminJobsTable';
+
 import { UserTable } from '@/components/admin/UserTable';
 import { api } from '@/lib/api';
 import { CertStatus, API_BASE_URL } from '@/lib/constants';
@@ -11,7 +13,7 @@ import { CertStatus, API_BASE_URL } from '@/lib/constants';
 export default function AdminPage() {
     const { user, isLoading: authLoading } = useAuth();
     const [stats, setStats] = useState<any>(null);
-    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'CERTS' | 'BUSINESS' | 'SCHOOL'>('OVERVIEW');
+    const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'USERS' | 'JOBS' | 'CERTS' | 'BUSINESS' | 'SCHOOL'>('OVERVIEW');
     const [pendingCerts, setPendingCerts] = useState<any[]>([]);
     const [pendingBusiness, setPendingBusiness] = useState<any[]>([]);
     const [pendingSchools, setPendingSchools] = useState<any[]>([]);
@@ -84,7 +86,7 @@ export default function AdminPage() {
         try {
             await api.patch(`/admin/school/${id}/verify`, { isVerified });
             fetchPendingSchools();
-            fetchStats(); // Update stats as well
+            fetchStats();
         } catch (err) {
             console.error('Failed to verify school');
             alert('승인 실패');
@@ -106,10 +108,7 @@ export default function AdminPage() {
     return (
         <DashboardLayout>
             <div className="max-w-6xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                <div className="flex flex-col gap-2">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">관리자 대시보드</h1>
-                    <p className="text-foreground-muted">전체 시스템 현황을 한눈에 파악하고 관리하세요.</p>
-                </div>
+                {/* ... existing header */}
 
                 {/* Tabs */}
                 <div className="border-b border-slate-200 dark:border-slate-700">
@@ -117,13 +116,14 @@ export default function AdminPage() {
                         {[
                             { id: 'OVERVIEW', label: '종합 개요' },
                             { id: 'USERS', label: '사용자 관리' },
+                            { id: 'JOBS', label: '공고 관리' },
                             { id: 'CERTS', label: '인증 승인', count: pendingCerts.length },
                             { id: 'BUSINESS', label: '기업 인증', count: pendingBusiness.length },
                             { id: 'SCHOOL', label: '학교 승인', count: pendingSchools.length }
                         ].map((tab) => (
                             <button
                                 key={tab.id}
-                                onClick={() => setActiveTab(tab.id as any)}
+                                onClick={() => setActiveTab(tab.id as typeof activeTab)}
                                 className={`
                                     whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all flex items-center gap-2
                                     ${activeTab === tab.id
@@ -132,7 +132,7 @@ export default function AdminPage() {
                                 `}
                             >
                                 {tab.label}
-                                {tab.count ? (
+                                {'count' in tab && tab.count && tab.count > 0 ? (
                                     <span className={`px-2 py-0.5 rounded-full text-xs ${activeTab === tab.id ? 'bg-primary/10 text-primary' : 'bg-slate-100 text-slate-500'}`}>
                                         {tab.count}
                                     </span>
@@ -144,6 +144,7 @@ export default function AdminPage() {
 
                 {/* Content */}
                 {activeTab === 'OVERVIEW' && (
+                    // ... existing overview
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <AdminStatsCard title="총 사용자" value={stats?.totalUsers || 0} icon="👥" description="이번 주 신규 등록" />
                         <AdminStatsCard title="활성 공고" value={stats?.totalJobs || 0} icon="📢" description="실시간 채용 중" />
@@ -168,12 +169,13 @@ export default function AdminPage() {
                     </div>
                 )}
 
-                {activeTab === 'USERS' && (
-                    <UserTable />
-                )}
+                {activeTab === 'USERS' && <UserTable />}
+
+                {activeTab === 'JOBS' && <AdminJobsTable />}
 
                 {activeTab === 'CERTS' && (
                     <div className="bg-surface rounded-3xl border border-slate-200/50 dark:border-slate-700 shadow-sm overflow-hidden">
+                        {/* ... existing certs content */}
                         <div className="p-8 border-b border-slate-200/50 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 flex justify-between items-center">
                             <h2 className="text-xl font-bold text-foreground">인증 대기 목록</h2>
                             <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">{pendingCerts.length}건</span>
@@ -336,7 +338,6 @@ export default function AdminPage() {
                                             >
                                                 최종 승인
                                             </button>
-                                            {/* School rejection is usually manual email communication if needed, or implement delete logic later */}
                                         </div>
                                     </div>
                                 ))}

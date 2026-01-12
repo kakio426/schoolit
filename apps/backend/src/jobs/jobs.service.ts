@@ -149,6 +149,39 @@ export class JobsService {
     });
   }
 
+  // [Admin] 모든 공고 조회 (삭제된 것 표시는 추후 고려, 현재는 active 상관없이 조회)
+  async findAllForAdmin(filters?: { keyword?: string }) {
+    const where: Prisma.JobListingWhereInput = {};
+
+    if (filters?.keyword) {
+      where.OR = [
+        { title: { contains: filters.keyword, mode: 'insensitive' } },
+        { description: { contains: filters.keyword, mode: 'insensitive' } },
+        { schoolProfile: { schoolName: { contains: filters.keyword, mode: 'insensitive' } } },
+      ];
+    }
+
+    return this.prisma.jobListing.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        workflowStatus: true,
+        createdAt: true,
+        active: true,
+        jobType: true,
+        schoolProfile: {
+          select: {
+            schoolName: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
   async findOne(id: number, userId?: number) {
     const job = await this.prisma.jobListing.findUnique({
       where: { id },
