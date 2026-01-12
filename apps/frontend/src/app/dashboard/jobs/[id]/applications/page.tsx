@@ -793,7 +793,7 @@ export default function JobApplicantsPage() {
                     salary: contractApplicant?.cost?.toLocaleString() || '',
                     isSigned: !!contractApplicant?.signatureData
                 }}
-                canSign={user?.role === Role.TEACHER || user?.role === Role.BUSINESS}
+                canSign={(user?.role as any) === Role.TEACHER || (user?.role as any) === Role.BUSINESS}
                 onSignatureComplete={fetchData}
             />
 
