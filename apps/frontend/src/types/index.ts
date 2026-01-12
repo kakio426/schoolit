@@ -215,6 +215,7 @@ export interface JobApplication {
     attachmentUrl?: string;
     complianceChecklist?: any;
     evaluations?: Evaluation[];
+    signatureData?: any;
 }
 
 /**

@@ -8,6 +8,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { useAuth } from '@/contexts/AuthContext';
 import JobDetailPage from '../page';
+import { Role } from '@/lib/constants';
 
 // Mock dependencies
 jest.mock('@/contexts/AuthContext');
@@ -32,7 +33,7 @@ describe('Test 2.1: Apply Button Profile Completion', () => {
         mockUseAuth.mockReturnValue({
             user: {
                 id: 1,
-                role: 'TEACHER',
+                role: Role.TEACHER,
                 name: 'Test Teacher',
                 email: 'teacher@test.com',
                 teacherProfile: {
@@ -42,8 +43,8 @@ describe('Test 2.1: Apply Button Profile Completion', () => {
                     educations: [], // Missing
                     licenses: [], // Missing
                     // Profile completion: 2/5 fields = 40%
-                },
-            },
+                } as any,
+            } as any,
             isLoading: false,
             login: jest.fn(),
             logout: jest.fn(),
@@ -81,7 +82,7 @@ describe('Test 2.1: Apply Button Profile Completion', () => {
         mockUseAuth.mockReturnValue({
             user: {
                 id: 1,
-                role: 'TEACHER',
+                role: Role.TEACHER,
                 name: 'Test Teacher',
                 email: 'teacher@test.com',
                 teacherProfile: {

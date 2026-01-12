@@ -32,10 +32,17 @@ async function request<T>(method: HttpMethod, endpoint: string, options: Request
         const response = await fetch(url, config);
 
         if (response.status === 401) {
-            // Handle unauthorized - potentially logout or redirect
-            if (typeof window !== 'undefined' && !url.includes('/auth/login')) {
-                // We don't want to throw during a login attempt
-                // Cleanup will be handled by Context/Hooks usually
+            // Handle unauthorized - Global logout
+            if (typeof window !== 'undefined') {
+                // 1. 만료되거나 잘못된 토큰 삭제
+                localStorage.removeItem('accessToken');
+
+                // 2. 로그인 페이지가 아니라면 로그인 페이지로 리다이렉트
+                if (!window.location.pathname.includes('/auth/login')) {
+                    alert('세션이 만료되었습니다. 다시 로그인해주세요.');
+                    window.location.href = '/auth/login';
+                    return {} as T; // Stop further processing
+                }
             }
         }
 

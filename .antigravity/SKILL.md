@@ -55,6 +55,7 @@ Include:
 - Rollback strategy per phase
 - Progress tracking section
 - Notes & learnings area
+- Implementation strategy based on Clean Architecture
 
 ### Step 4: User Approval
 **CRITICAL**: Use AskUserQuestion to get explicit approval before proceeding.
