@@ -8,8 +8,10 @@ import JobSearchFilter from '@/components/jobs/JobSearchFilter';
 import RecommendedJobs from '@/components/jobs/RecommendedJobs';
 import { api } from '@/lib/api';
 import { JobListing } from '@/types';
-import { Plus, Trash2, UserCheck, Calendar, MapPin, Eye, Clock, AlertCircle, CheckCircle2, ChevronRight, Briefcase } from 'lucide-react';
+import { Plus, Trash2, UserCheck, Calendar, MapPin, Eye, Clock, AlertCircle, CheckCircle2, ChevronRight, Briefcase, Filter } from 'lucide-react';
 import { JobCardSkeleton } from '@/components/ui/Skeleton';
+import MobileCard from '@/components/ui/MobileCard';
+import MobileJobFilter from '@/components/jobs/MobileJobFilter';
 
 interface JobsListClientProps {
     initialJobs?: JobListing[];
@@ -24,6 +26,7 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
     const [searchFilters, setSearchFilters] = useState<{ subject?: string; region?: string; keyword?: string }>({});
     const [jobTypeFilter, setJobTypeFilter] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'SEARCH' | 'MY'>('SEARCH');
+    const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
     useEffect(() => {
         if (user?.role === 'TEACHER' && !jobTypeFilter) {
@@ -130,7 +133,32 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
 
                 {/* Search Filter Section */}
                 {!isSchool && viewMode === 'SEARCH' && (
-                    <JobSearchFilter onSearch={(filters) => setSearchFilters(filters)} />
+                    <>
+                        {/* Desktop Filter */}
+                        <div className="hidden lg:block">
+                            <JobSearchFilter onSearch={(filters) => setSearchFilters(filters)} />
+                        </div>
+
+                        {/* Mobile Filter Trigger */}
+                        <div className="lg:hidden">
+                            <button
+                                onClick={() => setIsMobileFilterOpen(true)}
+                                className="w-full flex items-center justify-center gap-2 py-3 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl font-bold text-slate-600 dark:text-slate-200 shadow-sm active:scale-[0.98] transition-all"
+                            >
+                                <Filter className="w-4 h-4" />
+                                <span>검색 필터 열기</span>
+                                {(searchFilters.subject || searchFilters.region || searchFilters.keyword) && (
+                                    <span className="w-2 h-2 rounded-full bg-primary" />
+                                )}
+                            </button>
+                            <MobileJobFilter
+                                isOpen={isMobileFilterOpen}
+                                onClose={() => setIsMobileFilterOpen(false)}
+                                onSearch={(filters) => setSearchFilters(filters)}
+                                initialFilters={searchFilters}
+                            />
+                        </div>
+                    </>
                 )}
 
                 {/* Job List */}
@@ -149,97 +177,113 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
                 ) : (
                     <div className="space-y-3">
                         {jobs.map((job) => (
-                            <Link
-                                key={job.id}
-                                href={`/dashboard/jobs/${job.id}`}
-                                className="group block bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-600/50 hover:shadow-md rounded-xl transition-all overflow-hidden"
-                            >
-                                <div className="flex flex-col md:flex-row">
-                                    {/* Left Section (70%) - Content */}
-                                    <div className="flex-1 p-5">
-                                        {/* Tags Row */}
-                                        <div className="flex items-center gap-2 mb-3">
-                                            <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${(job as any).jobType === 'EVENT_VENDOR'
-                                                ? 'bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30'
-                                                : 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30'
-                                                }`}>
-                                                {(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
-                                            </span>
-                                            <span className="text-slate-500 text-xs">
-                                                {job.schoolProfile?.schoolName || '정보 없음'}
-                                            </span>
-                                        </div>
-
-                                        {/* Title */}
-                                        <h3 className="text-lg font-semibold text-foreground group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-1">
-                                            {job.title}
-                                        </h3>
-
-                                        {/* Meta Data */}
-                                        <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
-                                            <span className="flex items-center gap-1.5">
-                                                <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                                                {job.regions?.[0] || '전국'}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <Briefcase className="w-3.5 h-3.5 text-slate-500" />
-                                                {job.subjects?.join(', ') || '전과목'}
-                                            </span>
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar className="w-3.5 h-3.5 text-slate-500" />
-                                                {new Date(job.createdAt).toLocaleDateString()}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    {/* Right Section (30%) - Status & Actions */}
-                                    <div className="md:w-48 p-5 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700/50 flex flex-row md:flex-col items-center justify-between md:justify-center gap-3 bg-slate-50 dark:bg-slate-800/20">
-                                        {/* Status Badge */}
-                                        {job.active ? (
-                                            isDeadlineApproaching(job.createdAt) ? (
-                                                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 rounded-full text-[10px] font-semibold">
-                                                    <AlertCircle className="w-3 h-3" />
-                                                    마감 임박
-                                                </span>
-                                            ) : (
-                                                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-semibold">
-                                                    <CheckCircle2 className="w-3 h-3" />
-                                                    모집 중
-                                                </span>
-                                            )
-                                        ) : (
-                                            <span className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-slate-600/50 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded-full text-[10px] font-semibold">
-                                                모집 종료
-                                            </span>
-                                        )}
-
-                                        {/* Action Button or Arrow */}
-                                        {isSchool ? (
-                                            <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
-                                                <Link
-                                                    href={`/dashboard/jobs/${job.id}/applications`}
-                                                    className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-all flex items-center gap-1.5"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    <UserCheck className="w-3.5 h-3.5" />
-                                                    지원자
-                                                </Link>
-                                                <button
-                                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(job.id); }}
-                                                    className="p-1.5 text-slate-500 hover:text-red-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 rounded-lg transition-all"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center gap-1.5 text-slate-500 group-hover:text-blue-500 transition-colors">
-                                                <span className="text-xs font-medium hidden md:block">상세보기</span>
-                                                <ChevronRight className="w-4 h-4" />
-                                            </div>
-                                        )}
-                                    </div>
+                            <div key={job.id}>
+                                {/* Mobile View */}
+                                <div className="md:hidden">
+                                    <Link href={`/dashboard/jobs/${job.id}`}>
+                                        <MobileCard
+                                            title={job.title}
+                                            subtitle={job.schoolProfile?.schoolName || '정보 없음'}
+                                            description={`${job.regions?.[0] || '전국'} · ${job.subjects?.join(', ') || '전과목'} · 마감일: ${new Date(job.createdAt).toLocaleDateString()}`}
+                                            badge={(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
+                                            badgeColor={(job as any).jobType === 'EVENT_VENDOR' ? 'yellow' : 'blue'}
+                                            onClick={() => { }} // Link wrapper handles click, but prop needed for styling
+                                        />
+                                    </Link>
                                 </div>
-                            </Link>
+
+                                {/* Desktop View */}
+                                <Link
+                                    href={`/dashboard/jobs/${job.id}`}
+                                    className="hidden md:block group bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-600/50 hover:shadow-md rounded-xl transition-all overflow-hidden"
+                                >
+                                    <div className="flex flex-col md:flex-row">
+                                        {/* Left Section (70%) - Content */}
+                                        <div className="flex-1 p-5">
+                                            {/* Tags Row */}
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${(job as any).jobType === 'EVENT_VENDOR'
+                                                    ? 'bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30'
+                                                    : 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30'
+                                                    }`}>
+                                                    {(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
+                                                </span>
+                                                <span className="text-slate-500 text-xs">
+                                                    {job.schoolProfile?.schoolName || '정보 없음'}
+                                                </span>
+                                            </div>
+
+                                            {/* Title */}
+                                            <h3 className="text-lg font-semibold text-foreground group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors mb-2 line-clamp-1">
+                                                {job.title}
+                                            </h3>
+
+                                            {/* Meta Data */}
+                                            <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400">
+                                                <span className="flex items-center gap-1.5">
+                                                    <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                                                    {job.regions?.[0] || '전국'}
+                                                </span>
+                                                <span className="flex items-center gap-1.5">
+                                                    <Briefcase className="w-3.5 h-3.5 text-slate-500" />
+                                                    {job.subjects?.join(', ') || '전과목'}
+                                                </span>
+                                                <span className="flex items-center gap-1.5">
+                                                    <Calendar className="w-3.5 h-3.5 text-slate-500" />
+                                                    {new Date(job.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Right Section (30%) - Status & Actions */}
+                                        <div className="md:w-48 p-5 border-t md:border-t-0 md:border-l border-slate-200 dark:border-slate-700/50 flex flex-row md:flex-col items-center justify-between md:justify-center gap-3 bg-slate-50 dark:bg-slate-800/20">
+                                            {/* Status Badge */}
+                                            {job.active ? (
+                                                isDeadlineApproaching(job.createdAt) ? (
+                                                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 rounded-full text-[10px] font-semibold">
+                                                        <AlertCircle className="w-3 h-3" />
+                                                        마감 임박
+                                                    </span>
+                                                ) : (
+                                                    <span className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 rounded-full text-[10px] font-semibold">
+                                                        <CheckCircle2 className="w-3 h-3" />
+                                                        모집 중
+                                                    </span>
+                                                )
+                                            ) : (
+                                                <span className="flex items-center gap-1.5 px-2.5 py-1 bg-slate-200 dark:bg-slate-600/50 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-600 rounded-full text-[10px] font-semibold">
+                                                    모집 종료
+                                                </span>
+                                            )}
+
+                                            {/* Action Button or Arrow */}
+                                            {isSchool ? (
+                                                <div className="flex items-center gap-2" onClick={(e) => e.preventDefault()}>
+                                                    <Link
+                                                        href={`/dashboard/jobs/${job.id}/applications`}
+                                                        className="px-3 py-1.5 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-500 transition-all flex items-center gap-1.5"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <UserCheck className="w-3.5 h-3.5" />
+                                                        지원자
+                                                    </Link>
+                                                    <button
+                                                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleDelete(job.id); }}
+                                                        className="p-1.5 text-slate-500 hover:text-red-500 border border-slate-200 dark:border-slate-700 hover:border-red-500 rounded-lg transition-all"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center gap-1.5 text-slate-500 group-hover:text-blue-500 transition-colors">
+                                                    <span className="text-xs font-medium hidden md:block">상세보기</span>
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
                         ))}
                     </div>
                 )}

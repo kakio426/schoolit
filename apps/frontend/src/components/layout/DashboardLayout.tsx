@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import UnauthorizedView from '../auth/UnauthorizedView';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
-import { useTheme } from '@/contexts/ThemeContext';
 import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
 import FeedbackButton from '../ui/FeedbackButton';
 import ComplianceModal from '../ui/ComplianceModal';
 import VerificationPendingView from '../auth/VerificationPendingView';
 import { api } from '@/lib/api';
-import { DASHBOARD_MENU } from '@/config/dashboard-menu';
+import BottomNav from './BottomNav';
+import { useNavItems } from '@/hooks/useNavItems';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout, refreshProfile } = useAuth();
@@ -27,42 +27,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         setShowNotifications(false);
     }, [pathname]);
 
-    // [Optimization] 메뉴 아이템 계산 비용 줄이기 (useMemo)
-    const navItems = useMemo(() => {
-        if (!user) return [];
-        if (user.role === 'PENDING') return [];
-
-        if (user.role === 'ADMIN') {
-            return DASHBOARD_MENU.ADMIN;
-        }
-
-        const roleItems = DASHBOARD_MENU[user.role] || [];
-        const commonItems = DASHBOARD_MENU.COMMON.filter(item => item.label !== '메시지'); // '메시지'는 별도 처리 위함이나, 여기선 구조상 COMMON에 포함되어 있음.
-
-        // 재조립: 대시보드 -> 메시지 -> 역할별 메뉴 -> 커뮤니티 -> 설정
-        // 기존 로직:
-        // 1. 대시보드
-        // 2. 메시지
-        // 3. 역할별 아이템
-        // 4. 커뮤니티
-        // 5. 설정
-
-        // DASHBOARD_MENU.COMMON에는 대시보드, 메시지, 커뮤니티, 설정이 다 들어있음.
-        // 이를 분리해서 조립해야 함.
-
-        const dashboardItem = DASHBOARD_MENU.COMMON.find(i => i.label === '대시보드')!;
-        const messageItem = DASHBOARD_MENU.COMMON.find(i => i.label === '메시지')!;
-        const communityItem = DASHBOARD_MENU.COMMON.find(i => i.label === '커뮤니티')!;
-        const settingsItem = DASHBOARD_MENU.COMMON.find(i => i.label === '설정')!;
-
-        return [
-            dashboardItem,
-            messageItem,
-            ...roleItems,
-            communityItem,
-            settingsItem
-        ];
-    }, [user]);
+    // Get navigation items from hook
+    const { sidebarItems: navItems, bottomNavItems } = useNavItems(user?.role);
 
     // Loading State
     if (isLoading) {
@@ -233,7 +199,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
                 </header>
 
-                <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <main className="flex-1 p-4 md:p-8 pb-24 lg:pb-8 max-w-7xl w-full mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
                     {/* Bypass verification for test accounts */}
                     {(user.role === 'SCHOOL' && !user.schoolProfile?.isVerified && user.email !== 'school@test.com') ? (
                         !user.verificationCode ? (
@@ -279,7 +245,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <FooterDisclaimer />
                 <FeedbackButton />
                 <ComplianceModal userRole={user.role} />
-            </div >
-        </div >
+            </div>
+
+            {/* Mobile Bottom Navigation */}
+            <BottomNav items={bottomNavItems} unreadMessageCount={unreadMessageCount} />
+        </div>
     );
 }
