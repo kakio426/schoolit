@@ -41,7 +41,7 @@ export class RagService implements OnModuleInit {
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.chatModel = this.genAI.getGenerativeModel({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-1.5-flash',
       });
     }
   }
@@ -75,15 +75,13 @@ export class RagService implements OnModuleInit {
     }
   }
 
-  private readonly BATCH_SIZE = 5;
+  private readonly BATCH_SIZE = 10; // 인게스트 배치 크기 확대
 
   /**
    * Ingest extracted text into vector database (Client-Side Parsing)
    */
   async ingestDocument(dto: IngestTextDto): Promise<number> {
-    this.logger.log(
-      `Ingesting document: ${dto.filename} (Text Length: ${dto.content.length})`,
-    );
+    this.logger.log(`Ingesting document: ${dto.filename} (Text Length: ${dto.content.length})`);
 
     const text = dto.content;
     const chunks = this.chunkingService.splitByPages(text, dto.filename);
@@ -97,30 +95,34 @@ export class RagService implements OnModuleInit {
       const end = Math.min(start + this.BATCH_SIZE, chunks.length);
       const batch = chunks.slice(start, end);
 
-      this.logger.log(
-        `Processing batch ${batchIndex + 1}/${totalBatches} (chunks ${start + 1}-${end})`,
+      this.logger.log(`Processing batch ${batchIndex + 1}/${totalBatches}`);
+
+      // 병렬 처리로 속도 대폭 개선 (타임아웃 방지)
+      const results = await Promise.all(
+        batch.map(async (chunk) => {
+          try {
+            const embedding = await this.embeddingService.generateEmbedding(chunk.content);
+            await this.prisma.$executeRaw`
+              INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
+              VALUES (
+                ${chunk.content},
+                ${JSON.stringify(chunk.metadata)}::jsonb,
+                ${JSON.stringify(embedding)}::vector,
+                NOW(),
+                NOW()
+              )
+            `;
+            return true;
+          } catch (error) {
+            this.logger.error(`Failed to store chunk:`, error);
+            return false;
+          }
+        }),
       );
 
-      for (const chunk of batch) {
-        try {
-          const embedding = await this.embeddingService.generateEmbedding(chunk.content);
+      storedCount += results.filter((r) => r).length;
 
-          await this.prisma.$executeRaw`
-                        INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
-                        VALUES (
-                            ${chunk.content},
-                            ${JSON.stringify(chunk.metadata)}::jsonb,
-                            ${JSON.stringify(embedding)}::vector,
-                            NOW(),
-                            NOW()
-                        )
-                    `;
-          storedCount++;
-        } catch (error) {
-          this.logger.error(`Failed to store chunk ${chunk.metadata.chunkIndex}:`, error);
-        }
-      }
-      // GC Hint
+      // GC 및 이벤트 루프 양보
       await new Promise((resolve) => setImmediate(resolve));
     }
 
