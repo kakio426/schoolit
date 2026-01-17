@@ -281,33 +281,36 @@ export class JobsService {
   }
 
   async searchJobs(filters: { subject?: string; region?: string; keyword?: string }) {
-    const where: Prisma.JobListingWhereInput = {
-      active: true,
-      status: JobStatus.OPEN,
-      // [Fix] 검색에서도 게시된 공고만 노출
-      OR: [
-        { workflowStatus: HiringWorkflowStatus.PUBLISHED },
-        { workflowStatus: null }
-      ]
-    };
+    const baseConditions: Prisma.JobListingWhereInput[] = [
+      { active: true },
+      { status: JobStatus.OPEN },
+      {
+        OR: [
+          { workflowStatus: HiringWorkflowStatus.PUBLISHED },
+          { workflowStatus: null }
+        ]
+      }
+    ];
 
     if (filters.subject) {
-      where.subjects = { has: filters.subject };
+      baseConditions.push({ subjects: { has: filters.subject } });
     }
 
     if (filters.region) {
-      where.regions = { has: filters.region };
+      baseConditions.push({ regions: { has: filters.region } });
     }
 
     if (filters.keyword) {
-      where.OR = [
-        { title: { contains: filters.keyword, mode: 'insensitive' } },
-        { description: { contains: filters.keyword, mode: 'insensitive' } },
-      ];
+      baseConditions.push({
+        OR: [
+          { title: { contains: filters.keyword, mode: 'insensitive' } },
+          { description: { contains: filters.keyword, mode: 'insensitive' } },
+        ]
+      });
     }
 
     return this.prisma.jobListing.findMany({
-      where,
+      where: { AND: baseConditions },
       select: {
         id: true,
         title: true,

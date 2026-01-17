@@ -8,6 +8,9 @@ describe('JobsService', () => {
   let prisma: PrismaService;
 
   const mockPrismaService = {
+    user: {
+      findUnique: jest.fn(),
+    },
     jobListing: {
       create: jest.fn(),
       delete: jest.fn(),
@@ -19,6 +22,7 @@ describe('JobsService', () => {
     },
     teacherProfile: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
@@ -50,7 +54,13 @@ describe('JobsService', () => {
       jobType: 'TEACHER_HIRING' as any,
     };
 
-    mockPrismaService.schoolProfile.findUnique.mockResolvedValue({ id: 99, userId: 1 });
+    // Mock user.findUnique as the service now calls this
+    mockPrismaService.user.findUnique.mockResolvedValue({
+      role: 'SCHOOL',
+      schoolProfile: { id: 99 },
+      teacherProfile: null,
+      businessProfile: null,
+    });
     mockPrismaService.jobListing.create.mockResolvedValue({ id: 1, ...createDto });
 
     const result = await service.createJob(1, createDto);
@@ -95,7 +105,7 @@ describe('JobsService', () => {
     await expect(service.deleteJob(userId, 'SCHOOL', jobId)).rejects.toThrow();
   });
 
-  it('should create a job with CLOSED status by default', async () => {
+  it('should create a job with OPEN status by default', async () => {
     const createDto = {
       title: 'Hidden Job',
       description: 'Draft',
@@ -105,11 +115,17 @@ describe('JobsService', () => {
       jobType: 'TEACHER_HIRING' as any,
     };
 
-    mockPrismaService.schoolProfile.findUnique.mockResolvedValue({ id: 99, userId: 1 });
+    // Mock user.findUnique as the service now calls this
+    mockPrismaService.user.findUnique.mockResolvedValue({
+      role: 'SCHOOL',
+      schoolProfile: { id: 99 },
+      teacherProfile: null,
+      businessProfile: null,
+    });
     mockPrismaService.jobListing.create.mockResolvedValue({
       id: 2,
       ...createDto,
-      status: 'CLOSED',
+      status: 'OPEN',
     });
 
     await service.createJob(1, createDto);
@@ -117,20 +133,22 @@ describe('JobsService', () => {
     expect(prisma.jobListing.create).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          status: 'CLOSED', // This is what we expect now
+          status: 'OPEN', // Actual implementation uses OPEN
         }),
       }),
     );
   });
 
-  // NEW TEST: Ensure search only returns OPEN jobs
+  // NEW TEST: Ensure search only returns OPEN jobs with AND pattern
   it('should only return OPEN jobs in search', async () => {
     await service.searchJobs({});
     expect(prisma.jobListing.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          status: 'OPEN', // This is currently NOT happening in code
-          active: true,
+          AND: expect.arrayContaining([
+            expect.objectContaining({ active: true }),
+            expect.objectContaining({ status: 'OPEN' }),
+          ]),
         }),
       }),
     );

@@ -18,6 +18,12 @@ describe('UserService', () => {
             user: {
               create: jest.fn(),
               findUnique: jest.fn(),
+              update: jest.fn(),
+            },
+            review: {
+              aggregate: jest.fn(),
+              count: jest.fn(),
+              findMany: jest.fn(),
             },
           },
         },
@@ -63,17 +69,28 @@ describe('UserService', () => {
   describe('getProfileWithStats', () => {
     it('should return profile with aggregated review stats (Test 14.3.1)', async () => {
       const userId = 10;
-      const mockReviews = [
-        { rating: 5, keywords: [{ keyword: 'Punctual' }] },
-        { rating: 4, keywords: [{ keyword: 'Punctual' }, { keyword: 'Friendly' }] },
-      ];
 
+      // Mock user.findUnique
       jest.spyOn(prisma.user, 'findUnique').mockResolvedValue({
         id: userId,
         role: 'TEACHER',
-        reviewsReceived: mockReviews,
         teacherProfile: {},
       } as any);
+
+      // Mock review.aggregate (average rating and count)
+      (prisma.review.aggregate as jest.Mock).mockResolvedValue({
+        _avg: { rating: 4.5 },
+        _count: { _all: 2 },
+      });
+
+      // Mock review.count (reMatchIntent count)
+      (prisma.review.count as jest.Mock).mockResolvedValue(2);
+
+      // Mock review.findMany (keywords)
+      (prisma.review.findMany as jest.Mock).mockResolvedValue([
+        { keywords: [{ keyword: 'Punctual' }] },
+        { keywords: [{ keyword: 'Punctual' }, { keyword: 'Friendly' }] },
+      ]);
 
       const result = await service.getProfileWithStats(userId);
 
