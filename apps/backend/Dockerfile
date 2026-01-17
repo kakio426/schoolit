@@ -17,7 +17,7 @@ COPY package*.json ./
 COPY apps/backend/package*.json ./apps/backend/
 
 # 빌드에 필요한 모든 의존성 설치
-RUN npm ci
+RUN npm ci --legacy-peer-deps
 
 # 소스 복사 및 빌드
 COPY apps/backend ./apps/backend
@@ -48,7 +48,7 @@ COPY --from=builder /app/apps/backend/dist ./dist
 COPY --from=builder /app/apps/backend/prisma ./prisma
 
 # 프로덕션 의존성만 설치
-RUN npm install --omit=dev
+RUN npm install --omit=dev --legacy-peer-deps
 
 # Prisma Client 생성
 RUN npx prisma generate
