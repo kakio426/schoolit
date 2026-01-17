@@ -90,25 +90,33 @@ export class ChunkingService {
    * @returns Array of chunks with page numbers in metadata
    */
   splitByPages(text: string, source: string): DocumentChunk[] {
-    // Try to detect page breaks (common in PDF extraction)
-    const pagePattern = /\f|--- Page \d+ ---/g;
-    const pages = text.split(pagePattern);
+    try {
+      // Try to detect page breaks (common in PDF extraction)
+      const pagePattern = /\f|--- Page \d+ ---/g;
+      const pages = text.split(pagePattern);
 
-    const allChunks: DocumentChunk[] = [];
+      const allChunks: DocumentChunk[] = [];
 
-    pages.forEach((pageText, pageIndex) => {
-      const pageChunks = this.splitTextIntoChunks(pageText, source);
-      pageChunks.forEach((chunk) => {
-        allChunks.push({
-          ...chunk,
-          metadata: {
-            ...chunk.metadata,
-            page: pageIndex + 1,
-          },
+      pages.forEach((pageText, pageIndex) => {
+        const pageChunks = this.splitTextIntoChunks(pageText, source);
+        pageChunks.forEach((chunk) => {
+          allChunks.push({
+            ...chunk,
+            metadata: {
+              ...chunk.metadata,
+              page: pageIndex + 1,
+            },
+          });
         });
       });
-    });
 
-    return allChunks;
+      return allChunks;
+    } catch (error) {
+      // Safety Net: Log error and return empty array to prevent 500 crash in caller
+      // Use console.error if logger is not available context-wise, but here we let exception bubble or handle gracefully
+      // To strictly follow user's instruction: "침묵하지 말고 빈 상자라도 내놔라"
+      console.error(`[ChunkingService] Fatal Error in splitByPages: ${error.message}`, error.stack);
+      return [];
+    }
   }
 }

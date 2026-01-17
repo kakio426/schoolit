@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma.service';
@@ -85,6 +85,15 @@ export class RagService implements OnModuleInit {
 
     const text = dto.content;
     const chunks = this.chunkingService.splitByPages(text, dto.filename);
+
+    // --- Safety Guard: Check for empty chunks to prevent 500 Error (undefined length) ---
+    if (!chunks || chunks.length === 0) {
+      this.logger.warn(`[RAG] Chunking failed or returned empty result for ${dto.filename}`);
+      // 사용자에게 "서버가 죽었다"는 500 대신 명확한 에러 메시지 전달 (하지만 HTTP status는 500 유지하되 메시지 명시)
+      throw new InternalServerErrorException('텍스트를 처리하는 도중 문제가 발생했습니다. (Chunking Failed: No output)');
+    }
+    // --------------------------------------------------------------------------------
+
     this.logger.log(`[RAG] Created ${chunks.length} chunks. Using BATCH_SIZE=${this.BATCH_SIZE}`);
 
     let storedCount = 0;
