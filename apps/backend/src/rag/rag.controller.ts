@@ -20,7 +20,7 @@ import { AskQuestionDto } from './dto/ask-question.dto';
 @Controller('rag')
 @UseGuards(AuthGuard('jwt'))
 export class RagController {
-  constructor(private readonly ragService: RagService) {}
+  constructor(private readonly ragService: RagService) { }
 
   /**
    * Upload and process a PDF document for RAG
@@ -33,7 +33,7 @@ export class RagController {
       new ParseFilePipe({
         validators: [
           new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
-          new FileTypeValidator({ fileType: 'application/pdf' }),
+          new FileTypeValidator({ fileType: /application\/pdf/ }),
         ],
       }),
     )
