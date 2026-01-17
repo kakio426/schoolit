@@ -22,12 +22,22 @@ export default function RagAssistantPage() {
     const [activeTab, setActiveTab] = useState<TabType>('chat');
 
     useEffect(() => {
-        if (!isAuthLoading && user?.role !== 'ADMIN') {
+        if (!isAuthLoading && (!user || user.role !== 'ADMIN')) {
             router.replace('/dashboard');
         }
     }, [user, isAuthLoading, router]);
 
-    if (isAuthLoading || user?.role !== 'ADMIN') {
+    // Show loading spinner while checking auth
+    if (isAuthLoading || !user) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    // If not admin, return null (will redirect via useEffect)
+    if (user.role !== 'ADMIN') {
         return null;
     }
     const [stats, setStats] = useState<RagStats | null>(null);
@@ -53,8 +63,10 @@ export default function RagAssistantPage() {
     };
 
     useEffect(() => {
-        fetchStats();
-    }, []);
+        if (user?.role === 'ADMIN') {
+            fetchStats();
+        }
+    }, [user]);
 
     const handleClearDocuments = async () => {
         if (!confirm('모든 문서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
