@@ -28,10 +28,10 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '50mb' });
   app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
 
-  // Root Health Check v1.4.0
+  // Root Health Check v1.5.0 (CORS-FREE Edition via Next.js Proxy)
   const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/', (req: any, res: any) => res.status(200).send({ status: 'ok', version: '1.4.0' }));
-  httpAdapter.get('/api/health', (req: any, res: any) => res.status(200).send({ status: 'api-ok', version: '1.4.0' }));
+  httpAdapter.get('/', (req: any, res: any) => res.status(200).send({ status: 'ok', version: '1.5.0' }));
+  httpAdapter.get('/api/health', (req: any, res: any) => res.status(200).send({ status: 'api-ok', version: '1.5.0' }));
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');
