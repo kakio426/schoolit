@@ -112,46 +112,75 @@ export class RagService implements OnModuleInit {
     }
 
     /**
+     * Maximum file size in MB for PDF uploads
+     */
+    private readonly MAX_FILE_SIZE_MB = 20;
+
+    /**
+     * Batch size for processing chunks (prevents memory buildup)
+     */
+    private readonly BATCH_SIZE = 5;
+
+    /**
      * Ingest a PDF document into the vector database
+     * Uses batch processing to prevent memory overflow
      * @param file - Uploaded PDF file
      * @returns Number of chunks created
      */
     async ingestDocument(file: Express.Multer.File): Promise<number> {
-        this.logger.log(`Ingesting document: ${file.originalname}`);
+        this.logger.log(`Ingesting document: ${file.originalname} (${(file.size / 1024 / 1024).toFixed(2)}MB)`);
+
+        // 0. File size validation
+        const fileSizeMB = file.size / 1024 / 1024;
+        if (fileSizeMB > this.MAX_FILE_SIZE_MB) {
+            throw new Error(`파일이 너무 큽니다. 최대 ${this.MAX_FILE_SIZE_MB}MB까지 업로드 가능합니다. (현재: ${fileSizeMB.toFixed(2)}MB)`);
+        }
 
         // 1. Parse PDF
-        const text = await extractTextFromPdf(file.buffer);
-
-        this.logger.log(
-            `Extracted ${text.length} characters`,
-        );
+        let text = await extractTextFromPdf(file.buffer);
+        this.logger.log(`Extracted ${text.length} characters`);
 
         // 2. Chunk the text
         const chunks = this.chunkingService.splitByPages(text, file.originalname);
-        this.logger.log(`Created ${chunks.length} chunks`);
+        this.logger.log(`Created ${chunks.length} chunks, processing in batches of ${this.BATCH_SIZE}`);
 
-        // 3. Generate embeddings and store
+        // Release text from memory after chunking
+        text = null as any;
+
+        // 3. Process chunks in batches to prevent memory accumulation
         let storedCount = 0;
-        for (const chunk of chunks) {
-            try {
-                const embedding =
-                    await this.embeddingService.generateEmbedding(chunk.content);
+        const totalBatches = Math.ceil(chunks.length / this.BATCH_SIZE);
 
-                // Store using raw SQL for vector type
-                await this.prisma.$executeRaw`
-          INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
-          VALUES (
-            ${chunk.content},
-            ${JSON.stringify(chunk.metadata)}::jsonb,
-            ${JSON.stringify(embedding)}::vector,
-            NOW(),
-            NOW()
-          )
-        `;
-                storedCount++;
-            } catch (error) {
-                this.logger.error(`Failed to store chunk ${chunk.metadata.chunkIndex}:`, error);
+        for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+            const start = batchIndex * this.BATCH_SIZE;
+            const end = Math.min(start + this.BATCH_SIZE, chunks.length);
+            const batch = chunks.slice(start, end);
+
+            this.logger.log(`Processing batch ${batchIndex + 1}/${totalBatches} (chunks ${start + 1}-${end})`);
+
+            // Process each chunk in the batch
+            for (const chunk of batch) {
+                try {
+                    const embedding = await this.embeddingService.generateEmbedding(chunk.content);
+
+                    await this.prisma.$executeRaw`
+                        INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
+                        VALUES (
+                            ${chunk.content},
+                            ${JSON.stringify(chunk.metadata)}::jsonb,
+                            ${JSON.stringify(embedding)}::vector,
+                            NOW(),
+                            NOW()
+                        )
+                    `;
+                    storedCount++;
+                } catch (error) {
+                    this.logger.error(`Failed to store chunk ${chunk.metadata.chunkIndex}:`, error);
+                }
             }
+
+            // Allow GC to reclaim memory between batches
+            await new Promise(resolve => setImmediate(resolve));
         }
 
         this.logger.log(`Successfully stored ${storedCount}/${chunks.length} chunks`);
