@@ -37,7 +37,7 @@ export class GeminiPdfService {
         this.logger.log(`Extracting text from PDF (estimated ${estimatedSizeMB.toFixed(2)}MB)`);
 
         try {
-            const model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+            const model = this.genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
             const result = await model.generateContent([
                 {
