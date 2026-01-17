@@ -42,7 +42,7 @@ export class RagService implements OnModuleInit {
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
       this.chatModel = this.genAI.getGenerativeModel({
-        model: 'gemini-3.0-flash-preview',
+        model: 'gemini-3-flash',
       });
     }
   }
