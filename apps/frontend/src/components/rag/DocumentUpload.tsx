@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useRef, useCallback } from 'react';
-import { Upload, FileText, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { Upload, FileText, Check, AlertCircle, Loader2, FileSearch } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { extractTextFromPdf } from '../../lib/pdf-parser';
 
 interface UploadedFile {
     name: string;
-    status: 'uploading' | 'success' | 'error';
+    status: 'parsing' | 'uploading' | 'success' | 'error';
     chunksCreated?: number;
     error?: string;
 }
@@ -20,37 +21,49 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     const [isDragging, setIsDragging] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const uploadFile = async (file: File): Promise<UploadedFile> => {
-        const formData = new FormData();
-        formData.append('file', file);
+    const updateFileStatus = (name: string, status: UploadedFile['status'], error?: string, chunks?: number) => {
+        setFiles(prev => prev.map(f => f.name === name ? { ...f, status, error, chunksCreated: chunks } : f));
+    };
 
+    const processFile = async (file: File) => {
         try {
+            // 1. Parsing Phase (Client-side)
+            updateFileStatus(file.name, 'parsing');
+            const text = await extractTextFromPdf(file);
+
+            if (!text || text.trim().length === 0) {
+                throw new Error('PDF에서 텍스트를 추출할 수 없습니다.');
+            }
+
+            // 2. Upload Phase (Text Payload)
+            updateFileStatus(file.name, 'uploading');
+
             const token = localStorage.getItem('accessToken');
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/upload`, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: formData,
+                body: JSON.stringify({
+                    content: text,
+                    filename: file.name
+                }),
             });
 
             if (!res.ok) {
-                const error = await res.json();
-                throw new Error(error.message || '업로드 실패');
+                const errorData = await res.json();
+                throw new Error(errorData.message || '업로드 실패');
             }
 
             const data = await res.json();
-            return {
-                name: file.name,
-                status: 'success',
-                chunksCreated: data.chunksCreated,
-            };
+            updateFileStatus(file.name, 'success', undefined, data.chunksCreated);
+            return { name: file.name, status: 'success' as const, chunksCreated: data.chunksCreated };
+
         } catch (error) {
-            return {
-                name: file.name,
-                status: 'error',
-                error: error instanceof Error ? error.message : '알 수 없는 오류',
-            };
+            const errMsg = error instanceof Error ? error.message : '알 수 없는 오류';
+            updateFileStatus(file.name, 'error', errMsg);
+            return { name: file.name, status: 'error' as const, error: errMsg };
         }
     };
 
@@ -64,23 +77,18 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             return;
         }
 
-        // Add files with uploading status
+        // Initialize files with 'parsing' status
         const newFiles: UploadedFile[] = pdfFiles.map((f) => ({
             name: f.name,
-            status: 'uploading' as const,
+            status: 'parsing' as const,
         }));
         setFiles((prev) => [...prev, ...newFiles]);
 
-        // Upload files sequentially
+        // Process files sequentially
         const results: UploadedFile[] = [];
-        for (let i = 0; i < pdfFiles.length; i++) {
-            const result = await uploadFile(pdfFiles[i]);
+        for (const file of pdfFiles) {
+            const result = await processFile(file);
             results.push(result);
-
-            // Update specific file status
-            setFiles((prev) =>
-                prev.map((f) => (f.name === result.name ? result : f))
-            );
         }
 
         onUploadComplete?.(results);
@@ -146,7 +154,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                     PDF 파일을 드래그하거나 클릭하세요
                 </p>
                 <p className="text-sm text-muted-foreground">
-                    방과후 지침, 계약 관련 문서 등을 업로드하면 AI가 학습합니다
+                    방과후 지침, 계약 관련 문서 등을 업로드하면 AI가 학습합니다 (브라우저에서 직접 분석)
                 </p>
             </div>
 
@@ -171,8 +179,17 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                                 <FileText className="w-5 h-5 text-primary flex-shrink-0" />
                                 <span className="flex-1 text-sm truncate">{file.name}</span>
 
+                                {file.status === 'parsing' && (
+                                    <div className="flex items-center gap-1 text-primary">
+                                        <FileSearch className="w-4 h-4 animate-pulse" />
+                                        <span className="text-xs">분석 중...</span>
+                                    </div>
+                                )}
                                 {file.status === 'uploading' && (
-                                    <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                                    <div className="flex items-center gap-1 text-primary">
+                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                        <span className="text-xs">저장 중...</span>
+                                    </div>
                                 )}
                                 {file.status === 'success' && (
                                     <div className="flex items-center gap-1 text-success">
