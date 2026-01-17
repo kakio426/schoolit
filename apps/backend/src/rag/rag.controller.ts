@@ -6,14 +6,12 @@ import {
   Body,
   Query,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
   BadRequestException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
 import { RagService, RagResponse, SearchResult } from './rag.service';
 import { AskQuestionDto } from './dto/ask-question.dto';
+import { IngestTextDto } from './dto/ingest-text.dto'; // Import Added
 
 @Controller('rag')
 @UseGuards(AuthGuard('jwt'))
@@ -21,31 +19,16 @@ export class RagController {
   constructor(private readonly ragService: RagService) { }
 
   /**
-   * Upload and process a PDF document for RAG
+   * Ingest extracted text for RAG (Client-side parsing)
    * POST /api/rag/upload
    */
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
   async uploadDocument(
-    @UploadedFile() file: Express.Multer.File,
+    @Body() dto: IngestTextDto,
   ): Promise<{ message: string; chunksCreated: number }> {
-    if (!file) {
-      throw new BadRequestException('파일이 업로드되지 않았습니다.');
-    }
-
-    // 수동 검증: FileTypeValidator 이슈 우회
-    if (file.mimetype !== 'application/pdf') {
-      throw new BadRequestException('PDF 파일만 업로드 가능합니다.');
-    }
-
-    // 수동 검증: 50MB 제한
-    if (file.size > 50 * 1024 * 1024) {
-      throw new BadRequestException('파일 크기는 50MB를 초과할 수 없습니다.');
-    }
-
-    const chunksCreated = await this.ragService.ingestDocument(file);
+    const chunksCreated = await this.ragService.ingestDocument(dto);
     return {
-      message: `문서 '${file.originalname}'이(가) 성공적으로 처리되었습니다.`,
+      message: `문서 '${dto.filename}'이(가) 성공적으로 처리되었습니다.`,
       chunksCreated,
     };
   }
