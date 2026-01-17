@@ -27,15 +27,14 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '50mb' });
   app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
 
-  // CORS configuration (Reflecting origin for better debugging)
+  // CORS configuration (Max permissiveness to resolve long-standing issues)
   app.enableCors({
-    origin: true,
-    credentials: true,
+    origin: '*',
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization',
-    optionsSuccessStatus: 204,
+    allowedHeaders: '*',
+    credentials: false,
   });
-  console.log(`[Bootstrap] CORS simplified (Reflection mode enabled)`);
+  console.log(`[Bootstrap] CORS configured to '*' for maximum compatibility`);
 
   app.setGlobalPrefix('api');
   app.useGlobalFilters(new HttpExceptionFilter());
