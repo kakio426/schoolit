@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1598.up.railway.app';
+// Proxying through Next.js (rewrites) to bypass CORS issues
+export const API_BASE_URL = ''; // Relative path, browser will use current origin
 export const API_URL = `${API_BASE_URL}/api`;
 
 export enum Role {
