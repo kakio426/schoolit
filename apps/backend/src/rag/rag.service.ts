@@ -5,7 +5,6 @@ import { PrismaService } from '../prisma.service';
 import { EmbeddingService } from './embedding.service';
 import { ChunkingService, DocumentChunk } from './chunking.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
-import { GeminiPdfService } from './gemini-pdf.service'; // Optional but kept for DI if needed
 
 export interface SearchResult {
   content: string;
