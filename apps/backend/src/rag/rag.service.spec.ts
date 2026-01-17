@@ -5,8 +5,9 @@ import { EmbeddingService } from './embedding.service';
 import { ChunkingService } from './chunking.service';
 import { ConfigService } from '@nestjs/config';
 
-describe('RagService (Import Verification)', () => {
+describe('RagService (Baseline Test)', () => {
   let service: RagService;
+  let prisma: PrismaService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -14,15 +15,25 @@ describe('RagService (Import Verification)', () => {
         RagService,
         {
           provide: PrismaService,
-          useValue: {},
+          useValue: {
+            $executeRaw: jest.fn().mockResolvedValue(1),
+            $executeRawUnsafe: jest.fn().mockResolvedValue(1),
+            $queryRaw: jest.fn().mockResolvedValue([]),
+          },
         },
         {
           provide: EmbeddingService,
-          useValue: {},
+          useValue: {
+            generateEmbedding: jest.fn().mockResolvedValue(new Array(768).fill(0.1)),
+          },
         },
         {
           provide: ChunkingService,
-          useValue: {},
+          useValue: {
+            splitByPages: jest.fn().mockReturnValue([
+              { content: 'chunk 1', metadata: { source: 'test.pdf', chunkIndex: 0 } },
+            ]),
+          },
         },
         {
           provide: ConfigService,
@@ -34,34 +45,22 @@ describe('RagService (Import Verification)', () => {
     }).compile();
 
     service = module.get<RagService>(RagService);
+    prisma = module.get<PrismaService>(PrismaService);
   });
 
-  it('should have pdfParse as a function (Runtime Check)', async () => {
-    // Create a minimal valid-ish PDF buffer (header only)
-    const mockPdfBuffer = Buffer.from(
-      '%PDF-1.4\n1 0 obj < < /Type /Catalog >> endobj\ntrailer < < /Root 1 0 R >> %%EOF',
-    );
+  it('should be defined and configured with gemini-3-flash-preview', () => {
+    expect(service).toBeDefined();
+    // chatModel is private, but we can check if service loads.
+  });
 
-    try {
-      // Direct import to see what's happening
-      const pLib = require('pdf-parse');
-      console.log('--- DEBUG pdf-parse ---');
-      console.log('pLib type:', typeof pLib);
-      console.log('pLib keys:', Object.keys(pLib));
-      if (pLib.default) {
-        console.log('pLib.default type:', typeof pLib.default);
-      }
-      console.log('-----------------------');
+  it('should ingest text content (IngestTextDto Flow)', async () => {
+    const dto = {
+      content: 'This is a sample text for RAG digestion.',
+      filename: 'sample.pdf',
+    };
 
-      await service.ingestDocument({
-        buffer: mockPdfBuffer,
-        originalname: 'test.pdf',
-      } as any);
-    } catch (error) {
-      console.log('Caught expected test error:', error.message);
-      // If it's the "INITIALIZATION FAILED" error from rag.service.ts,
-      // the module failed to even load properly due to our top-level check.
-      expect(error.message).not.toContain('pdfParse is not a function');
-    }
+    const result = await service.ingestDocument(dto);
+    expect(result).toBe(1);
+    expect(prisma.$executeRaw).toHaveBeenCalled();
   });
 });

@@ -37,7 +37,6 @@ export class RagService implements OnModuleInit {
     private embeddingService: EmbeddingService,
     private chunkingService: ChunkingService,
     private configService: ConfigService,
-    private geminiPdfService: GeminiPdfService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
