@@ -30,18 +30,21 @@ export default function RagAssistantPage() {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('chat');
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    // Auth check effect
     useEffect(() => {
         if (!isAuthLoading && (!user || user.role !== 'ADMIN')) {
             router.replace('/dashboard');
         }
     }, [user, isAuthLoading, router]);
 
-    // Very important: prevent rendering ANY UI until auth is confirmed
-    // The previous error "Unexpected error" comes from hydration mismatches or trying to render restricted content
-    // We return null immediately if not admin (even before useEffect redirects)
-    if (!isAuthLoading && (!user || user.role !== 'ADMIN')) {
-        return null;
-    }
+    // Prevent rendering until mounted on client AND auth confirmed
+    if (!mounted) return null;
 
     // Show loading spinner while checking auth
     if (isAuthLoading || !user) {
@@ -52,7 +55,7 @@ export default function RagAssistantPage() {
         );
     }
 
-    // If not admin, return null (will redirect via useEffect)
+    // If not admin, return null
     if (user.role !== 'ADMIN') {
         return null;
     }
