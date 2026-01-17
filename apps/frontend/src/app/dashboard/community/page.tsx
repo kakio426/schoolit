@@ -20,7 +20,7 @@ async function getBoards(): Promise<Board[]> {
     if (!token) return [];
 
     try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop';
         const res = await fetch(`${apiUrl}/api/boards`, {
             headers: { 'Authorization': `Bearer ${token}` },
             cache: 'no-store',

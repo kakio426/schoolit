@@ -127,7 +127,7 @@ export default function BusinessPortfolioManager({ portfolios, token, onRefresh 
                         <div className="grid grid-cols-2 shadow-inner md:grid-cols-4 gap-4 mb-4">
                             {activeItem.images.map((img, idx) => (
                                 <div key={idx} className="relative group aspect-square rounded-2xl overflow-hidden border border-slate-200">
-                                    <img src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${img}`} alt="Preview" className="w-full h-full object-cover" />
+                                    <img src={img.startsWith('http') ? img : `${process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop'}${img}`} alt="Preview" className="w-full h-full object-cover" />
                                     <button
                                         onClick={() => removeImage(idx)}
                                         className="absolute top-2 right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
@@ -175,7 +175,7 @@ export default function BusinessPortfolioManager({ portfolios, token, onRefresh 
                             <div key={p.id} className="bg-surface rounded-3xl border border-slate-200 dark:border-slate-700 overflow-hidden shadow-sm group">
                                 <div className="aspect-video bg-slate-100 relative">
                                     {p.images[0] ? (
-                                        <img src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${p.images[0]}`} alt={p.title} className="w-full h-full object-cover" />
+                                        <img src={p.images[0].startsWith('http') ? p.images[0] : `${process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop'}${p.images[0]}`} alt={p.title} className="w-full h-full object-cover" />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-3xl">📁</div>
                                     )}

@@ -280,7 +280,7 @@ export default function TeacherProfileForm({ user, token, onRefresh }: TeacherPr
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {basicInfo.profileImage ? (
-                            <img src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${basicInfo.profileImage}`} alt="Profile" className="w-full h-full object-cover" />
+                            <img src={basicInfo.profileImage.startsWith('http') ? basicInfo.profileImage : `${process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop'}${basicInfo.profileImage}`} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-foreground-muted">
                                 <User className="w-12 h-12" />

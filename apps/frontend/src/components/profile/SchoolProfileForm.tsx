@@ -138,7 +138,7 @@ export default function SchoolProfileForm({ user, token, onRefresh }: SchoolProf
                         onClick={() => fileInputRef.current?.click()}
                     >
                         {formData.logoImage ? (
-                            <img src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000'}${formData.logoImage}`} alt="School Logo" className="w-full h-full object-cover" />
+                            <img src={formData.logoImage.startsWith('http') ? formData.logoImage : `${process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop'}${formData.logoImage}`} alt="School Logo" className="w-full h-full object-cover" />
                         ) : (
                             <div className="text-center p-2">
                                 <Upload className="w-8 h-8 mx-auto text-slate-400 mb-2" />
@@ -322,8 +322,8 @@ export default function SchoolProfileForm({ user, token, onRefresh }: SchoolProf
             {/* Messages */}
             {message && (
                 <div className={`p-4 rounded-2xl text-sm font-bold text-center animate-pulse ${message.type === 'success'
-                        ? 'bg-green-100 text-green-700 border border-green-200'
-                        : 'bg-red-100 text-red-700 border border-red-200'
+                    ? 'bg-green-100 text-green-700 border border-green-200'
+                    : 'bg-red-100 text-red-700 border border-red-200'
                     }`}>
                     {message.text}
                 </div>

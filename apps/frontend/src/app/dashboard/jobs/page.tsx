@@ -6,7 +6,7 @@ async function getJobs(): Promise<JobListing[]> {
     try {
         // Server-side fetch. Note: This request is unauthenticated.
         // It fetches PUBLIC jobs (equivalent to /jobs endpoint).
-        // API_URL from constants already includes '/api' suffix (e.g. http://localhost:4000/api)
+        // API_URL from constants already includes '/api' suffix (e.g. https://schoolit.shop/api)
         const url = `${API_URL}/jobs`;
         console.log("Fetching jobs from SSR:", url);
 

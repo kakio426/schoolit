@@ -57,7 +57,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
             })
             .catch(console.error);
 
-        const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/api$/, '');
+        const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'https://schoolit.shop').replace(/\/api$/, '');
         const socket = io(apiUrl, {
             auth: { token },
             transports: ['websocket'],
