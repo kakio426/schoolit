@@ -32,7 +32,7 @@ export class RagController {
         @UploadedFile(
             new ParseFilePipe({
                 validators: [
-                    new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+                    new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
                     new FileTypeValidator({ fileType: 'application/pdf' }),
                 ],
             }),

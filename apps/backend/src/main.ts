@@ -6,7 +6,11 @@ import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 async function bootstrap() {
   console.log(`[Bootstrap] Starting app in ${process.env.NODE_ENV} mode...`);
 
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Increase body size limit for large file uploads
+  app.useBodyParser('json', { limit: '50mb' });
+  app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
 
   // CORS configuration
   const isProduction = process.env.NODE_ENV === 'production';
