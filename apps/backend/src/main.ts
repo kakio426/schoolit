@@ -2,6 +2,8 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as fs from 'fs'; // fs import 추가
+import * as path from 'path';
+import * as os from 'os';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
@@ -9,7 +11,7 @@ async function bootstrap() {
   console.log(`[Bootstrap] Starting app in ${process.env.NODE_ENV} mode...`);
 
   // Ensure upload directory exists (Prevent Multer Error)
-  const uploadDir = './uploads/temp';
+  const uploadDir = path.join(os.tmpdir(), 'schoolit-uploads');
   try {
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
