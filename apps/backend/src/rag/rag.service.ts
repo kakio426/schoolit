@@ -5,10 +5,15 @@ import { PrismaService } from '../prisma.service';
 import { EmbeddingService } from './embedding.service';
 import { ChunkingService, DocumentChunk } from './chunking.service';
 
-import * as pdfParseLib from 'pdf-parse';
-
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pdfParseLib = require('pdf-parse');
 // Handle default export compatibility for both CommonJS and ESM
-const pdfParse = (pdfParseLib as any).default || pdfParseLib;
+const pdfParse = pdfParseLib.default || pdfParseLib;
+
+if (typeof pdfParse !== 'function') {
+    Logger.error(`Failed to load pdf-parse library. Type: ${typeof pdfParse}, Value: ${JSON.stringify(pdfParse)}`);
+    throw new Error('INTERNAL_SERVER_ERROR: pdf-parse library initialization failed');
+}
 
 export interface SearchResult {
     content: string;
