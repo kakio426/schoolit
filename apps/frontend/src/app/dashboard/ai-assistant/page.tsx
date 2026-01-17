@@ -27,6 +27,13 @@ export default function RagAssistantPage() {
         }
     }, [user, isAuthLoading, router]);
 
+    // Very important: prevent rendering ANY UI until auth is confirmed
+    // The previous error "Unexpected error" comes from hydration mismatches or trying to render restricted content
+    // We return null immediately if not admin (even before useEffect redirects)
+    if (!isAuthLoading && (!user || user.role !== 'ADMIN')) {
+        return null;
+    }
+
     // Show loading spinner while checking auth
     if (isAuthLoading || !user) {
         return (
