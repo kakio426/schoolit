@@ -27,6 +27,7 @@ import { DocumentsModule } from './documents/documents.module';
 import { RecommendationsModule } from './recommendations/recommendations.module';
 import { ComplianceModule } from './compliance/compliance.module';
 import { EvaluationsModule } from './evaluations/evaluations.module';
+import { RagModule } from './rag/rag.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { EvaluationsModule } from './evaluations/evaluations.module';
     RecommendationsModule,
     ComplianceModule,
     EvaluationsModule,
+    RagModule,
   ],
   controllers: [],
   providers: [],

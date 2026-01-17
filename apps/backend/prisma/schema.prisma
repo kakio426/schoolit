@@ -628,3 +628,23 @@ model UserBadge {
   @@unique([userId, type])
   @@map("user_badges")
 }
+
+// ============================================
+// RAG SYSTEM: Document Embedding Storage
+// ============================================
+
+model DocumentSection {
+  id        Int      @id @default(autoincrement())
+  content   String   // 실제 텍스트 내용 (청크)
+  metadata  Json     // { source: "파일명.pdf", page: 5, chunkIndex: 0 }
+  
+  // pgvector embedding - Prisma doesn't natively support vector type
+  // We use Unsupported type and handle via raw SQL
+  embedding Unsupported("vector(768)")?
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([createdAt])
+  @@map("document_sections")
+}
