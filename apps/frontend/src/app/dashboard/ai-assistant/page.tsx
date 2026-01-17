@@ -4,7 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Database, MessageSquare, Upload, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
-import { DocumentUpload, RagChatbot } from '@/components/rag';
+import dynamic from 'next/dynamic';
+
+const DocumentUpload = dynamic(
+    () => import('@/components/rag/DocumentUpload').then((mod) => mod.DocumentUpload),
+    { ssr: false }
+);
+const RagChatbot = dynamic(
+    () => import('@/components/rag/RagChatbot').then((mod) => mod.RagChatbot),
+    { ssr: false }
+);
 
 interface RagStats {
     totalChunks: number;
