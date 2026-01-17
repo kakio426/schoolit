@@ -10,6 +10,7 @@ import { JobListing, JobApplication } from '@/types';
 import { Role } from '@/lib/constants';
 import QuickApplyModal from '@/components/applications/QuickApplyModal';
 import StandardCard, { StandardBadge } from '@/components/ui/StandardCard';
+import WarningModal from '@/components/ui/WarningModal';
 import { Calendar, MapPin, Clock, BookOpen, User, Building, ExternalLink, ChevronLeft, Send, CheckCircle, FileText } from 'lucide-react';
 
 export default function JobDetailPage() {
@@ -20,6 +21,11 @@ export default function JobDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isApplying, setIsApplying] = useState(false);
     const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
+    const [errorModal, setErrorModal] = useState<{ isOpen: boolean; title: string; message: string; redirectUrl?: string }>({
+        isOpen: false,
+        title: '',
+        message: '',
+    });
 
     // 🔥 hasApplied는 백엔드에서 받아옴 (중복 지원 방지)
     const hasApplied = (job as any)?.hasApplied || false;
@@ -93,7 +99,21 @@ export default function JobDetailPage() {
             // 🔄 지원 완료 후 공고 정보 다시 불러오기 (hasApplied 업데이트)
             await fetchJob();
         } catch (e: any) {
-            alert(e.message || '지원 중 오류가 발생했습니다.');
+            const errorMessage = e.message || '지원 중 오류가 발생했습니다.';
+
+            // 백엔드에서 보낸 구조화된 에러 메시지 파싱
+            if (errorMessage.includes('PROFILE_REQUIRED|')) {
+                const [, message, redirectUrl] = errorMessage.split('|');
+                setIsApplyModalOpen(false);
+                setErrorModal({
+                    isOpen: true,
+                    title: '프로필 작성 필요',
+                    message: message || '지원하려면 먼저 프로필을 작성해주세요.',
+                    redirectUrl: redirectUrl || '/dashboard/profile/edit',
+                });
+            } else {
+                alert(errorMessage);
+            }
         } finally {
             setIsApplying(false);
         }
@@ -386,6 +406,25 @@ export default function JobDetailPage() {
                 onSubmit={handleApplySubmit}
                 jobType={(job.jobType || 'TEACHER_HIRING') as 'TEACHER_HIRING' | 'EVENT_VENDOR'}
                 jobTitle={job.title}
+            />
+
+            <WarningModal
+                isOpen={errorModal.isOpen}
+                onClose={() => setErrorModal({ ...errorModal, isOpen: false })}
+                title={errorModal.title}
+                description={errorModal.message}
+                type="warning"
+                primaryAction={
+                    errorModal.redirectUrl
+                        ? {
+                            label: '프로필 작성하러 가기',
+                            onClick: () => {
+                                setErrorModal({ ...errorModal, isOpen: false });
+                                router.push(errorModal.redirectUrl!);
+                            },
+                        }
+                        : undefined
+                }
             />
         </DashboardLayout>
     );

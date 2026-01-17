@@ -33,6 +33,7 @@ export class ApplicationsService {
           title: true,
           status: true,
           active: true,
+          jobType: true,
           schoolProfile: { select: { userId: true } },
           teacherProfile: { select: { userId: true } },
         },
@@ -43,7 +44,29 @@ export class ApplicationsService {
         throw new BadRequestException('마감되었거나 비활성화된 공고입니다.');
       }
 
-      // 2. 중복 지원 체크
+      // 2. 프로필 존재 여부 체크 (사용자 친화적 에러 메시지)
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+          role: true,
+          teacherProfile: { select: { id: true } },
+          businessProfile: { select: { id: true } },
+        },
+      });
+
+      if (job.jobType === 'TEACHER_HIRING' && !user?.teacherProfile) {
+        throw new BadRequestException(
+          'PROFILE_REQUIRED|지원하려면 먼저 선생님 프로필을 작성해주세요.|/dashboard/profile/edit',
+        );
+      }
+
+      if (job.jobType === 'EVENT_VENDOR' && !user?.businessProfile) {
+        throw new BadRequestException(
+          'PROFILE_REQUIRED|지원하려면 먼저 기업 프로필을 작성해주세요.|/dashboard/profile/edit',
+        );
+      }
+
+      // 3. 중복 지원 체크
       const existing = await this.prisma.jobApplication.findUnique({
         where: {
           jobId_userId: { jobId, userId },
