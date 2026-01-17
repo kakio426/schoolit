@@ -17,7 +17,12 @@ describe('BusinessProfileController Permissions (TDD)', () => {
       uploadFile: jest.fn(),
       getFileUrl: jest.fn(),
     } as any;
-    controller = new BusinessProfileController(service, mockCloudinaryService);
+    const mockPrismaService = {
+      user: {
+        findUnique: jest.fn(),
+      },
+    } as any;
+    controller = new BusinessProfileController(service, mockCloudinaryService, mockPrismaService);
   });
 
   it('findAll() should exist and allow TEACHER and SCHOOL', () => {

@@ -23,12 +23,14 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
 import { CloudinaryService } from '../common/storage/cloudinary.service';
+import { PrismaService } from '../prisma.service';
 
 @Controller('business-profiles')
 export class BusinessProfileController {
   constructor(
     private readonly service: BusinessProfileService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly prisma: PrismaService,
   ) { }
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -47,7 +49,16 @@ export class BusinessProfileController {
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   async getMyProfile(@Request() req) {
-    return this.service.findByUserId(req.user.userId);
+    const profile = await this.service.findByUserId(req.user.userId);
+    if (!profile) {
+      // Return basic user info if profile hasn't been created yet
+      const user = await this.prisma.user.findUnique({
+        where: { id: req.user.userId },
+        select: { id: true, name: true, email: true, phone: true },
+      });
+      return { user, portfolios: [] };
+    }
+    return profile;
   }
 
   @Get(':userId')

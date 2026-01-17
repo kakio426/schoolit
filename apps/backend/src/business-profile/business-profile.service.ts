@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class BusinessProfileService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async createOrUpdate(userId: number, data: any) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -25,23 +25,32 @@ export class BusinessProfileService {
   async findByUserId(userId: number) {
     const profile = await this.prisma.businessProfile.findUnique({
       where: { userId },
-      include: { portfolios: true },
+      include: {
+        portfolios: true,
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
     });
-    if (!profile) throw new NotFoundException('Business profile not found');
     return profile;
   }
 
   async findPublicProfile(userId: number) {
     return this.prisma.businessProfile.findUnique({
       where: { userId },
-      include: { portfolios: true },
+      include: {
+        portfolios: true,
+        user: {
+          select: { id: true, name: true, email: true, phone: true },
+        },
+      },
     });
   }
 
   async findAll() {
     return this.prisma.businessProfile.findMany({
       include: {
-        user: { select: { id: true, name: true, email: true } },
+        user: { select: { id: true, name: true, email: true, phone: true } },
         portfolios: { take: 1 }, // Preview image?
       },
       orderBy: { isVerified: 'desc' }, // Verified first
@@ -51,6 +60,7 @@ export class BusinessProfileService {
   // Portfolio Management
   async addPortfolio(userId: number, data: any) {
     const profile = await this.findByUserId(userId);
+    if (!profile) throw new NotFoundException('Business profile not found');
     return this.prisma.businessPortfolio.create({
       data: {
         businessProfileId: profile.id,

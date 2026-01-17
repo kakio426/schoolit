@@ -71,7 +71,7 @@ export default function QuickApplyModal({
                         name: data.user?.name || user?.name || '(담당자명 없음)',
                         email: data.user?.email || user?.email || '',
                         phone: data.user?.phone || user?.phone,
-                        companyName: data.companyName,
+                        companyName: data.companyName || (user as any)?.businessProfile?.companyName,
                         s2bNumber: data.s2bNumber,
                     });
                 }
