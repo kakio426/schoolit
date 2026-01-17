@@ -5,8 +5,10 @@ import { PrismaService } from '../prisma.service';
 import { EmbeddingService } from './embedding.service';
 import { ChunkingService, DocumentChunk } from './chunking.service';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParse = require('pdf-parse');
+import * as pdfParseLib from 'pdf-parse';
+
+// Handle default export compatibility for both CommonJS and ESM
+const pdfParse = (pdfParseLib as any).default || pdfParseLib;
 
 export interface SearchResult {
     content: string;
