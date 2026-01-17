@@ -11,4 +11,4 @@ import { StorageModule } from '../common/storage/storage.module';
   providers: [BusinessProfileService, PrismaService],
   exports: [BusinessProfileService],
 })
-export class BusinessProfileModule { }
+export class BusinessProfileModule {}

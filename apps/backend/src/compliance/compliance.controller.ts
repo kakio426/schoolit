@@ -23,7 +23,7 @@ class UpdateWorkflowDto {
 @Controller('compliance')
 @UseGuards(AuthGuard('jwt'))
 export class ComplianceController {
-  constructor(private readonly complianceService: ComplianceService) { }
+  constructor(private readonly complianceService: ComplianceService) {}
 
   /**
    * 평가 점수 저장

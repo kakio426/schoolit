@@ -25,7 +25,7 @@ export class ApplicationsController {
   constructor(
     private applicationsService: ApplicationsService,
     private dataCleanupService: DataCleanupService,
-  ) { }
+  ) {}
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.TEACHER, Role.BUSINESS)

@@ -21,7 +21,7 @@ export class ApplicationsService {
     private chatService: ChatService,
     private notificationsService: NotificationsService,
     private pdfGeneratorService: PdfGeneratorService,
-  ) { }
+  ) {}
 
   async applyToJob(userId: number, jobId: number, dto: ApplyJobDto) {
     try {
@@ -492,7 +492,7 @@ export class ApplicationsService {
   async updateSignature(userId: number, applicationId: number, signatureData: string) {
     const app = await this.prisma.jobApplication.findUnique({
       where: { id: applicationId },
-      select: { userId: true, status: true }
+      select: { userId: true, status: true },
     });
 
     if (!app) throw new NotFoundException('Application not found');
@@ -507,7 +507,7 @@ export class ApplicationsService {
 
     return this.prisma.jobApplication.update({
       where: { id: applicationId },
-      data: { signatureData }
+      data: { signatureData },
     });
   }
 
@@ -536,16 +536,14 @@ export class ApplicationsService {
 
     const missing = MANDATORY_KEYS.filter((key) => !checklist[key]);
     if (missing.length > 0) {
-      throw new BadRequestException(
-        `Missing mandatory compliance checks: ${missing.join(', ')}`,
-      );
+      throw new BadRequestException(`Missing mandatory compliance checks: ${missing.join(', ')}`);
     }
 
     return this.prisma.jobApplication.update({
       where: { id: applicationId },
       data: {
         complianceChecklist: checklist,
-        // If all verified, maybe we can auto-advance status? 
+        // If all verified, maybe we can auto-advance status?
         // For now, just save.
       },
     });

@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class BusinessProfileService {
-  constructor(private prisma: PrismaService) { }
+  constructor(private prisma: PrismaService) {}
 
   async createOrUpdate(userId: number, data: any) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

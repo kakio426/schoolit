@@ -11,4 +11,4 @@ import { StorageModule } from '../common/storage/storage.module';
   providers: [UserService, GamificationService],
   exports: [UserService, GamificationService],
 })
-export class UsersModule { }
+export class UsersModule {}

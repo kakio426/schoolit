@@ -9,7 +9,7 @@ export class FeedbackService {
     private prisma: PrismaService,
     private discord: DiscordService,
     private notifications: NotificationsService,
-  ) { }
+  ) {}
 
   async create(data: { userId?: number; category: string; content: string }) {
     // 1. Save to Database

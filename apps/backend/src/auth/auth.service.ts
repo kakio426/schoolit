@@ -14,7 +14,7 @@ export class AuthService {
     private jwtService: JwtService,
     private emailService: EmailService,
     private smsService: SmsService,
-  ) { }
+  ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
     const user = await this.userService.findOne(email);
@@ -102,7 +102,7 @@ export class AuthService {
 
     return {
       success: true,
-      ...tokenData
+      ...tokenData,
     };
   }
 

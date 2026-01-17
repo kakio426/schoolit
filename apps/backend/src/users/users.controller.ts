@@ -41,7 +41,7 @@ export class UserController {
     private userService: UserService,
     private gamificationService: GamificationService,
     private cloudinaryService: CloudinaryService,
-  ) { }
+  ) {}
 
   @UseGuards(AuthGuard('jwt'))
   @Get('profile')

@@ -20,11 +20,9 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Role } from '@prisma/client';
 
-
-
 @Controller('jobs')
 export class JobsController {
-  constructor(private jobsService: JobsService) { }
+  constructor(private jobsService: JobsService) {}
 
   @Get()
   async findAll(@Query('jobType') jobType?: string) {

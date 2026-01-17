@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ForbiddenException, Inject, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  Inject,
+  OnModuleInit,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { IStorageService, STORAGE_SERVICE } from '../common/storage/interfaces/storage.interface';
 
@@ -7,7 +13,7 @@ export class BoardService implements OnModuleInit {
   constructor(
     private prisma: PrismaService,
     @Inject(STORAGE_SERVICE) private storageService: IStorageService,
-  ) { }
+  ) {}
 
   async onModuleInit() {
     await this.seedBoards();
@@ -18,22 +24,22 @@ export class BoardService implements OnModuleInit {
       {
         title: '공지사항',
         description: '스쿨잇의 새로운 소식을 전해드립니다.',
-        category: 'NOTICE'
+        category: 'NOTICE',
       },
       {
         title: '자유게시판',
         description: '자유롭게 정보를 공유하고 이야기 나누는 공간입니다.',
-        category: 'FREE'
+        category: 'FREE',
       },
       {
         title: '질문과 답변',
         description: '궁금한 점을 묻고 전문가의 답변을 받아보세요.',
-        category: 'QNA'
+        category: 'QNA',
       },
       {
         title: '후기게시판',
         description: '생생한 업체 이용 후기를 공유합니다.',
-        category: 'REVIEW_BOARD'
+        category: 'REVIEW_BOARD',
       },
     ];
 
@@ -264,7 +270,7 @@ export class BoardService implements OnModuleInit {
     if (files && files.length > 0) {
       // Delete old images
       for (const oldId of post.imageIds) {
-        await this.storageService.deleteFile(oldId).catch(() => { });
+        await this.storageService.deleteFile(oldId).catch(() => {});
       }
 
       // Upload new images
@@ -300,7 +306,7 @@ export class BoardService implements OnModuleInit {
 
     // Delete images from storage
     for (const imageId of post.imageIds) {
-      await this.storageService.deleteFile(imageId).catch(() => { });
+      await this.storageService.deleteFile(imageId).catch(() => {});
     }
 
     await this.prisma.post.delete({ where: { id: postId } });

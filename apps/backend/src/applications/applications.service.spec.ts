@@ -149,7 +149,10 @@ describe('ApplicationsService', () => {
     it('should update checklist if all mandatory items are verified', async () => {
       const mockApp = { id: 1, jobListing: { schoolProfile: { userId: 1 } } };
       mockPrismaService.jobApplication.findUnique.mockResolvedValue(mockApp);
-      mockPrismaService.jobApplication.update.mockResolvedValue({ ...mockApp, complianceChecklist: {} });
+      mockPrismaService.jobApplication.update.mockResolvedValue({
+        ...mockApp,
+        complianceChecklist: {},
+      });
 
       const validChecklist = {
         sex_offender_check: true,

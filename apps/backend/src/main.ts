@@ -17,18 +17,25 @@ async function bootstrap() {
 
   if (isProduction) {
     const rawFrontendUrl = process.env.FRONTEND_URL || 'https://schoolit.shop';
-    const normalize = (url: string) => url.replace(/\/$/, ''); // 끝의 / 제거 유틸 
+    const normalize = (url: string) => url.replace(/\/$/, ''); // 끝의 / 제거 유틸
 
     app.enableCors({
       origin: (requestOrigin, callback) => {
-        const allowedOrigins = [rawFrontendUrl, 'https://schoolit.shop', 'http://localhost:3000', 'http://127.0.0.1:3000'];
+        const allowedOrigins = [
+          rawFrontendUrl,
+          'https://schoolit.shop',
+          'http://localhost:3000',
+          'http://127.0.0.1:3000',
+        ];
 
         if (!requestOrigin) {
           callback(null, true);
           return;
         }
 
-        const isAllowed = allowedOrigins.some(allowed => normalize(allowed) === normalize(requestOrigin));
+        const isAllowed = allowedOrigins.some(
+          (allowed) => normalize(allowed) === normalize(requestOrigin),
+        );
 
         if (isAllowed) {
           callback(null, true);

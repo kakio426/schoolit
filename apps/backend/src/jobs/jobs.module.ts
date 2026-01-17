@@ -10,4 +10,4 @@ import { UsersModule } from '../users/users.module';
   controllers: [JobsController],
   exports: [JobsService],
 })
-export class JobsModule { }
+export class JobsModule {}

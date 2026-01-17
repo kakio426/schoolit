@@ -213,14 +213,20 @@ export class PdfGeneratorService {
 
         page.drawImage(embeddedImage, {
           x: margin + (width - 2 * margin) / 2 + 50, // 서명란 X 좌표
-          y: yPos - 60,                              // 서명란 Y 좌표
+          y: yPos - 60, // 서명란 Y 좌표
           width: sigWidth,
           height: sigHeight,
         });
       } catch (e) {
-        console.error("서명 이미지 처리 실패:", e);
+        console.error('서명 이미지 처리 실패:', e);
         // 실패 시 대체 텍스트 표시
-        page.drawText('(서명 이미지 오류)', { x: margin + (width - 2 * margin) / 2 + 30, y: yPos - 50, size: 8, font: customFont, color: rgb(1, 0, 0) });
+        page.drawText('(서명 이미지 오류)', {
+          x: margin + (width - 2 * margin) / 2 + 30,
+          y: yPos - 50,
+          size: 8,
+          font: customFont,
+          color: rgb(1, 0, 0),
+        });
       }
     } else {
       // 이미지가 없으면 밑줄 유지 (서명 대기 상태)

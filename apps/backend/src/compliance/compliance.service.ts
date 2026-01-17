@@ -6,7 +6,7 @@ type EvaluationType = 'DOCUMENT' | 'INTERVIEW' | 'DEMONSTRATION';
 
 @Injectable()
 export class ComplianceService {
-  constructor(private readonly prisma: PrismaService) { }
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * 호봉 상한 확인 (2025 지침: 명예퇴직자 등 14호봉 제한)

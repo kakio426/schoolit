@@ -31,7 +31,7 @@ export class BusinessProfileController {
     private readonly service: BusinessProfileService,
     private readonly cloudinaryService: CloudinaryService,
     private readonly prisma: PrismaService,
-  ) { }
+  ) {}
 
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.SCHOOL, Role.TEACHER)

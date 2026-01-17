@@ -14,7 +14,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) { }
+  ) {}
 
   // Type for user with profiles (타입 안전성 강화)
   private resolveProfileConnection(user: {
@@ -97,10 +97,7 @@ export class JobsService {
       active: true,
       status: JobStatus.OPEN, // 기본적으로 모집 중인 공고만 노출
       // [Fix] 워크플로우 상태가 'PUBLISHED' 이거나, 과거 데이터(null)인 경우만 노출
-      OR: [
-        { workflowStatus: HiringWorkflowStatus.PUBLISHED },
-        { workflowStatus: null }
-      ]
+      OR: [{ workflowStatus: HiringWorkflowStatus.PUBLISHED }, { workflowStatus: null }],
     };
 
     if (filters?.jobType) {
@@ -205,8 +202,8 @@ export class JobsService {
       const application = await this.prisma.jobApplication.findFirst({
         where: {
           jobId: id,
-          userId: userId // JobApplication은 userId를 직접 가지고 있음
-        }
+          userId: userId, // JobApplication은 userId를 직접 가지고 있음
+        },
       });
       hasApplied = !!application;
     }
@@ -285,11 +282,8 @@ export class JobsService {
       { active: true },
       { status: JobStatus.OPEN },
       {
-        OR: [
-          { workflowStatus: HiringWorkflowStatus.PUBLISHED },
-          { workflowStatus: null }
-        ]
-      }
+        OR: [{ workflowStatus: HiringWorkflowStatus.PUBLISHED }, { workflowStatus: null }],
+      },
     ];
 
     if (filters.subject) {
@@ -305,7 +299,7 @@ export class JobsService {
         OR: [
           { title: { contains: filters.keyword, mode: 'insensitive' } },
           { description: { contains: filters.keyword, mode: 'insensitive' } },
-        ]
+        ],
       });
     }
 
@@ -344,18 +338,21 @@ export class JobsService {
             { isSearchable: true }, // 구직 중(공개 설정)인 선생님만
             { subjects: { hasSome: job.subjects } }, // 과목 매칭
             // { regions: { hasSome: job.regions } },   // 지역 매칭
-          ]
+          ],
         },
-        select: { userId: true, user: { select: { email: true, name: true } } }
+        select: { userId: true, user: { select: { email: true, name: true } } },
       });
 
-      console.log(`[Emergency Alert] Found ${matchedTeachers.length} candidates for job #${job.id} (${job.title})`);
+      console.log(
+        `[Emergency Alert] Found ${matchedTeachers.length} candidates for job #${job.id} (${job.title})`,
+      );
 
       // 실제 NotificationService 연동은 추후 진행, 현재는 로그로 대체
-      matchedTeachers.forEach(t => {
-        console.log(`[Notification] Sending Alert to ${t.user.name} (${t.user.email}): 🚨 긴급 대강 요청이 있습니다!`);
+      matchedTeachers.forEach((t) => {
+        console.log(
+          `[Notification] Sending Alert to ${t.user.name} (${t.user.email}): 🚨 긴급 대강 요청이 있습니다!`,
+        );
       });
-
     } catch (e) {
       console.error('Failed to send emergency alerts', e);
     }
