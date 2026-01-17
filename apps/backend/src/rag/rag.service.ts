@@ -4,32 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma.service';
 import { EmbeddingService } from './embedding.service';
 import { ChunkingService, DocumentChunk } from './chunking.service';
-
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pdfParseLib = require('pdf-parse');
-
-/**
- * Robust extraction function that handles both old (1.1.x) and new (2.4.x) pdf-parse APIs
- */
-async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  // New API (2.4.x): PDFParse class
-  if (pdfParseLib.PDFParse) {
-    const parser = new pdfParseLib.PDFParse({ data: buffer });
-    const result = await parser.getText();
-    return result.text;
-  }
-
-  // Old API (1.1.x): main function
-  const pdfParse = pdfParseLib.default || (typeof pdfParseLib === 'function' ? pdfParseLib : null);
-  if (typeof pdfParse === 'function') {
-    const data = await pdfParse(buffer);
-    return data.text;
-  }
-
-  // Fallback/Error
-  Logger.error(`Unsupported pdf-parse API structure. Keys: ${Object.keys(pdfParseLib).join(', ')}`);
-  throw new Error('INTERNAL_SERVER_ERROR: pdf-parse lib incompatible');
-}
+import { GeminiPdfService } from './gemini-pdf.service';
 
 export interface SearchResult {
   content: string;
@@ -61,6 +36,7 @@ export class RagService implements OnModuleInit {
     private embeddingService: EmbeddingService,
     private chunkingService: ChunkingService,
     private configService: ConfigService,
+    private geminiPdfService: GeminiPdfService,
   ) {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
@@ -140,9 +116,10 @@ export class RagService implements OnModuleInit {
       );
     }
 
-    // 1. Parse PDF
-    let text = await extractTextFromPdf(file.buffer);
-    this.logger.log(`Extracted ${text.length} characters`);
+    // 1. Parse PDF using Gemini API (no memory issues!)
+    const base64Data = file.buffer.toString('base64');
+    let text = await this.geminiPdfService.extractTextFromPdf(base64Data);
+    this.logger.log(`Extracted ${text.length} characters via Gemini API`);
 
     // 2. Chunk the text
     const chunks = this.chunkingService.splitByPages(text, file.originalname);
