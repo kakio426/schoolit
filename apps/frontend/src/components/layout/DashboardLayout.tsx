@@ -6,12 +6,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useSocket } from '@/contexts/SocketContext';
 import { useRouter, usePathname } from 'next/navigation';
 import FooterDisclaimer from './FooterDisclaimer';
-import FeedbackButton from '../ui/FeedbackButton';
 import ComplianceModal from '../ui/ComplianceModal';
 import VerificationPendingView from '../auth/VerificationPendingView';
 import { api } from '@/lib/api';
 import BottomNav from './BottomNav';
 import { useNavItems } from '@/hooks/useNavItems';
+import FloatingRobotButton from '../chat/FloatingRobotButton';
+import IntegratedChatModal from '../chat/IntegratedChatModal';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout, refreshProfile } = useAuth();
@@ -20,6 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [showNotifications, setShowNotifications] = useState(false);
+    const [isChatModalOpen, setIsChatModalOpen] = useState(false);
 
     // 경로 변경 시 모바일 메뉴 닫기
     useEffect(() => {
@@ -243,8 +245,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </main>
 
                 <FooterDisclaimer />
-                <FeedbackButton />
                 <ComplianceModal userRole={user.role} />
+
+                {user.role !== 'ADMIN' && (
+                    <FloatingRobotButton onClick={() => setIsChatModalOpen(true)} />
+                )}
+
+                <IntegratedChatModal isOpen={isChatModalOpen} onClose={() => setIsChatModalOpen(false)} />
             </div>
 
             {/* Mobile Bottom Navigation */}

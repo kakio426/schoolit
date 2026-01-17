@@ -7,6 +7,7 @@ export const DASHBOARD_MENU = {
         { label: '리뷰 관리', href: '/dashboard/admin/reviews', icon: '⭐' },
         { label: '공지 발송', href: '/dashboard/admin/notifications', icon: '📣' },
         { label: '피드백 센터', href: '/dashboard/admin/feedback', icon: '📢' },
+        { label: 'AI 관리', href: '/dashboard/ai-assistant', icon: '🤖' },
         { label: '설정', href: '/dashboard/settings', icon: '⚙️' }
     ],
     SCHOOL: [

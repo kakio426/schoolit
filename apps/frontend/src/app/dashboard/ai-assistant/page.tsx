@@ -13,8 +13,23 @@ interface RagStats {
 
 type TabType = 'chat' | 'upload' | 'manage';
 
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+
 export default function RagAssistantPage() {
+    const { user, isLoading: isAuthLoading } = useAuth();
+    const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabType>('chat');
+
+    useEffect(() => {
+        if (!isAuthLoading && user?.role !== 'ADMIN') {
+            router.replace('/dashboard');
+        }
+    }, [user, isAuthLoading, router]);
+
+    if (isAuthLoading || user?.role !== 'ADMIN') {
+        return null;
+    }
     const [stats, setStats] = useState<RagStats | null>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isClearing, setIsClearing] = useState(false);
