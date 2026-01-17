@@ -4,6 +4,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Upload, FileText, Check, AlertCircle, Loader2, FileSearch } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { extractTextFromPdf } from '../../lib/pdf-parser';
+import { API_URL } from '../../lib/constants';
 
 interface UploadedFile {
     name: string;
@@ -39,7 +40,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             updateFileStatus(filename, 'uploading');
 
             const token = localStorage.getItem('accessToken');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/upload`, {
+            const res = await fetch(`${API_URL}/rag/upload`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

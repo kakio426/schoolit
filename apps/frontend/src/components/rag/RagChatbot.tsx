@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Send, Bot, User, FileText, Loader2 } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { API_URL } from '../../lib/constants';
 
 interface Message {
     role: 'user' | 'assistant';
@@ -46,7 +47,7 @@ export function RagChatbot({
 
         try {
             const token = localStorage.getItem('accessToken');
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/ask`, {
+            const res = await fetch(`${API_URL}/rag/ask`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
