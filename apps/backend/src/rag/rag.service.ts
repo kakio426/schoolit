@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma.service';
@@ -28,7 +28,7 @@ export interface RagResponse {
 }
 
 @Injectable()
-export class RagService {
+export class RagService implements OnModuleInit {
     private readonly logger = new Logger(RagService.name);
     private genAI: GoogleGenerativeAI;
     private chatModel: any;
@@ -45,6 +45,46 @@ export class RagService {
             this.chatModel = this.genAI.getGenerativeModel({
                 model: 'gemini-1.5-flash',
             });
+        }
+    }
+
+    /**
+     * Initialize database schema for RAG on module start
+     */
+    async onModuleInit() {
+        this.logger.log('Initializing RAG database schema...');
+        try {
+            // Enable pgvector extension
+            await this.prisma.$executeRawUnsafe(`
+                CREATE EXTENSION IF NOT EXISTS vector;
+            `);
+            this.logger.log('pgvector extension enabled');
+
+            // Create document_sections table if not exists
+            await this.prisma.$executeRawUnsafe(`
+                CREATE TABLE IF NOT EXISTS document_sections (
+                    id SERIAL PRIMARY KEY,
+                    content TEXT NOT NULL,
+                    metadata JSONB,
+                    embedding vector(768),
+                    created_at TIMESTAMP DEFAULT NOW(),
+                    updated_at TIMESTAMP DEFAULT NOW()
+                );
+            `);
+            this.logger.log('document_sections table ready');
+
+            // Create HNSW index for fast similarity search (if not exists)
+            await this.prisma.$executeRawUnsafe(`
+                CREATE INDEX IF NOT EXISTS idx_document_sections_embedding 
+                ON document_sections USING hnsw (embedding vector_cosine_ops);
+            `);
+            this.logger.log('Vector index ready');
+
+            this.logger.log('RAG database schema initialized successfully');
+        } catch (error) {
+            this.logger.error('Failed to initialize RAG schema:', error);
+            // Don't throw - allow the service to start even if schema init fails
+            // The specific operations will fail with clearer errors
         }
     }
 
