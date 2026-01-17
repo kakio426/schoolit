@@ -8,9 +8,7 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthGuard } from '@nestjs/passport';
@@ -29,16 +27,22 @@ export class RagController {
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
   async uploadDocument(
-    @UploadedFile(
-      new ParseFilePipe({
-        validators: [
-          new MaxFileSizeValidator({ maxSize: 50 * 1024 * 1024 }), // 50MB
-          new FileTypeValidator({ fileType: /application\/pdf/ }),
-        ],
-      }),
-    )
-    file: Express.Multer.File,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<{ message: string; chunksCreated: number }> {
+    if (!file) {
+      throw new BadRequestException('파일이 업로드되지 않았습니다.');
+    }
+
+    // 수동 검증: FileTypeValidator 이슈 우회
+    if (file.mimetype !== 'application/pdf') {
+      throw new BadRequestException('PDF 파일만 업로드 가능합니다.');
+    }
+
+    // 수동 검증: 50MB 제한
+    if (file.size > 50 * 1024 * 1024) {
+      throw new BadRequestException('파일 크기는 50MB를 초과할 수 없습니다.');
+    }
+
     const chunksCreated = await this.ragService.ingestDocument(file);
     return {
       message: `문서 '${file.originalname}'이(가) 성공적으로 처리되었습니다.`,
