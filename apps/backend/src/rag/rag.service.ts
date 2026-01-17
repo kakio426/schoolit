@@ -75,17 +75,17 @@ export class RagService implements OnModuleInit {
     }
   }
 
-  private readonly BATCH_SIZE = 10; // 인게스트 배치 크기 확대
+  private readonly BATCH_SIZE = 2; // Stability First: 502 에러 방지를 위해 배치 크기 대폭 축소
 
   /**
    * Ingest extracted text into vector database (Client-Side Parsing)
    */
   async ingestDocument(dto: IngestTextDto): Promise<number> {
-    this.logger.log(`Ingesting document: ${dto.filename} (Text Length: ${dto.content.length})`);
+    this.logger.log(`[RAG] Starting Ingest for ${dto.filename} (${dto.content.length} chars)`);
 
     const text = dto.content;
     const chunks = this.chunkingService.splitByPages(text, dto.filename);
-    this.logger.log(`Created ${chunks.length} chunks, processing in batches of ${this.BATCH_SIZE}`);
+    this.logger.log(`[RAG] Created ${chunks.length} chunks. Using BATCH_SIZE=${this.BATCH_SIZE}`);
 
     let storedCount = 0;
     const totalBatches = Math.ceil(chunks.length / this.BATCH_SIZE);
@@ -95,11 +95,10 @@ export class RagService implements OnModuleInit {
       const end = Math.min(start + this.BATCH_SIZE, chunks.length);
       const batch = chunks.slice(start, end);
 
-      this.logger.log(`Processing batch ${batchIndex + 1}/${totalBatches}`);
+      this.logger.log(`[RAG] Processing Batch ${batchIndex + 1}/${totalBatches} (${batch.length} chunks)`);
 
-      // 병렬 처리로 속도 대폭 개선 (타임아웃 방지)
-      const results = await Promise.all(
-        batch.map(async (chunk) => {
+      const batchResults = await Promise.all(
+        batch.map(async (chunk, idx) => {
           try {
             const embedding = await this.embeddingService.generateEmbedding(chunk.content);
             await this.prisma.$executeRaw`
@@ -114,19 +113,19 @@ export class RagService implements OnModuleInit {
             `;
             return true;
           } catch (error) {
-            this.logger.error(`Failed to store chunk:`, error);
+            this.logger.error(`[RAG] Error in Chunk ${start + idx}:`, error?.message || error);
             return false;
           }
         }),
       );
 
-      storedCount += results.filter((r) => r).length;
+      storedCount += batchResults.filter((r) => r).length;
 
-      // GC 및 이벤트 루프 양보
-      await new Promise((resolve) => setImmediate(resolve));
+      // Give breath to the event loop
+      await new Promise((resolve) => setTimeout(resolve, 50));
     }
 
-    this.logger.log(`Successfully stored ${storedCount}/${chunks.length} chunks`);
+    this.logger.log(`[RAG] Ingest Complete. Stored ${storedCount}/${chunks.length} chunks.`);
     return storedCount;
   }
 
