@@ -29,7 +29,7 @@ describe('ChunkingService', () => {
 
         it('should split long text into multiple chunks', () => {
             // Generate text longer than CHUNK_SIZE (800 chars)
-            const longText = '안녕하세요. '.repeat(200); // ~1200 chars
+            const longText = '안녕하세요. '.repeat(150); // ~1050 chars (was 200)
             const chunks = service.splitTextIntoChunks(longText, 'long.pdf');
 
             expect(chunks.length).toBeGreaterThan(1);

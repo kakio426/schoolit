@@ -7,12 +7,28 @@ import { ChunkingService, DocumentChunk } from './chunking.service';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParseLib = require('pdf-parse');
-// Handle default export compatibility for both CommonJS and ESM
-const pdfParse = pdfParseLib.default || pdfParseLib;
 
-if (typeof pdfParse !== 'function') {
-    Logger.error(`Failed to load pdf-parse library. Type: ${typeof pdfParse}, Value: ${JSON.stringify(pdfParse)}`);
-    throw new Error('INTERNAL_SERVER_ERROR: pdf-parse library initialization failed');
+/**
+ * Robust extraction function that handles both old (1.1.x) and new (2.4.x) pdf-parse APIs
+ */
+async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+    // New API (2.4.x): PDFParse class
+    if (pdfParseLib.PDFParse) {
+        const parser = new pdfParseLib.PDFParse({ data: buffer });
+        const result = await parser.getText();
+        return result.text;
+    }
+
+    // Old API (1.1.x): main function
+    const pdfParse = pdfParseLib.default || (typeof pdfParseLib === 'function' ? pdfParseLib : null);
+    if (typeof pdfParse === 'function') {
+        const data = await pdfParse(buffer);
+        return data.text;
+    }
+
+    // Fallback/Error
+    Logger.error(`Unsupported pdf-parse API structure. Keys: ${Object.keys(pdfParseLib).join(', ')}`);
+    throw new Error('INTERNAL_SERVER_ERROR: pdf-parse lib incompatible');
 }
 
 export interface SearchResult {
@@ -104,11 +120,10 @@ export class RagService implements OnModuleInit {
         this.logger.log(`Ingesting document: ${file.originalname}`);
 
         // 1. Parse PDF
-        const pdfData = await pdfParse(file.buffer);
-        const text = pdfData.text;
+        const text = await extractTextFromPdf(file.buffer);
 
         this.logger.log(
-            `Extracted ${text.length} characters from ${pdfData.numpages} pages`,
+            `Extracted ${text.length} characters`,
         );
 
         // 2. Chunk the text
