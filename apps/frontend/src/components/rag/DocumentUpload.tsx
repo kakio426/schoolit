@@ -19,24 +19,24 @@ interface DocumentUploadProps {
 export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [isDragging, setIsDragging] = useState(false);
+    const [mode, setMode] = useState<'pdf' | 'text'>('text'); // 텍스트를 기본값으로 설정 (안정성)
+    const [pastedText, setPastedText] = useState('');
+    const [isPasting, setIsPasting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const updateFileStatus = (name: string, status: UploadedFile['status'], error?: string, chunks?: number) => {
-        setFiles(prev => prev.map(f => f.name === name ? { ...f, status, error, chunksCreated: chunks } : f));
+        setFiles(prev => {
+            const exists = prev.find(f => f.name === name);
+            if (exists) {
+                return prev.map(f => f.name === name ? { ...f, status, error, chunksCreated: chunks } : f);
+            }
+            return [...prev, { name, status, error, chunksCreated: chunks }];
+        });
     };
 
-    const processFile = async (file: File) => {
+    const uploadText = async (text: string, filename: string) => {
         try {
-            // 1. Parsing Phase (Client-side)
-            updateFileStatus(file.name, 'parsing');
-            const text = await extractTextFromPdf(file);
-
-            if (!text || text.trim().length === 0) {
-                throw new Error('PDF에서 텍스트를 추출할 수 없습니다.');
-            }
-
-            // 2. Upload Phase (Text Payload)
-            updateFileStatus(file.name, 'uploading');
+            updateFileStatus(filename, 'uploading');
 
             const token = localStorage.getItem('accessToken');
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/upload`, {
@@ -47,7 +47,7 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
                 },
                 body: JSON.stringify({
                     content: text,
-                    filename: file.name
+                    filename: filename
                 }),
             });
 
@@ -57,8 +57,36 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             }
 
             const data = await res.json();
-            updateFileStatus(file.name, 'success', undefined, data.chunksCreated);
-            return { name: file.name, status: 'success' as const, chunksCreated: data.chunksCreated };
+            updateFileStatus(filename, 'success', undefined, data.chunksCreated);
+            return { name: filename, status: 'success' as const, chunksCreated: data.chunksCreated };
+
+        } catch (error) {
+            const errMsg = error instanceof Error ? error.message : '알 수 없는 오류';
+            updateFileStatus(filename, 'error', errMsg);
+            return { name: filename, status: 'error' as const, error: errMsg };
+        }
+    };
+
+    const handlePasteSubmit = async () => {
+        if (!pastedText.trim()) return;
+        setIsPasting(true);
+        const filename = `직접입력_${new Date().toLocaleTimeString()}`;
+        const result = await uploadText(pastedText, filename);
+        setPastedText('');
+        setIsPasting(false);
+        onUploadComplete?.([result]);
+    };
+
+    const processFile = async (file: File) => {
+        try {
+            updateFileStatus(file.name, 'parsing');
+            const text = await extractTextFromPdf(file);
+
+            if (!text || text.trim().length === 0) {
+                throw new Error('PDF에서 텍스트를 추출할 수 없습니다.');
+            }
+
+            return await uploadText(text, file.name);
 
         } catch (error) {
             const errMsg = error instanceof Error ? error.message : '알 수 없는 오류';
@@ -77,14 +105,6 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
             return;
         }
 
-        // Initialize files with 'parsing' status
-        const newFiles: UploadedFile[] = pdfFiles.map((f) => ({
-            name: f.name,
-            status: 'parsing' as const,
-        }));
-        setFiles((prev) => [...prev, ...newFiles]);
-
-        // Process files sequentially
         const results: UploadedFile[] = [];
         for (const file of pdfFiles) {
             const result = await processFile(file);
@@ -121,42 +141,84 @@ export function DocumentUpload({ onUploadComplete }: DocumentUploadProps) {
 
     return (
         <div className="space-y-4">
-            {/* Drop Zone */}
-            <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                className={`
-          border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer
-          transition-all duration-200
-          ${isDragging
-                        ? 'border-primary bg-primary/5 scale-[1.02]'
-                        : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50'
-                    }
-        `}
-            >
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf"
-                    multiple
-                    onChange={handleInputChange}
-                    className="hidden"
-                />
-
-                <Upload
-                    className={`w-12 h-12 mx-auto mb-4 transition-colors ${isDragging ? 'text-primary' : 'text-muted-foreground'
+            {/* Mode Tabs */}
+            <div className="flex p-1 bg-muted rounded-xl gap-1">
+                <button
+                    onClick={() => setMode('text')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'text' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'
                         }`}
-                />
-
-                <p className="text-lg font-medium mb-1">
-                    PDF 파일을 드래그하거나 클릭하세요
-                </p>
-                <p className="text-sm text-muted-foreground">
-                    방과후 지침, 계약 관련 문서 등을 업로드하면 AI가 학습합니다 (브라우저에서 직접 분석)
-                </p>
+                >
+                    텍스트 붙여넣기
+                </button>
+                <button
+                    onClick={() => setMode('pdf')}
+                    className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${mode === 'pdf' ? 'bg-background shadow-sm text-primary' : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                >
+                    PDF 업로드
+                </button>
             </div>
+
+            {mode === 'pdf' ? (
+                <div
+                    onDragOver={handleDragOver}
+                    onDragLeave={handleDragLeave}
+                    onDrop={handleDrop}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`
+                        border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer
+                        transition-all duration-200
+                        ${isDragging
+                            ? 'border-primary bg-primary/5 scale-[1.02]'
+                            : 'border-muted-foreground/30 hover:border-primary/50 hover:bg-muted/50'
+                        }
+                    `}
+                >
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".pdf"
+                        multiple
+                        onChange={handleInputChange}
+                        className="hidden"
+                    />
+
+                    <Upload
+                        className={`w-12 h-12 mx-auto mb-4 transition-colors ${isDragging ? 'text-primary' : 'text-muted-foreground'
+                            }`}
+                    />
+
+                    <p className="text-lg font-medium mb-1">
+                        PDF 파일을 드래그하거나 클릭하세요
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                        방과후 지침, 계약 관련 문서 등을 AI가 직접 분석합니다.
+                    </p>
+                </div>
+            ) : (
+                <div className="space-y-4">
+                    <textarea
+                        value={pastedText}
+                        onChange={(e) => setPastedText(e.target.value)}
+                        placeholder="분석하고 싶은 문서의 내용을 여기에 붙여넣으세요..."
+                        className="w-full h-48 p-4 rounded-2xl bg-muted/50 border border-muted-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm resize-none"
+                    />
+                    <Button
+                        onClick={handlePasteSubmit}
+                        disabled={!pastedText.trim() || isPasting}
+                        className="w-full"
+                    >
+                        {isPasting ? (
+                            <>
+                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                처리 중...
+                            </>
+                        ) : (
+                            '내용 학습시키기'
+                        )}
+                    </Button>
+                </div>
+            )}
 
             {/* File List */}
             {files.length > 0 && (
