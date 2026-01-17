@@ -116,17 +116,26 @@ export class RagService implements OnModuleInit {
       );
     }
 
-    // 1. Parse PDF using Gemini API (no memory issues!)
-    const base64Data = file.buffer.toString('base64');
-    let text = await this.geminiPdfService.extractTextFromPdf(base64Data);
+    // 1. Parse PDF using Gemini File API (Disk-based, no memory issue)
+    let text: string;
+
+    if (file.path) {
+      // DiskStorage used (Recommended)
+      text = await this.geminiPdfService.processFile(file.path, file.mimetype);
+    } else {
+      throw new Error(
+        'Internal Error: File upload path missing. Ensure Multer DiskStorage is configured correctly.',
+      );
+    }
+
     this.logger.log(`Extracted ${text.length} characters via Gemini API`);
 
     // 2. Chunk the text
     const chunks = this.chunkingService.splitByPages(text, file.originalname);
     this.logger.log(`Created ${chunks.length} chunks, processing in batches of ${this.BATCH_SIZE}`);
 
-    // Release text from memory after chunking
-    text = null as any;
+    // Release text from memory explicitly
+    text = ''; // Clear string content
 
     // 3. Process chunks in batches to prevent memory accumulation
     let storedCount = 0;
