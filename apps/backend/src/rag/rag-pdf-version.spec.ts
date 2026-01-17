@@ -75,43 +75,34 @@ describe('RagService - PDF Parse Version Test', () => {
     });
 
     /**
-     * RED TEST 2: 작은 파일 처리 시 OOM 없이 완료되어야 함
-     * pdf-parse를 mock하여 실제 파싱 없이 흐름만 검증
+     * TEST 2: 텍스트 주입이 정상적으로 완료되어야 함 (Client-side parsing 대응)
      */
-    it('should process small PDF file without memory error', async () => {
-        // 작은 버퍼 생성 (실제 PDF가 아니어도 됨, mock 처리)
-        const smallBuffer = Buffer.from('mock pdf content');
+    it('should process text content successfully', async () => {
+        const dto = {
+            content: 'Extracted text from PDF',
+            filename: 'test.pdf'
+        };
 
-        const file = {
-            buffer: smallBuffer,
-            originalname: 'test.pdf',
-            size: smallBuffer.length,
-        } as Express.Multer.File;
-
-        // ingestDocument가 호출되면 내부적으로 pdf-parse가 호출됨
-        // 하지만 실제 PDF가 아니면 에러가 날 수 있으므로
-        // 여기서는 "에러가 OOM이 아닌지"만 확인
-        try {
-            await service.ingestDocument(file);
-            // 성공하면 통과
-        } catch (error: any) {
-            // OOM 에러가 아니면 통과 (PDF 형식 에러는 허용)
-            expect(error.message).not.toContain('heap out of memory');
-            expect(error.message).not.toContain('Allocation failed');
-        }
+        const result = await service.ingestDocument(dto);
+        expect(result).toBe(1); // Mocked chunking returns 1 chunk
+        expect(prismaService.$executeRaw).toHaveBeenCalled();
     });
 
     /**
-     * RED TEST 3: 파일 크기 제한이 작동해야 함
+     * TEST 3: 빈 텍스트 처리 방어
      */
-    it('should reject files larger than MAX_FILE_SIZE_MB', async () => {
-        const largeBuffer = Buffer.alloc(21 * 1024 * 1024); // 21MB (현재 제한은 20MB)
-        const file = {
-            buffer: largeBuffer,
-            originalname: 'too-big.pdf',
-            size: largeBuffer.length,
-        } as Express.Multer.File;
+    it('should handle empty content if needed', async () => {
+        // RagService 내부 로직에 따라 빈 텍스트 처리가 다를 수 있음
+        // 현재는 chunkingService로 바로 넘기므로, chunkingService의 동작을 따름
+        const dto = {
+            content: '',
+            filename: 'empty.pdf'
+        };
 
-        await expect(service.ingestDocument(file)).rejects.toThrow('파일이 너무 큽니다');
+        // Mocked chunking might return 0 chunks for empty text
+        chunkingService.splitByPages.mockReturnValueOnce([]);
+
+        const result = await service.ingestDocument(dto);
+        expect(result).toBe(0);
     });
 });
