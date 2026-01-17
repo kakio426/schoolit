@@ -26,10 +26,10 @@ async function bootstrap() {
   app.useBodyParser('json', { limit: '50mb' });
   app.useBodyParser('urlencoded', { limit: '50mb', extended: true });
 
-  // 5. Root Health Check v1.3.0
+  // 5. Root Health Check v1.3.1
   const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/', (req: any, res: any) => res.status(200).send({ status: 'ok', version: '1.3.0' }));
-  httpAdapter.get('/api/health', (req: any, res: any) => res.status(200).send({ status: 'api-ok', version: '1.3.0' }));
+  httpAdapter.get('/', (req: any, res: any) => res.status(200).send({ status: 'ok', version: '1.3.1' }));
+  httpAdapter.get('/api/health', (req: any, res: any) => res.status(200).send({ status: 'api-ok', version: '1.3.1' }));
 
   const port = process.env.PORT || 4000;
   await app.listen(port, '0.0.0.0');
