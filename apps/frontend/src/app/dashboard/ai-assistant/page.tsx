@@ -1,10 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ArrowLeft, Database, MessageSquare, Upload, Trash2, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
 
 const DocumentUpload = dynamic(
     () => import('@/components/rag/DocumentUpload').then((mod) => mod.DocumentUpload),
@@ -22,48 +24,22 @@ interface RagStats {
 
 type TabType = 'chat' | 'upload' | 'manage';
 
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-
 export default function RagAssistantPage() {
+    // ========================================
+    // ALL HOOKS MUST BE AT THE TOP - NO EXCEPTIONS
+    // ========================================
     const { user, isLoading: isAuthLoading } = useAuth();
     const router = useRouter();
-    const [activeTab, setActiveTab] = useState<TabType>('chat');
 
+    // UI State
     const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    // Auth check effect
-    useEffect(() => {
-        if (!isAuthLoading && (!user || user.role !== 'ADMIN')) {
-            router.replace('/dashboard');
-        }
-    }, [user, isAuthLoading, router]);
-
-    // Prevent rendering until mounted on client AND auth confirmed
-    if (!mounted) return null;
-
-    // Show loading spinner while checking auth
-    if (isAuthLoading || !user) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
-
-    // If not admin, return null
-    if (user.role !== 'ADMIN') {
-        return null;
-    }
+    const [activeTab, setActiveTab] = useState<TabType>('chat');
     const [stats, setStats] = useState<RagStats | null>(null);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
     const [isClearing, setIsClearing] = useState(false);
 
-    const fetchStats = async () => {
+    // Fetch stats function
+    const fetchStats = useCallback(async () => {
         setIsLoadingStats(true);
         try {
             const token = localStorage.getItem('accessToken');
@@ -79,14 +55,51 @@ export default function RagAssistantPage() {
         } finally {
             setIsLoadingStats(false);
         }
-    };
+    }, []);
 
+    // Mount effect
     useEffect(() => {
-        if (user?.role === 'ADMIN') {
+        setMounted(true);
+    }, []);
+
+    // Auth check effect
+    useEffect(() => {
+        if (mounted && !isAuthLoading && (!user || user.role !== 'ADMIN')) {
+            router.replace('/dashboard');
+        }
+    }, [user, isAuthLoading, router, mounted]);
+
+    // Fetch stats on mount (only for admin)
+    useEffect(() => {
+        if (mounted && user?.role === 'ADMIN') {
             fetchStats();
         }
-    }, [user]);
+    }, [mounted, user, fetchStats]);
 
+    // ========================================
+    // EARLY RETURNS - AFTER ALL HOOKS
+    // ========================================
+
+    // Prevent rendering until mounted on client
+    if (!mounted) return null;
+
+    // Show loading spinner while checking auth
+    if (isAuthLoading || !user) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+            </div>
+        );
+    }
+
+    // If not admin, return null (redirect handled by useEffect)
+    if (user.role !== 'ADMIN') {
+        return null;
+    }
+
+    // ========================================
+    // EVENT HANDLERS
+    // ========================================
     const handleClearDocuments = async () => {
         if (!confirm('모든 문서를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
             return;
@@ -113,6 +126,9 @@ export default function RagAssistantPage() {
         { id: 'manage' as const, label: '문서 관리', icon: Database },
     ];
 
+    // ========================================
+    // RENDER
+    // ========================================
     return (
         <div className="min-h-screen bg-background">
             {/* Header */}
@@ -196,7 +212,7 @@ export default function RagAssistantPage() {
                             <h3 className="font-medium mb-2">💡 업로드 팁</h3>
                             <ul className="text-sm text-muted-foreground space-y-1">
                                 <li>• PDF 형식만 지원됩니다</li>
-                                <li>• 문서당 최대 10MB까지 업로드 가능합니다</li>
+                                <li>• 문서당 최대 50MB까지 업로드 가능합니다</li>
                                 <li>• 텍스트가 잘 추출되도록 스캔본보다 원본 PDF를 권장합니다</li>
                                 <li>• 업로드 후 AI가 문서를 학습하는 데 약간의 시간이 소요됩니다</li>
                             </ul>
