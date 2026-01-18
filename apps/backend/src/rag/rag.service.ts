@@ -24,7 +24,7 @@ export class RagService implements OnModuleInit {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.chatModel = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+      this.chatModel = this.genAI.getGenerativeModel({ model: 'gemini-3-pro-preview' });
       this.embeddingModel = this.genAI.getGenerativeModel({ model: 'text-embedding-004' });
     }
   }
