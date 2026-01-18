@@ -57,4 +57,4 @@ RUN npx prisma generate
 EXPOSE 8080
 
 # DB 마이그레이션과 시드 실행 후 앱 시작
-CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && node dist/src/main"]
+CMD ["npm", "run", "start:prod"]

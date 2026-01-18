@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma.service';
 import { EmbeddingService } from './embedding.service';
-import { ChunkingService, DocumentChunk } from './chunking.service';
+import { ChunkingService } from './chunking.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
 
 export interface SearchResult {
@@ -40,6 +40,7 @@ export class RagService implements OnModuleInit {
     const apiKey = this.configService.get<string>('GEMINI_API_KEY');
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
+      // 선생님이 설정하신 2026년 최신 모델 사용
       this.chatModel = this.genAI.getGenerativeModel({
         model: 'gemini-3-flash-preview',
       });
@@ -47,52 +48,29 @@ export class RagService implements OnModuleInit {
   }
 
   async onModuleInit() {
-    this.logger.log('Initializing RAG database schema...');
+    this.logger.log('Initializing RAG database settings...');
     try {
+      // [수정 1] 테이블 생성은 Prisma Migration에 맡기고, 여기서는 확장 기능 활성화만 확인합니다.
+      // Railway 등 클라우드 환경에서는 권한 문제로 실패할 수 있으니, 로그만 남기고 넘어갑니다.
       await this.prisma.$executeRawUnsafe(`CREATE EXTENSION IF NOT EXISTS vector;`);
       this.logger.log('pgvector extension enabled');
-
-      await this.prisma.$executeRawUnsafe(`
-                CREATE TABLE IF NOT EXISTS document_sections (
-                    id SERIAL PRIMARY KEY,
-                    content TEXT NOT NULL,
-                    metadata JSONB,
-                    embedding vector(768),
-                    created_at TIMESTAMP DEFAULT NOW(),
-                    updated_at TIMESTAMP DEFAULT NOW()
-                );
-            `);
-      this.logger.log('document_sections table ready');
-
-      await this.prisma.$executeRawUnsafe(`
-                CREATE INDEX IF NOT EXISTS idx_document_sections_embedding 
-                ON document_sections USING hnsw (embedding vector_cosine_ops);
-            `);
-      this.logger.log('Vector index ready');
-      this.logger.log('RAG database schema initialized successfully');
     } catch (error) {
-      this.logger.error('Failed to initialize RAG schema:', error);
+      this.logger.warn('Warning: Failed to enable pgvector extension. It might be already enabled or requires superuser permissions.', error);
     }
   }
 
-  private readonly BATCH_SIZE = 2; // Stability First: 502 에러 방지를 위해 배치 크기 대폭 축소
+  private readonly BATCH_SIZE = 5;
 
-  /**
-   * Ingest extracted text into vector database (Client-Side Parsing)
-   */
   async ingestDocument(dto: IngestTextDto): Promise<number> {
     this.logger.log(`[RAG] Starting Ingest for ${dto.filename} (${dto.content.length} chars)`);
 
     const text = dto.content;
     const chunks = this.chunkingService.splitByPages(text, dto.filename);
 
-    // --- Safety Guard: Check for empty chunks to prevent 500 Error (undefined length) ---
     if (!chunks || chunks.length === 0) {
       this.logger.warn(`[RAG] Chunking failed or returned empty result for ${dto.filename}`);
-      // 사용자에게 "서버가 죽었다"는 500 대신 명확한 에러 메시지 전달 (하지만 HTTP status는 500 유지하되 메시지 명시)
-      throw new InternalServerErrorException('텍스트를 처리하는 도중 문제가 발생했습니다. (Chunking Failed: No output)');
+      throw new InternalServerErrorException('텍스트를 처리하는 도중 문제가 발생했습니다. (Chunking Failed)');
     }
-    // --------------------------------------------------------------------------------
 
     this.logger.log(`[RAG] Created ${chunks.length} chunks. Using BATCH_SIZE=${this.BATCH_SIZE}`);
 
@@ -104,18 +82,24 @@ export class RagService implements OnModuleInit {
       const end = Math.min(start + this.BATCH_SIZE, chunks.length);
       const batch = chunks.slice(start, end);
 
-      this.logger.log(`[RAG] Processing Batch ${batchIndex + 1}/${totalBatches} (${batch.length} chunks)`);
+      this.logger.log(`[RAG] Processing Batch ${batchIndex + 1}/${totalBatches}`);
 
       const batchResults = await Promise.all(
         batch.map(async (chunk, idx) => {
           try {
             const embedding = await this.embeddingService.generateEmbedding(chunk.content);
+
+            // [수정 2] 핵심 수정: 벡터와 메타데이터를 명시적 문자열로 변환하여 주입
+            const vectorString = `[${embedding.join(',')}]`;
+            const metadataString = JSON.stringify(chunk.metadata);
+
+            // Prisma Raw Query 사용 시 타입 캐스팅(::vector, ::jsonb) 명시
             await this.prisma.$executeRaw`
               INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
               VALUES (
                 ${chunk.content},
-                ${JSON.stringify(chunk.metadata)}::jsonb,
-                ${JSON.stringify(embedding)}::vector,
+                ${metadataString}::jsonb,
+                ${vectorString}::vector, 
                 NOW(),
                 NOW()
               )
@@ -123,15 +107,14 @@ export class RagService implements OnModuleInit {
             return true;
           } catch (error) {
             this.logger.error(`[RAG] Error in Chunk ${start + idx}:`, error?.message || error);
+            // 에러가 나도 전체 프로세스를 멈추지 않고 진행
             return false;
           }
         }),
       );
 
       storedCount += batchResults.filter((r) => r).length;
-
-      // Give breath to the event loop
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await new Promise((resolve) => setTimeout(resolve, 50)); // 부하 조절
     }
 
     this.logger.log(`[RAG] Ingest Complete. Stored ${storedCount}/${chunks.length} chunks.`);
@@ -141,14 +124,18 @@ export class RagService implements OnModuleInit {
   async searchSimilar(query: string, topK = 3): Promise<SearchResult[]> {
     const queryEmbedding = await this.embeddingService.generateEmbedding(query);
 
+    // [수정 3] 검색 쿼리에서도 동일하게 포맷팅 적용
+    const vectorString = `[${queryEmbedding.join(',')}]`;
+
+    // cosine distance 연산자 (<=>) 사용
     const results = await this.prisma.$queryRaw<SearchResult[]>`
       SELECT 
         content,
         metadata,
-        1 - (embedding <=> ${JSON.stringify(queryEmbedding)}::vector) AS similarity
+        1 - (embedding <=> ${vectorString}::vector) AS similarity
       FROM document_sections
       WHERE embedding IS NOT NULL
-      ORDER BY embedding <=> ${JSON.stringify(queryEmbedding)}::vector
+      ORDER BY embedding <=> ${vectorString}::vector
       LIMIT ${topK}
     `;
 
@@ -157,7 +144,8 @@ export class RagService implements OnModuleInit {
 
   async askQuestion(question: string): Promise<RagResponse> {
     this.logger.log(`Processing question: ${question}`);
-    const relevantDocs = await this.searchSimilar(question, 3);
+
+    const relevantDocs = await this.searchSimilar(question, 4);
 
     if (relevantDocs.length === 0) {
       return {
@@ -173,14 +161,13 @@ export class RagService implements OnModuleInit {
       )
       .join('\n\n---\n\n');
 
-    const prompt = `당신은 학교 행정 전문가입니다. 
-아래 참고 문서를 바탕으로 질문에 정확하게 답변해주세요.
+    const prompt = `당신은 학교 행정 업무를 지원하는 AI 어시스턴트입니다. 
+다음 제공된 [참고 문서]만을 바탕으로 [질문]에 대해 답변해주세요.
 
 ## 지침
-- 반드시 제공된 문서에 근거한 답변만 하세요.
-- 문서에 없는 내용은 "해당 내용은 제공된 문서에서 확인되지 않습니다"라고 답하세요.
-- 답변 시 어떤 출처를 참고했는지 명시하세요.
-- 친절하고 명확하게 설명하세요.
+1. **사실 기반:** 문서에 없는 내용은 지어내지 말고 "문서에서 정보를 찾을 수 없습니다"라고 하세요.
+2. **출처 명시:** 답변 중간이나 끝에 인용한 정보의 출처 번호(예: [출처 1])를 표기하세요.
+3. **어조:** 한국 학교 행정가들에게 적합한 정중하고 전문적인 어조(해요체)를 사용하세요.
 
 ## 참고 문서
 ${context}
@@ -190,17 +177,22 @@ ${question}
 
 ## 답변`;
 
-    const result = await this.chatModel.generateContent(prompt);
-    const answer = result.response.text();
+    try {
+      const result = await this.chatModel.generateContent(prompt);
+      const answer = result.response.text();
 
-    return {
-      answer,
-      sources: relevantDocs.map((doc) => ({
-        source: doc.metadata.source,
-        page: doc.metadata.page,
-        snippet: doc.content.slice(0, 100) + '...',
-      })),
-    };
+      return {
+        answer,
+        sources: relevantDocs.map((doc) => ({
+          source: doc.metadata.source,
+          page: doc.metadata.page,
+          snippet: doc.content.slice(0, 100) + '...',
+        })),
+      };
+    } catch (error) {
+      this.logger.error('Gemini Generate Error:', error);
+      throw new InternalServerErrorException('답변 생성 중 오류가 발생했습니다.');
+    }
   }
 
   async getStats(): Promise<{ totalChunks: number; sources: string[] }> {
@@ -214,8 +206,11 @@ ${question}
       WHERE metadata->>'source' IS NOT NULL
     `;
 
+    // BigInt 처리 (JSON 직렬화 문제 방지)
+    const count = countResult[0]?.count ? Number(countResult[0].count) : 0;
+
     return {
-      totalChunks: Number(countResult[0]?.count || 0),
+      totalChunks: count,
       sources: sourcesResult.map((r) => r.source),
     };
   }
