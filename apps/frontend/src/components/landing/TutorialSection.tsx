@@ -272,6 +272,55 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
                     </div>
                 </div>
             );
+        case 'BID_NOTICE':
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700">
+                    <div className="flex gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-purple-100 flex items-center justify-center text-2xl">🏫</div>
+                        <div>
+                            <div className="text-sm font-bold text-slate-800 dark:text-white">서울 미래초등학교</div>
+                            <div className="text-[10px] text-slate-500">입찰 공고 | 2026.03.15</div>
+                        </div>
+                    </div>
+                    <div className="space-y-2 mb-6">
+                        <div className="text-lg font-bold text-slate-800 dark:text-white leading-tight">2026학년도 창의 체험<br />진로 캠프 운영 업체 모집</div>
+                        <div className="text-xs text-slate-500">예산: 5,000,000원 (금오백만원)<br />기간: 2026.05 - 2026.07</div>
+                    </div>
+                    <div className="flex gap-2">
+                        <div className="px-3 py-1 rounded-full bg-purple-50 text-purple-500 text-[10px] font-bold">#진로체험</div>
+                        <div className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-bold">#캠프</div>
+                    </div>
+                    <div className="mt-6">
+                        <div className="w-full py-2.5 bg-primary rounded-xl text-center text-white text-xs font-bold shadow-lg shadow-primary/20">제안서 제출하기</div>
+                    </div>
+                </div>
+            );
+        case 'PARTNERSHIP':
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 shadow-2xl border border-slate-200 dark:border-slate-700 text-center flex flex-col items-center">
+                    <div className="w-20 h-20 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center mb-6 animate-pulse">
+                        <BadgeCheck size={40} strokeWidth={3} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">파트너십 체결!</h3>
+                    <p className="text-slate-500 text-sm mb-6">
+                        서울 미래초등학교와<br />협약이 완료되었습니다.
+                    </p>
+                    <div className="flex items-center justify-center gap-2 mb-6">
+                        <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-xl">🏫</div>
+                        <div className="h-0.5 w-8 bg-blue-500 rounded-full"></div>
+                        <div className="w-12 h-12 rounded-full bg-slate-100 border-2 border-slate-200 flex items-center justify-center text-xl">🏢</div>
+                    </div>
+                    <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: '100%' }}
+                            transition={{ duration: 1, delay: 0.5 }}
+                            className="h-full bg-blue-500"
+                        />
+                    </div>
+                    <div className="mt-4 text-[10px] text-slate-400 font-mono">2026.03.20 PARTNERSHIP</div>
+                </div>
+            );
         default:
             return null;
     }

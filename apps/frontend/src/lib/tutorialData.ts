@@ -6,7 +6,7 @@ export type TutorialStep = {
     title: string;
     description: string;
     icon: LucideIcon;
-    mockType: 'JOB_POST' | 'PROFILE_CARD' | 'MATCH_SUCCESS' | 'CERTIFICATION' | 'PORTFOLIO';
+    mockType: 'JOB_POST' | 'PROFILE_CARD' | 'MATCH_SUCCESS' | 'CERTIFICATION' | 'PORTFOLIO' | 'BID_NOTICE' | 'PARTNERSHIP';
 };
 
 export type TutorialRole = {
@@ -90,14 +90,14 @@ export const TUTORIAL_DATA: TutorialRole[] = [
                 title: '학교 연결 제안',
                 description: '학교의 입찰 공고를 확인하고 제안서를 보내 파트너십을 맺으세요.',
                 icon: Search,
-                mockType: 'JOB_POST'
+                mockType: 'BID_NOTICE'
             },
             {
                 id: 'b3',
                 title: '비즈니스 확장',
                 description: '성공적인 레퍼런스를 통해 더 많은 학교와 연결될 기회를 잡으세요.',
                 icon: TrendingUp,
-                mockType: 'MATCH_SUCCESS'
+                mockType: 'PARTNERSHIP'
             }
         ]
     }
