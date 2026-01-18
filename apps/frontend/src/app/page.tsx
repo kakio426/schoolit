@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Search, School, UserCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight, Search, School, UserCheck, ShieldCheck, Bot } from "lucide-react";
 import TutorialSection from "@/components/landing/TutorialSection";
 import FooterDisclaimer from "@/components/layout/FooterDisclaimer";
 
@@ -40,7 +40,7 @@ export default function LandingPage() {
       {/* Feature Grid */}
       <section className="py-16 px-6 bg-slate-900">
         <div className="max-w-6xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             <FeatureCard
               icon={<UserCheck className="w-8 h-8 text-blue-400" />}
               title="준비된 선생님"
@@ -55,6 +55,11 @@ export default function LandingPage() {
               icon={<ShieldCheck className="w-8 h-8 text-emerald-400" />}
               title="신뢰할 수 있는 후기"
               description="실제 근무 경험을 바탕으로 한 정성적 후기로 서로의 신뢰를 쌓아가세요."
+            />
+            <FeatureCard
+              icon={<Bot className="w-8 h-8 text-amber-400" />}
+              title="AI 어시스턴트"
+              description="채용 지침과 행정 절차를 AI에게 물어보세요. 24시간 즉시 답변해드립니다."
             />
           </div>
         </div>
