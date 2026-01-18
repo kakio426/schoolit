@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, UserCheck, School, ShieldCheck, Bot, CheckCircle2, TrendingUp, Users } from "lucide-react";
+import { ArrowRight, UserCheck, School, ShieldCheck, Bot, CheckCircle2 } from "lucide-react";
 import TutorialSection from "@/components/landing/TutorialSection";
 import FooterDisclaimer from "@/components/layout/FooterDisclaimer";
 
@@ -60,28 +60,22 @@ export default function LandingPage() {
             AI 기반 매칭으로 학교는 최적의 인재를, 선생님은 최고의 기회를 찾으세요.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+          <div className="flex justify-center pt-4">
             <Link
-              href="/auth/signup?type=school"
-              className="w-full sm:w-auto px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 group"
+              href="/auth/login"
+              className="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-lg transition-all shadow-lg shadow-blue-600/25 flex items-center justify-center gap-2 group hover:scale-105 active:scale-95"
             >
-              학교로 시작하기
+              무료로 시작하기
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </Link>
-            <Link
-              href="/auth/signup?type=teacher"
-              className="w-full sm:w-auto px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:border-slate-600 rounded-2xl font-bold text-lg transition-all flex items-center justify-center gap-2"
-            >
-              선생님으로 시작하기
             </Link>
           </div>
 
-          {/* Trust Badges / Stats (Social Proof) */}
+          {/* Service Benefits */}
           <div className="pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 border-t border-white/5 mt-16">
-            <StatItem number="1,200+" label="등록된 선생님" icon={<Users className="w-5 h-5 text-blue-400" />} />
-            <StatItem number="98%" label="매칭 성공률" icon={<CheckCircle2 className="w-5 h-5 text-emerald-400" />} />
-            <StatItem number="24h" label="평균 채용 시간" icon={<TrendingUp className="w-5 h-5 text-purple-400" />} />
-            <StatItem number="ZERO" label="행정 업무 부담" icon={<ShieldCheck className="w-5 h-5 text-amber-400" />} />
+            <BenefitItem icon={<School className="w-5 h-5 text-blue-400" />} title="AI 맞춤 매칭" description="학교 조건에 맞는 인재 추천" />
+            <BenefitItem icon={<ShieldCheck className="w-5 h-5 text-emerald-400" />} title="자격 검증" description="자격증/경력 자동 확인" />
+            <BenefitItem icon={<CheckCircle2 className="w-5 h-5 text-purple-400" />} title="서류 자동화" description="계약서/채용문서 생성" />
+            <BenefitItem icon={<Bot className="w-5 h-5 text-amber-400" />} title="24시간 AI 지원" description="행정 문의 즉시 답변" />
           </div>
         </div>
       </section>
@@ -159,14 +153,14 @@ export default function LandingPage() {
 
 // --- Sub Components ---
 
-function StatItem({ number, label, icon }: { number: string, label: string, icon: React.ReactNode }) {
+function BenefitItem({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="flex flex-col items-center justify-center space-y-2 group cursor-default">
+    <div className="flex flex-col items-center justify-center space-y-2 group cursor-default text-center">
       <div className="p-3 bg-slate-900 rounded-2xl border border-white/5 group-hover:border-blue-500/30 transition-colors mb-2">
         {icon}
       </div>
-      <span className="text-3xl md:text-4xl font-bold text-white">{number}</span>
-      <span className="text-sm text-slate-500 font-medium">{label}</span>
+      <span className="text-lg font-bold text-white">{title}</span>
+      <span className="text-xs text-slate-500 font-medium">{description}</span>
     </div>
   );
 }
