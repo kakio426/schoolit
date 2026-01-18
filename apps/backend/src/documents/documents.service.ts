@@ -39,7 +39,8 @@ export interface ContractDocumentData {
 @Injectable()
 export class DocumentsService {
   private genAI: GoogleGenerativeAI | null = null;
-  private model: any = null;
+  private model: any = null; // @google/generative-ai does not expose a clear Model type easily without extra steps
+
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
@@ -50,7 +51,7 @@ export class DocumentsService {
   }
 
   // [CORE] PDF 생성 메인 로직
-  async generateHiringPlanPdf(data: any): Promise<Buffer> {
+  async generateHiringPlanPdf(data: HiringDocumentData | any): Promise<Buffer> {
     try {
       const browser = await puppeteer.launch({
         headless: true,
@@ -85,7 +86,6 @@ export class DocumentsService {
 
   // [TEMPLATE] 교육청 공문 스타일 HTML/CSS
   private getHiringPlanTemplate(data: any): string {
-    const today = format(new Date(), 'yyyy. MM. dd.');
     const docNumber = `제 ${new Date().getFullYear()} - ${Math.floor(Math.random() * 100)}호`;
 
     // 날짜 파싱 시도 (단순 문자열일 경우 대비)

@@ -41,11 +41,11 @@ export class RagService implements OnModuleInit {
 
       // [중요] 'Pro'는 무료 티어에서 limit: 0 이므로 반드시 'Flash'를 사용해야 합니다.
       this.chatModel = this.genAI.getGenerativeModel({
-        model: 'gemini-3-flash-preview'
+        model: 'gemini-3-flash-preview',
       });
 
       this.embeddingModel = this.genAI.getGenerativeModel({
-        model: 'text-embedding-004'
+        model: 'text-embedding-004',
       });
     }
   }
@@ -73,7 +73,7 @@ export class RagService implements OnModuleInit {
         const chunkText = chunks[i];
 
         // 임베딩 생성 (재시도 로직 적용)
-        const result = await withRetry(() => this.embeddingModel.embedContent(chunkText));
+        const result = await withRetry(() => this.embeddingModel.embedContent(chunkText)) as any;
 
         const embedding = result.embedding.values;
         const vectorString = `[${embedding.join(',')}]`;
@@ -82,7 +82,7 @@ export class RagService implements OnModuleInit {
         const safeMeta = JSON.stringify({
           ...metadata,
           chunkIndex: i,
-          source: 'manual_text'
+          source: 'manual_text',
         }).replace(/'/g, "''");
 
         await this.prisma.$executeRawUnsafe(`
@@ -91,8 +91,7 @@ export class RagService implements OnModuleInit {
         `);
 
         successCount++;
-        await new Promise(r => setTimeout(r, 500)); // 0.5초 대기 (안전장치)
-
+        await new Promise((r) => setTimeout(r, 500)); // 0.5초 대기 (안전장치)
       } catch (error) {
         this.logger.error(`[RAG] Failed chunk ${i}: ${error.message}`);
       }
@@ -102,7 +101,7 @@ export class RagService implements OnModuleInit {
 
   async searchSimilar(query: string, topK = 4): Promise<SearchResult[]> {
     // 검색어 임베딩도 재시도 로직 적용
-    const result = await withRetry(() => this.embeddingModel.embedContent(query));
+    const result = await withRetry(() => this.embeddingModel.embedContent(query)) as any;
     const vectorString = `[${result.embedding.values.join(',')}]`;
 
     return this.prisma.$queryRaw<SearchResult[]>`
@@ -128,13 +127,32 @@ ${context}
 답변:`;
 
     // [핵심] 답변 생성 시에도 재시도 로직 적용 (429 에러 방어)
-    const result = await withRetry(() => this.chatModel.generateContent(prompt));
+    const result = await withRetry(() => this.chatModel.generateContent(prompt)) as any;
 
-    return { answer: result.response.text(), sources: docs.map(d => d.metadata) };
+    return { answer: result.response.text(), sources: docs.map((d) => d.metadata) };
   }
 
   async getStats() {
-    const count = await this.prisma.$queryRaw<any[]>`SELECT COUNT(*)::int as count FROM document_sections`;
+    const count = await this.prisma.$queryRaw<
+      any[]
+    >`SELECT COUNT(*)::int as count FROM document_sections`;
     return { totalChunks: count[0].count, sources: [] };
+  }
+
+  async listSections() {
+    return this.prisma.documentSection.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 100,
+    });
+  }
+
+  async deleteSection(id: number) {
+    return this.prisma.documentSection.delete({
+      where: { id },
+    });
+  }
+
+  async deleteAllSections() {
+    return this.prisma.documentSection.deleteMany({});
   }
 }

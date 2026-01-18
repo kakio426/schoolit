@@ -30,9 +30,11 @@ describe('RagService (Baseline Test)', () => {
         {
           provide: ChunkingService,
           useValue: {
-            splitByPages: jest.fn().mockReturnValue([
-              { content: 'chunk 1', metadata: { source: 'test.pdf', chunkIndex: 0 } },
-            ]),
+            splitByPages: jest
+              .fn()
+              .mockReturnValue([
+                { content: 'chunk 1', metadata: { source: 'test.pdf', chunkIndex: 0 } },
+              ]),
           },
         },
         {

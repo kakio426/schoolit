@@ -10,12 +10,9 @@ import { EmbeddingService } from './embedding.service';
 import { ChunkingService } from './chunking.service';
 
 @Module({
-  imports: [
-    PrismaModule,
-    ConfigModule,
-  ],
+  imports: [PrismaModule, ConfigModule],
   controllers: [RagController],
   providers: [RagService, EmbeddingService, ChunkingService],
   exports: [RagService],
 })
-export class RagModule { }
+export class RagModule {}

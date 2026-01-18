@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, Logger } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param } from '@nestjs/common';
 import { RagService } from './rag.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
 
@@ -21,5 +21,20 @@ export class RagController {
   @Post('ask')
   async askQuestion(@Body() body: { question: string }) {
     return this.ragService.askQuestion(body.question);
+  }
+
+  @Get('sections')
+  async listSections() {
+    return this.ragService.listSections();
+  }
+
+  @Delete('sections/:id')
+  async deleteSection(@Param('id') id: string) {
+    return this.ragService.deleteSection(parseInt(id, 10));
+  }
+
+  @Delete('documents')
+  async deleteAllDocuments() {
+    return this.ragService.deleteAllSections();
   }
 }

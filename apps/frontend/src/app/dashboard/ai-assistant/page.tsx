@@ -22,6 +22,13 @@ interface RagStats {
     sources: string[];
 }
 
+interface RagSection {
+    id: number;
+    content: string;
+    metadata: any;
+    createdAt: string;
+}
+
 type TabType = 'chat' | 'upload' | 'manage';
 
 export default function RagAssistantPage() {
@@ -35,7 +42,9 @@ export default function RagAssistantPage() {
     const [mounted, setMounted] = useState(false);
     const [activeTab, setActiveTab] = useState<TabType>('chat');
     const [stats, setStats] = useState<RagStats | null>(null);
+    const [sections, setSections] = useState<RagSection[]>([]);
     const [isLoadingStats, setIsLoadingStats] = useState(true);
+    const [isLoadingSections, setIsLoadingSections] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
 
     // Fetch stats function
@@ -57,6 +66,24 @@ export default function RagAssistantPage() {
         }
     }, []);
 
+    const fetchSections = useCallback(async () => {
+        setIsLoadingSections(true);
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/sections`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setSections(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch sections:', error);
+        } finally {
+            setIsLoadingSections(false);
+        }
+    }, []);
+
     // Mount effect
     useEffect(() => {
         setMounted(true);
@@ -73,8 +100,11 @@ export default function RagAssistantPage() {
     useEffect(() => {
         if (mounted && user?.role === 'ADMIN') {
             fetchStats();
+            if (activeTab === 'manage') {
+                fetchSections();
+            }
         }
-    }, [mounted, user, fetchStats]);
+    }, [mounted, user, fetchStats, fetchSections, activeTab]);
 
     // ========================================
     // EARLY RETURNS - AFTER ALL HOOKS
@@ -113,10 +143,31 @@ export default function RagAssistantPage() {
                 headers: { Authorization: `Bearer ${token}` },
             });
             await fetchStats();
+            await fetchSections();
         } catch (error) {
             console.error('Failed to clear documents:', error);
         } finally {
             setIsClearing(false);
+        }
+    };
+
+    const handleDeleteSection = async (id: number) => {
+        if (!confirm('이 청크를 삭제하시겠습니까?')) {
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('accessToken');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}/api/rag/sections/${id}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) {
+                await fetchStats();
+                await fetchSections();
+            }
+        } catch (error) {
+            console.error('Failed to delete section:', error);
         }
     };
 
@@ -244,17 +295,51 @@ export default function RagAssistantPage() {
                                     </div>
 
                                     <div className="border-t border-border pt-4">
-                                        <h3 className="text-sm font-medium mb-2">업로드된 문서</h3>
-                                        <div className="space-y-2">
-                                            {stats.sources.map((source, idx) => (
-                                                <div
-                                                    key={idx}
-                                                    className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg text-sm"
-                                                >
-                                                    <Database className="w-4 h-4 text-muted-foreground" />
-                                                    {source}
-                                                </div>
-                                            ))}
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-sm font-medium">학습된 청크 (최근 100개)</h3>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={fetchSections}
+                                                disabled={isLoadingSections}
+                                            >
+                                                <RefreshCw className={`w-3 h-3 mr-1 ${isLoadingSections ? 'animate-spin' : ''}`} />
+                                                새로고침
+                                            </Button>
+                                        </div>
+                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-1">
+                                            {isLoadingSections ? (
+                                                <div className="text-center py-4 text-xs text-muted-foreground">목록 로딩 중...</div>
+                                            ) : sections.length > 0 ? (
+                                                sections.map((section) => (
+                                                    <div
+                                                        key={section.id}
+                                                        className="p-3 bg-muted/20 border border-border/50 rounded-lg group text-xs relative"
+                                                    >
+                                                        <div className="flex justify-between items-start mb-1">
+                                                            <span className="font-bold text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+                                                                #{section.id}
+                                                            </span>
+                                                            <button
+                                                                onClick={() => handleDeleteSection(section.id)}
+                                                                className="opacity-0 group-hover:opacity-100 p-1 hover:text-danger hover:bg-danger/10 rounded transition-all"
+                                                            >
+                                                                <Trash2 className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                        <p className="line-clamp-3 text-muted-foreground mb-2 leading-relaxed">
+                                                            {section.content}
+                                                        </p>
+                                                        <div className="flex gap-2 text-[10px] text-muted-foreground/70">
+                                                            <span>📄 {section.metadata?.source || 'unknown'}</span>
+                                                            {section.metadata?.page && <span>| P.{section.metadata.page}</span>}
+                                                            <span>| {new Date(section.createdAt).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-center py-4 text-xs text-muted-foreground">데이터가 없습니다.</div>
+                                            )}
                                         </div>
                                     </div>
 
