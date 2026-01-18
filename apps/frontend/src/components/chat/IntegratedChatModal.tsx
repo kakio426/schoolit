@@ -180,8 +180,8 @@ export default function IntegratedChatModal({ isOpen, onClose }: IntegratedChatM
                 {/* Content Area */}
                 <div className="flex-1 overflow-hidden relative bg-slate-50 dark:bg-zinc-950/50">
                     {mode === 'CHAT' ? (
-                        <>
-                            <div className="absolute inset-0 overflow-y-auto p-4 space-y-4">
+                        <div className="flex flex-col h-full">
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
                                 {messages.length === 0 && (
                                     <div className="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">
                                         <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900/30 rounded-full flex items-center justify-center mb-4">
@@ -234,7 +234,7 @@ export default function IntegratedChatModal({ isOpen, onClose }: IntegratedChatM
                             </div>
 
                             {/* Input Area */}
-                            <form onSubmit={handleChatSubmit} className="absolute bottom-0 left-0 right-0 p-4 bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800">
+                            <form onSubmit={handleChatSubmit} className="p-4 bg-white dark:bg-zinc-900 border-t border-slate-200 dark:border-zinc-800 shrink-0">
                                 <div className="relative">
                                     <input
                                         ref={inputRef}
@@ -253,7 +253,7 @@ export default function IntegratedChatModal({ isOpen, onClose }: IntegratedChatM
                                     </button>
                                 </div>
                             </form>
-                        </>
+                        </div>
                     ) : (
                         <div className="h-full overflow-y-auto p-6">
                             {isFeedbackSuccess ? (
