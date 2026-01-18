@@ -116,20 +116,31 @@ export class RagService implements OnModuleInit {
     const docs = await this.searchSimilar(question);
     if (!docs.length) return { answer: '관련 정보를 찾을 수 없습니다.', sources: [] };
 
-    const context = docs.map((d, i) => `[문서 ${i + 1}] ${d.content}`).join('\n\n');
+    const context = docs.map((d, i) => `[데이터 ${i + 1}] ${d.content}`).join('\n\n');
 
-    const prompt = `당신은 학교 행정 전문가입니다. 아래 [참고 문서]를 바탕으로 선생님의 질문에 명확하게 답변해주세요.
-    
-[참고 문서]
+    const prompt = `당신은 학교 행정 전문가입니다. 아래 제공된 [참고 데이터]를 바탕으로 선생님의 질문에 답변해주세요.
+
+[규칙]
+1. 답변에 "문서 1", "데이터 1" 같은 출처 번호를 절대 언급하지 마십시오.
+2. 마크다운 기호(**, *, #, -, > 등)를 절대 사용하지 마십시오. (순수 텍스트로만 답변)
+3. 답변은 친절하고 명확하게 작성하십시오.
+4. 답변 본문만 작성하십시오. (부연 설명이나 출처 표기는 제가 별도로 추가합니다.)
+
+[참고 데이터]
 ${context}
 
 질문: ${question}
 답변:`;
 
     // [핵심] 답변 생성 시에도 재시도 로직 적용 (429 에러 방어)
-    const result = await withRetry(() => this.chatModel.generateContent(prompt)) as any;
+    const result = (await withRetry(() => this.chatModel.generateContent(prompt))) as any;
+    const answer = result.response.text().trim();
 
-    return { answer: result.response.text(), sources: docs.map((d) => d.metadata) };
+    // 완성된 답변에 출처 및 면책 조항 추가
+    const finalAnswer = `${answer}\n\n해당 내용은 경기도교육청 기준의 기간제 교원 및 교육공무직 관리 실무 지침을 바탕으로 하고 있으며, AI 어시스턴트의 답변은 참고용으로만 활용하시기 바랍니다.`;
+
+    // 출처 리스트는 UI에서 노출하지 않기 위해 빈 배열로 반환
+    return { answer: finalAnswer, sources: [] };
   }
 
   async getStats() {
