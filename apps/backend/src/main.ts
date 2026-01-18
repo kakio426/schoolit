@@ -4,96 +4,49 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const cookieParser = require('cookie-parser');
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
-import { json, urlencoded } from 'express';
+import { json, urlencoded } from 'express'; // 👈 용량 제한 설정을 위해 추가
 
 async function bootstrap() {
-  // 1. CORS 옵션을 끈 상태로 앱 생성 (수동 설정을 위함)
-  const app = await NestFactory.create<NestExpressApplication>(AppModule, { cors: false });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   const logger = new Logger('Bootstrap');
 
-  // API 접두사 설정
-  app.setGlobalPrefix('api');
-
-  // 2. CORS 설정 (가장 먼저 적용 - 입구컷 방지)
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'https://schoolit.shop',
-    'https://schoolit-frontend.up.railway.app',
-    process.env.FRONTEND_URL,
-  ].filter((origin): origin is string => !!origin);
-
-  app.enableCors({
-    origin: (origin, callback) => {
-      // origin이 없으면(서버 간 통신 or Postman 등) 허용
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      // 허용된 도메인인지 확인
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      // 디버깅을 위해 막힌 Origin을 로그에 출력
-      logger.warn(`Blocked CORS origin: ${origin}`);
-      logger.log(`Allowed origins are: ${allowedOrigins.join(', ')}`);
-
-      // 개발 중 편의를 위해 에러 대신 허용할 수도 있음 (보안 주의)
-      // callback(null, true); 
-
-      callback(new Error('Not allowed by CORS'));
-    },
-    credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
-  });
-
-  // 3. 용량 제한 설정 (CORS 직후 적용 - 50MB까지 허용)
-  // NestJS의 기본 BodyParser 대신 Express의 json/urlencoded를 직접 미들웨어로 등록하여 순서 보장
+  // [핵심 1] Payload Size 제한 해제 (PDF 텍스트 등 큰 데이터 수신용)
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  // 4. 쿠키 및 유효성 검사
-  app.use(cookieParser());
+  // [핵심 2] CORS 완벽 허용 (인증 쿠키 포함 가능)
+  app.enableCors({
+    origin: true, // 요청을 보낸 도메인을 그대로 허용 (개발 편의성)
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true, // 쿠키/인증 헤더 허용
+    allowedHeaders: 'Content-Type, Accept, Authorization',
+  });
 
-  // Global Filters
-  app.useGlobalFilters(new HttpExceptionFilter());
-
-  // 유효성 검사 파이프
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
+      forbidNonWhitelisted: true,
       transform: true,
-      // forbidNonWhitelisted: true, // <-- 이 옵션이 빡빡하면 에러가 잘 남. 일단 주석 처리.
-      transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  // 5. Swagger 설정
+  // API URL 프리픽스 설정 (예: /api/users)
+  app.setGlobalPrefix('api');
+
+  // Swagger 설정 (선택 사항이지만 유지)
   const config = new DocumentBuilder()
-    .setTitle('Schoolit API')
-    .setDescription('Schoolit Backend API Documentation')
-    .setVersion('1.7.0') // Updated version
+    .setTitle('School It API')
+    .setDescription('School administrative support platform')
+    .setVersion('1.0')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
-  // Root Health Check v1.7.0
-  const httpAdapter = app.getHttpAdapter();
-  httpAdapter.get('/', (req: any, res: any) => res.status(200).send({ status: 'ok', version: '1.7.0' }));
-  httpAdapter.get('/api/health', (req: any, res: any) => res.status(200).send({ status: 'api-ok', version: '1.7.0' }));
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
 
-  const port = process.env.PORT || 8000;
-  await app.listen(port, '0.0.0.0');
-  logger.log(`[v1.7.0] Server running on port ${port}`);
-  logger.log(`Environment: ${process.env.NODE_ENV}`);
+  logger.log(`Application is running on port ${port}`);
+  logger.log(`CORS enabled for origin: true`);
 }
-
-bootstrap().catch(err => {
-  console.error('Fatal Bootstrap Error:', err);
-  process.exit(1);
-});
+bootstrap();
