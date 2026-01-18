@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Logger, InternalServerErrorException, Get, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Logger, InternalServerErrorException } from '@nestjs/common';
 import { RagService } from './rag.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
 
@@ -10,13 +10,14 @@ export class RagController {
 
   @Post('upload')
   async uploadDocument(@Body() dto: IngestTextDto) {
-    // 텍스트 내용 검증
+    // 1. 내용 검증
     if (!dto.content || dto.content.trim().length === 0) {
       throw new InternalServerErrorException('문서 내용이 비어있습니다.');
     }
 
-    this.logger.log(`[RAG] Text received. Length: ${dto.content.length}`);
+    this.logger.log(`[RAG] Text received: ${dto.filename} (${dto.content.length} chars)`);
 
+    // 2. 서비스 호출
     const storedCount = await this.ragService.ingestDocument(dto);
 
     return {
@@ -29,17 +30,5 @@ export class RagController {
   @Post('ask')
   async askQuestion(@Body() body: { question: string }) {
     return this.ragService.askQuestion(body.question);
-  }
-
-  // 기존 유용한 엔드포인트 유지
-  @Get('stats')
-  async getStats() {
-    return this.ragService.getStats();
-  }
-
-  @Delete('documents')
-  async clearDocuments() {
-    await this.ragService.clearDocuments();
-    return { message: '모든 문서가 삭제되었습니다.' };
   }
 }
