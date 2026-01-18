@@ -27,120 +27,119 @@ export default function TutorialSection() {
     return (
         <section className="pt-24 pb-32 px-6 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 overflow-hidden">
             <div className="max-w-7xl mx-auto">
-                <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-16 space-y-4">
-                        <motion.h2
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="text-3xl md:text-5xl font-bold text-white tracking-tight"
-                        >
-                            복잡한 절차 없이, <span className="text-primary">3단계로 끝</span>
-                        </motion.h2>
-                        <motion.p
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.1 }}
-                            className="text-slate-400 text-lg max-w-2xl mx-auto"
-                        >
-                            원하는 조건을 선택하고 매칭을 기다리세요. 나머지는 AI가 알아서 처리합니다.
-                        </motion.p>
-                    </div>
+                <div className="text-center mb-16 space-y-4">
+                    <motion.h2
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="text-3xl md:text-5xl font-bold text-white tracking-tight"
+                    >
+                        복잡한 절차 없이, <span className="text-primary">3단계로 끝</span>
+                    </motion.h2>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: 0.1 }}
+                        className="text-slate-400 text-lg max-w-2xl mx-auto"
+                    >
+                        원하는 조건을 선택하고 매칭을 기다리세요. 나머지는 AI가 알아서 처리합니다.
+                    </motion.p>
+                </div>
 
-                    {/* Role Tabs */}
-                    <div className="flex justify-center mb-12">
-                        <div className="flex bg-slate-800/50 p-1.5 rounded-full border border-white/10 backdrop-blur-sm overflow-x-auto max-w-full">
-                            {TUTORIAL_DATA.map((role) => (
-                                <button
-                                    key={role.id}
-                                    onClick={() => handleRoleChange(role)}
-                                    className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap relative ${activeRole.id === role.id
-                                        ? 'text-white'
-                                        : 'text-slate-400 hover:text-white'
-                                        }`}
-                                >
-                                    {activeRole.id === role.id && (
-                                        <motion.div
-                                            layoutId="activeRoleTab"
-                                            className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/25"
-                                            initial={false}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    )}
-                                    <span className="relative z-10">{role.label}</span>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 stretch">
-
-                        {/* Left: Steps List - Flex col to distribute space if needed, or just fill */}
-                        <div className="flex flex-col gap-4 h-full">
-                            {activeRole.steps.map((step, index) => (
-                                <div
-                                    key={step.id}
-                                    className={`relative p-6 flex-1 flex flex-col justify-center rounded-2xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
-                                        ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
-                                        : 'bg-slate-800 border-white/5 hover:bg-slate-700 hover:border-white/20 opacity-80 hover:opacity-100'
-                                        }`}
-                                    onClick={() => setActiveStepIndex(index)}
-                                >
-                                    <div className="flex items-start gap-5">
-                                        <div className={`p-3 rounded-xl shrink-0 ${index === activeStepIndex
-                                            ? 'bg-primary text-white'
-                                            : 'bg-slate-900/50 text-slate-400'
-                                            }`}>
-                                            <step.icon size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className={`text-xl font-bold mb-2 ${index === activeStepIndex ? 'text-white' : 'text-slate-200'
-                                                }`}>
-                                                {step.title}
-                                            </h3>
-                                            <p className="text-slate-400 font-medium leading-relaxed">
-                                                {step.description}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Progress Bar for Active Step */}
-                                    {index === activeStepIndex && (
-                                        <motion.div
-                                            className="absolute bottom-0 left-0 h-1 bg-primary rounded-b-2xl"
-                                            initial={{ width: "0%" }}
-                                            animate={{ width: "100%" }}
-                                            transition={{ duration: 4, ease: "linear" }}
-                                        />
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Right: Mock UI Display - Stretches to match Left Column Height */}
-                        <div className="relative w-full bg-slate-800 rounded-[32px] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-12 ring-1 ring-white/5 mx-auto max-w-[500px] lg:max-w-full lg:h-auto min-h-[400px]">
-                            {/* Abstract Background Decoration */}
-                            <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-slate-800 to-slate-900/50" />
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-primary/5 blur-[80px] rounded-full" />
-
-                            <AnimatePresence mode="wait">
-                                <motion.div
-                                    key={`${activeRole.id}-${activeStepIndex}`}
-                                    initial={{ opacity: 0, y: 10, scale: 0.98 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    exit={{ opacity: 0, y: -10, scale: 1.02 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="relative w-full max-w-sm"
-                                >
-                                    <MockUI type={activeRole.steps[activeStepIndex].mockType} />
-                                </motion.div>
-                            </AnimatePresence>
-                        </div>
-
+                {/* Role Tabs */}
+                <div className="flex justify-center mb-12">
+                    <div className="flex bg-slate-800/50 p-1.5 rounded-full border border-white/10 backdrop-blur-sm overflow-x-auto max-w-full">
+                        {TUTORIAL_DATA.map((role) => (
+                            <button
+                                key={role.id}
+                                onClick={() => handleRoleChange(role)}
+                                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all whitespace-nowrap relative ${activeRole.id === role.id
+                                    ? 'text-white'
+                                    : 'text-slate-400 hover:text-white'
+                                    }`}
+                            >
+                                {activeRole.id === role.id && (
+                                    <motion.div
+                                        layoutId="activeRoleTab"
+                                        className="absolute inset-0 bg-primary rounded-full shadow-lg shadow-primary/25"
+                                        initial={false}
+                                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">{role.label}</span>
+                            </button>
+                        ))}
                     </div>
                 </div>
+
+                {/* Main Content Area */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 stretch">
+
+                    {/* Left: Steps List - Flex col to distribute space if needed, or just fill */}
+                    <div className="flex flex-col gap-4 h-full">
+                        {activeRole.steps.map((step, index) => (
+                            <div
+                                key={step.id}
+                                className={`relative p-6 flex-1 flex flex-col justify-center rounded-2xl transition-all duration-300 cursor-pointer border ${index === activeStepIndex
+                                    ? 'bg-primary/5 border-primary shadow-lg shadow-primary/10 scale-100 ring-1 ring-primary/20'
+                                    : 'bg-slate-800 border-white/5 hover:bg-slate-700 hover:border-white/20 opacity-80 hover:opacity-100'
+                                    }`}
+                                onClick={() => setActiveStepIndex(index)}
+                            >
+                                <div className="flex items-start gap-5">
+                                    <div className={`p-3 rounded-xl shrink-0 ${index === activeStepIndex
+                                        ? 'bg-primary text-white'
+                                        : 'bg-slate-900/50 text-slate-400'
+                                        }`}>
+                                        <step.icon size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className={`text-xl font-bold mb-2 ${index === activeStepIndex ? 'text-white' : 'text-slate-200'
+                                            }`}>
+                                            {step.title}
+                                        </h3>
+                                        <p className="text-slate-400 font-medium leading-relaxed">
+                                            {step.description}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Progress Bar for Active Step */}
+                                {index === activeStepIndex && (
+                                    <motion.div
+                                        className="absolute bottom-0 left-0 h-1 bg-primary rounded-b-2xl"
+                                        initial={{ width: "0%" }}
+                                        animate={{ width: "100%" }}
+                                        transition={{ duration: 4, ease: "linear" }}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Right: Mock UI Display - Stretches to match Left Column Height */}
+                    <div className="relative w-full bg-slate-800 rounded-[32px] border border-white/10 shadow-2xl overflow-hidden flex items-center justify-center p-8 lg:p-12 ring-1 ring-white/5 mx-auto max-w-[500px] lg:max-w-full lg:h-auto min-h-[400px]">
+                        {/* Abstract Background Decoration */}
+                        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-slate-800 to-slate-900/50" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[250px] h-[250px] bg-primary/5 blur-[80px] rounded-full" />
+
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={`${activeRole.id}-${activeStepIndex}`}
+                                initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                                animate={{ opacity: 1, y: 0, scale: 1 }}
+                                exit={{ opacity: 0, y: -10, scale: 1.02 }}
+                                transition={{ duration: 0.3 }}
+                                className="relative w-full max-w-sm"
+                            >
+                                <MockUI type={activeRole.steps[activeStepIndex].mockType} />
+                            </motion.div>
+                        </AnimatePresence>
+                    </div>
+
+                </div>
+            </div>
         </section>
     );
 }
