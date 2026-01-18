@@ -255,20 +255,108 @@ function MockUI({ type }: { type: TutorialStep['mockType'] }) {
             );
         case 'PORTFOLIO':
             return (
-                <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 shadow-2xl border border-slate-200 dark:border-slate-700">
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-3">
-                            <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-2xl">📸</div>
-                            <div className="text-[10px] font-bold text-slate-600 dark:text-slate-400">2026 코딩 캠프</div>
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-[340px] mx-auto">
+                    {/* Header */}
+                    <div className="flex justify-between items-center mb-4">
+                        <div className="text-sm font-bold text-slate-800 dark:text-white">성과 대시보드</div>
+                        <div className="text-[10px] bg-green-100 text-green-600 px-2 py-0.5 rounded-full font-bold">인기 업체 🔥</div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex gap-2 mb-4">
+                        <div className="flex-1 bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl text-center">
+                            <div className="text-[10px] text-slate-400 mb-1">총 참여 학생</div>
+                            <div className="text-lg font-bold text-slate-800 dark:text-white">1,234<span className="text-xs text-slate-400 font-normal">명</span></div>
                         </div>
-                        <div className="space-y-3 mt-8">
-                            <div className="aspect-square bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center text-2xl">🎥</div>
-                            <div className="text-[10px] font-bold text-slate-600 dark:text-slate-400">방과후 학교 홍보</div>
+                        <div className="flex-1 bg-slate-50 dark:bg-slate-800 p-3 rounded-2xl text-center">
+                            <div className="text-[10px] text-slate-400 mb-1">평균 만족도</div>
+                            <div className="text-lg font-bold text-slate-800 dark:text-white">4.9<span className="text-xs text-slate-400 font-normal">/5</span></div>
                         </div>
                     </div>
-                    <div className="mt-4 p-3 bg-slate-50 rounded-xl flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white shadow-sm flex items-center justify-center text-xs">📊</div>
-                        <div className="text-xs text-slate-500">지난달 조회수 <span className="font-bold text-primary">1,234</span></div>
+
+                    {/* Gallery / Project Grid */}
+                    <div className="space-y-3">
+                        <div className="relative group overflow-hidden rounded-2xl">
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                            <div className="h-24 bg-gradient-to-br from-indigo-500 to-purple-500"></div>
+                            <div className="absolute bottom-3 left-3 z-20">
+                                <div className="text-xs font-bold text-white mb-0.5">2025 AI 코딩 캠프</div>
+                                <div className="text-[10px] text-white/80">서울 강남구 • 참여 50명</div>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                            <div className="relative group overflow-hidden rounded-2xl">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                                <div className="h-20 bg-gradient-to-br from-blue-400 to-teal-400"></div>
+                                <div className="absolute bottom-2 left-2 z-20">
+                                    <div className="text-[10px] font-bold text-white">진로 체험</div>
+                                </div>
+                            </div>
+                            <div className="relative group overflow-hidden rounded-2xl">
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
+                                <div className="h-20 bg-gradient-to-br from-orange-400 to-red-400"></div>
+                                <div className="absolute bottom-2 left-2 z-20">
+                                    <div className="text-[10px] font-bold text-white">과학 축제</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        case 'TEACHER_REVIEWS':
+            return (
+                <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-[340px] mx-auto relative overflow-hidden">
+                    {/* Background decoration */}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-400/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2"></div>
+
+                    <div className="flex items-center gap-4 mb-6 relative z-10">
+                        <div className="w-16 h-16 rounded-full bg-slate-200 border-2 border-white dark:border-slate-800 shadow-md flex items-center justify-center text-3xl">👩‍🏫</div>
+                        <div>
+                            <div className="text-lg font-bold text-slate-800 dark:text-white">홍길동 선생님</div>
+                            <div className="flex items-center gap-1 text-yellow-500">
+                                <Star size={14} fill="currentColor" />
+                                <Star size={14} fill="currentColor" />
+                                <Star size={14} fill="currentColor" />
+                                <Star size={14} fill="currentColor" />
+                                <Star size={14} fill="currentColor" />
+                                <span className="text-slate-800 dark:text-white font-bold ml-1 text-sm">4.9</span>
+                                <span className="text-slate-400 text-xs">(32개 후기)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-3 mb-6 relative z-10">
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl rounded-tl-none border border-slate-100 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] font-bold text-slate-800 dark:text-white">에듀핀 학교</span>
+                                <div className="flex gap-0.5">
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-snug">"수업 준비가 정말 철저하시고 아이들이 선생님을 너무 좋아해요! 다음 학기에도 꼭 함께하고 싶습니다."</p>
+                        </div>
+                        <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl rounded-tl-none border border-slate-100 dark:border-slate-700">
+                            <div className="flex items-center gap-2 mb-1">
+                                <span className="text-[10px] font-bold text-slate-800 dark:text-white">서울 미래초</span>
+                                <div className="flex gap-0.5">
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                    <Star size={8} className="text-yellow-400" fill="currentColor" />
+                                </div>
+                            </div>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-snug">"행정 업무 처리가 빠르시고 소통이 원활해서 믿고 맡길 수 있었습니다."</p>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800 relative z-10">
+                        <div className="text-xs font-medium text-slate-500">재계약 희망률</div>
+                        <div className="text-sm font-bold text-blue-500">100% 달성 🏆</div>
                     </div>
                 </div>
             );

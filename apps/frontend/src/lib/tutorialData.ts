@@ -6,7 +6,7 @@ export type TutorialStep = {
     title: string;
     description: string;
     icon: LucideIcon;
-    mockType: 'JOB_POST' | 'PROFILE_CARD' | 'MATCH_SUCCESS' | 'CERTIFICATION' | 'PORTFOLIO' | 'BID_NOTICE' | 'PARTNERSHIP';
+    mockType: 'JOB_POST' | 'PROFILE_CARD' | 'MATCH_SUCCESS' | 'CERTIFICATION' | 'PORTFOLIO' | 'BID_NOTICE' | 'PARTNERSHIP' | 'TEACHER_REVIEWS';
 };
 
 export type TutorialRole = {
@@ -69,7 +69,7 @@ export const TUTORIAL_DATA: TutorialRole[] = [
                 title: '경력 성장',
                 description: '활동 후 쌓이는 실제 학교의 후기로 퍼스널 브랜딩을 강화하세요.',
                 icon: Star,
-                mockType: 'PROFILE_CARD'
+                mockType: 'TEACHER_REVIEWS'
             }
         ]
     },
