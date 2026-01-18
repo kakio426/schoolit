@@ -1,76 +1,44 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Delete,
-  Body,
-  Query,
-  UseGuards,
-  BadRequestException,
-} from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { RagService, RagResponse, SearchResult } from './rag.service';
-import { AskQuestionDto } from './dto/ask-question.dto';
-import { IngestTextDto } from './dto/ingest-text.dto'; // Import Added
+import { Controller, Post, Body, Logger, InternalServerErrorException, Get, Delete } from '@nestjs/common';
+import { RagService } from './rag.service';
+import { IngestTextDto } from './dto/ingest-text.dto';
 
 @Controller('rag')
-@UseGuards(AuthGuard('jwt'))
 export class RagController {
+  private readonly logger = new Logger(RagController.name);
+
   constructor(private readonly ragService: RagService) { }
 
-  /**
-   * Ingest extracted text for RAG (Client-side parsing)
-   * POST /api/rag/upload
-   */
   @Post('upload')
-  async uploadDocument(
-    @Body() dto: IngestTextDto,
-  ): Promise<{ message: string; chunksCreated: number }> {
-    const chunksCreated = await this.ragService.ingestDocument(dto);
+  async uploadDocument(@Body() dto: IngestTextDto) {
+    // 텍스트 내용 검증
+    if (!dto.content || dto.content.trim().length === 0) {
+      throw new InternalServerErrorException('문서 내용이 비어있습니다.');
+    }
+
+    this.logger.log(`[RAG] Text received. Length: ${dto.content.length}`);
+
+    const storedCount = await this.ragService.ingestDocument(dto);
+
     return {
-      message: `문서 '${dto.filename}'이(가) 성공적으로 처리되었습니다.`,
-      chunksCreated,
+      success: true,
+      chunks: storedCount,
+      message: `성공적으로 ${storedCount}개의 지식 조각이 저장되었습니다.`
     };
   }
 
-  /**
-   * Ask a question using RAG
-   * POST /api/rag/ask
-   */
   @Post('ask')
-  async askQuestion(@Body() dto: AskQuestionDto): Promise<RagResponse> {
-    return this.ragService.askQuestion(dto.question);
+  async askQuestion(@Body() body: { question: string }) {
+    return this.ragService.askQuestion(body.question);
   }
 
-  /**
-   * Search similar documents
-   * GET /api/rag/search?q=query&limit=3
-   */
-  @Get('search')
-  async searchDocuments(
-    @Query('q') query: string,
-    @Query('limit') limit?: string,
-  ): Promise<{ results: SearchResult[] }> {
-    const topK = limit ? parseInt(limit, 10) : 3;
-    const results = await this.ragService.searchSimilar(query, topK);
-    return { results };
-  }
-
-  /**
-   * Get document statistics
-   * GET /api/rag/stats
-   */
+  // 기존 유용한 엔드포인트 유지
   @Get('stats')
-  async getStats(): Promise<{ totalChunks: number; sources: string[] }> {
+  async getStats() {
     return this.ragService.getStats();
   }
 
-  /**
-   * Clear all documents (admin only - add role guard if needed)
-   * DELETE /api/rag/documents
-   */
   @Delete('documents')
-  async clearDocuments(): Promise<{ message: string }> {
+  async clearDocuments() {
     await this.ragService.clearDocuments();
     return { message: '모든 문서가 삭제되었습니다.' };
   }
