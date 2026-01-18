@@ -70,12 +70,12 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          {/* Service Benefits (비율 조정: 사이즈 축소 및 정렬) */}
-          <div className="pt-12 grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 border-t border-white/5 mt-12 max-w-3xl mx-auto">
-            <BenefitItem icon={<School className="w-4 h-4 text-blue-400" />} title="AI 맞춤 매칭" description="학교 조건에 맞는 인재 추천" />
-            <BenefitItem icon={<ShieldCheck className="w-4 h-4 text-emerald-400" />} title="자격 검증" description="자격증/경력 자동 확인" />
-            <BenefitItem icon={<CheckCircle2 className="w-4 h-4 text-purple-400" />} title="서류 자동화" description="계약서/채용문서 생성" />
-            <BenefitItem icon={<Bot className="w-4 h-4 text-amber-400" />} title="24시간 AI 지원" description="행정 문의 즉시 답변" />
+          {/* Service Benefits (비율 조정: 가시성 확보를 위해 사이즈 확대) */}
+          <div className="pt-16 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 border-t border-white/5 mt-16 max-w-5xl mx-auto">
+            <BenefitItem icon={<School className="w-8 h-8 text-blue-400" />} title="AI 맞춤 매칭" description="학교 조건에 맞는 인재 추천" />
+            <BenefitItem icon={<ShieldCheck className="w-8 h-8 text-emerald-400" />} title="자격 검증" description="자격증/경력 자동 확인" />
+            <BenefitItem icon={<CheckCircle2 className="w-8 h-8 text-purple-400" />} title="서류 자동화" description="계약서/채용문서 생성" />
+            <BenefitItem icon={<Bot className="w-8 h-8 text-amber-400" />} title="24시간 AI 지원" description="행정 문의 즉시 답변" />
           </div>
         </div>
       </section>
@@ -152,12 +152,12 @@ export default function LandingPage() {
 
 function BenefitItem({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
   return (
-    <div className="flex flex-col items-center justify-center space-y-1.5 group cursor-default text-center">
-      <div className="p-2.5 bg-slate-900 rounded-xl border border-white/5 group-hover:border-blue-500/30 transition-colors mb-1">
+    <div className="flex flex-col items-center justify-center space-y-4 group cursor-default text-center">
+      <div className="p-4 bg-slate-900 rounded-3xl border border-white/5 group-hover:border-blue-500/30 transition-colors mb-2 shadow-lg">
         {icon}
       </div>
-      <span className="text-lg font-bold text-white">{title}</span>
-      <span className="text-xs text-slate-500 font-medium">{description}</span>
+      <span className="text-xl font-bold text-white tracking-tight">{title}</span>
+      <span className="text-sm text-slate-400 font-medium leading-relaxed">{description}</span>
     </div>
   );
 }
