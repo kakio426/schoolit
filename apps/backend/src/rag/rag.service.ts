@@ -69,10 +69,10 @@ export class RagService implements OnModuleInit {
 
     if (!chunks || chunks.length === 0) {
       this.logger.warn(`[RAG] Chunking failed or returned empty result for ${dto.filename}`);
-      throw new InternalServerErrorException('텍스트를 처리하는 도중 문제가 발생했습니다. (Chunking Failed)');
+      throw new InternalServerErrorException('텍스트 처리 실패 (Chunking Failed)');
     }
 
-    this.logger.log(`[RAG] Created ${chunks.length} chunks. Using BATCH_SIZE=${this.BATCH_SIZE}`);
+    this.logger.log(`[RAG] Created ${chunks.length} chunks. Processing...`);
 
     let storedCount = 0;
     const totalBatches = Math.ceil(chunks.length / this.BATCH_SIZE);
@@ -87,37 +87,45 @@ export class RagService implements OnModuleInit {
       const batchResults = await Promise.all(
         batch.map(async (chunk, idx) => {
           try {
+            // 1. 임베딩 생성 시도
             const embedding = await this.embeddingService.generateEmbedding(chunk.content);
 
-            // [수정 2] 핵심 수정: 벡터와 메타데이터를 명시적 문자열로 변환하여 주입
+            // 2. 데이터 포맷팅
             const vectorString = `[${embedding.join(',')}]`;
-            const metadataString = JSON.stringify(chunk.metadata);
 
-            // Prisma Raw Query 사용 시 타입 캐스팅(::vector, ::jsonb) 명시
-            await this.prisma.$executeRaw`
-              INSERT INTO document_sections (content, metadata, embedding, created_at, updated_at)
+            // 작은 따옴표 이스케이프 처리 (SQL Injection 방지 및 문법 오류 방지)
+            const safeContent = chunk.content.replace(/'/g, "''");
+            const safeMetadata = JSON.stringify(chunk.metadata).replace(/'/g, "''");
+
+            // 3. Raw Query 실행 (Unsafe 사용으로 벡터 변환 오류 원천 차단)
+            await this.prisma.$executeRawUnsafe(`
+              INSERT INTO "document_sections" ("content", "metadata", "embedding", "created_at", "updated_at")
               VALUES (
-                ${chunk.content},
-                ${metadataString}::jsonb,
-                ${vectorString}::vector, 
+                '${safeContent}',
+                '${safeMetadata}'::jsonb,
+                '${vectorString}'::vector,
                 NOW(),
                 NOW()
               )
-            `;
+            `);
             return true;
           } catch (error) {
-            this.logger.error(`[RAG] Error in Chunk ${start + idx}:`, error?.message || error);
-            // 에러가 나도 전체 프로세스를 멈추지 않고 진행
+            // 에러 로그를 상세하게 찍어서 Railway 로그에서 확인 가능하게 함
+            this.logger.error(`[RAG] Failed at Chunk ${start + idx}. Cause: ${error.message}`);
+            if (error instanceof Error) {
+              this.logger.error(error.stack);
+            }
             return false;
           }
         }),
       );
 
       storedCount += batchResults.filter((r) => r).length;
-      await new Promise((resolve) => setTimeout(resolve, 50)); // 부하 조절
+      // API Rate Limit 방지를 위한 지연
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
-    this.logger.log(`[RAG] Ingest Complete. Stored ${storedCount}/${chunks.length} chunks.`);
+    this.logger.log(`[RAG] Ingest Complete. Stored ${storedCount}/${chunks.length}`);
     return storedCount;
   }
 
