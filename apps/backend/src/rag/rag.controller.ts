@@ -1,10 +1,11 @@
-import { Controller, Post, Get, Delete, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, Param, UseGuards, Request } from '@nestjs/common';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { AuthGuard } from '@nestjs/passport';
 import { RagService } from './rag.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
 
 @Controller('rag')
-@UseGuards(ThrottlerGuard) // Rate Limiting: 1분당 10회 제한 (AppModule에서 설정)
+@UseGuards(ThrottlerGuard, AuthGuard('jwt')) // Rate Limiting & Authentication
 export class RagController {
   constructor(private readonly ragService: RagService) {}
 
@@ -23,8 +24,9 @@ export class RagController {
   }
 
   @Post('ask')
-  async askQuestion(@Body() body: { question: string }) {
-    return this.ragService.askQuestion(body.question);
+  async askQuestion(@Request() req, @Body() body: { question: string }) {
+    // req.user.role을 통해 유저의 역할 정보를 서비스로 전달
+    return this.ragService.askQuestion(body.question, req.user?.role);
   }
 
   @Get('sections')
