@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { HealthModule } from './health/health.module';
 // ...
 import { AuthModule } from './auth/auth.module';
@@ -32,6 +33,12 @@ import { RagModule } from './rag/rag.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1분 (밀리초)
+        limit: 10, // 10회 제한
+      },
+    ]),
     PrismaModule,
     HealthModule,
     UsersModule,

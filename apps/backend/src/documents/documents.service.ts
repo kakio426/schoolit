@@ -41,7 +41,6 @@ export class DocumentsService {
   private genAI: GoogleGenerativeAI | null = null;
   private model: any = null; // @google/generative-ai does not expose a clear Model type easily without extra steps
 
-
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {

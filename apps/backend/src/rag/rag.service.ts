@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PrismaService } from '../prisma.service';
 import { IngestTextDto } from './dto/ingest-text.dto';
+import * as crypto from 'crypto';
 
 // 재시도(Retry) 헬퍼 함수: 429 에러 발생 시 잠시 후 다시 시도함
 async function withRetry<T>(fn: () => Promise<T>, retries = 3, delay = 2000): Promise<T> {
@@ -63,6 +64,17 @@ export class RagService implements OnModuleInit {
     const { content, filename, metadata } = dto;
     this.logger.log(`[RAG] Processing text: ${filename} (${content.length} chars)`);
 
+    // 중복 방지: 파일 내용의 해시 생성 및 중복 확인
+    const contentHash = this.generateContentHash(content);
+    const existing = await this.checkExistingHash(contentHash);
+
+    if (existing) {
+      this.logger.log(
+        `[RAG] 중복 문서 감지! (hash: ${contentHash.substring(0, 8)}...) API 호출을 건너뜁니다.`,
+      );
+      return 0; // API 호출 없이 즉시 반환
+    }
+
     const chunks = content.match(/.{1,1000}/g) || [content]; // 1000자로 늘림 (API 호출 횟수 절약)
     this.logger.log(`[RAG] Split into ${chunks.length} chunks`);
 
@@ -73,7 +85,7 @@ export class RagService implements OnModuleInit {
         const chunkText = chunks[i];
 
         // 임베딩 생성 (재시도 로직 적용)
-        const result = await withRetry(() => this.embeddingModel.embedContent(chunkText)) as any;
+        const result = (await withRetry(() => this.embeddingModel.embedContent(chunkText))) as any;
 
         const embedding = result.embedding.values;
         const vectorString = `[${embedding.join(',')}]`;
@@ -82,7 +94,8 @@ export class RagService implements OnModuleInit {
         const safeMeta = JSON.stringify({
           ...metadata,
           chunkIndex: i,
-          source: 'manual_text',
+          source: filename || 'manual_text',
+          fileHash: contentHash, // 해시 저장
         }).replace(/'/g, "''");
 
         await this.prisma.$executeRawUnsafe(`
@@ -99,9 +112,23 @@ export class RagService implements OnModuleInit {
     return successCount;
   }
 
+  // MD5 해시 생성 (32자)
+  private generateContentHash(content: string): string {
+    return crypto.createHash('md5').update(content).digest('hex');
+  }
+
+  // DB에서 해시 존재 여부 확인
+  private async checkExistingHash(hash: string): Promise<boolean> {
+    const result = await this.prisma.$queryRawUnsafe<any[]>(
+      `SELECT id FROM document_sections WHERE metadata->>'fileHash' = $1 LIMIT 1`,
+      hash,
+    );
+    return result.length > 0;
+  }
+
   async searchSimilar(query: string, topK = 4): Promise<SearchResult[]> {
     // 검색어 임베딩도 재시도 로직 적용
-    const result = await withRetry(() => this.embeddingModel.embedContent(query)) as any;
+    const result = (await withRetry(() => this.embeddingModel.embedContent(query))) as any;
     const vectorString = `[${result.embedding.values.join(',')}]`;
 
     return this.prisma.$queryRaw<SearchResult[]>`
