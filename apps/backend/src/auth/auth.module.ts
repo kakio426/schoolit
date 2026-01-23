@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UsersModule } from '../users/users.module';
@@ -10,9 +11,11 @@ import { KakaoStrategy } from './strategies/kakao.strategy';
 import { NaverStrategy } from './strategies/naver.strategy';
 import { EmailService } from '../email/email.service';
 import { SmsModule } from '../sms/sms.module';
+import { SSOGuard } from './guards/sso.guard';
 
 @Module({
   imports: [
+    ConfigModule,
     UsersModule,
     PassportModule,
     SmsModule,
@@ -21,8 +24,8 @@ import { SmsModule } from '../sms/sms.module';
       signOptions: { expiresIn: '60m' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy, EmailService],
+  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy, EmailService, SSOGuard],
   controllers: [AuthController],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule, SSOGuard],
 })
 export class AuthModule {}

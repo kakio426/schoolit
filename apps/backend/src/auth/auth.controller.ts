@@ -16,6 +16,7 @@ import { Response } from 'express';
 import { AuthService } from './auth.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateUserDto } from '../users/dtos/create-user.dto';
+import { SSOGuard } from './guards/sso.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -61,6 +62,21 @@ export class AuthController {
     const { accessToken } = await this.authService.login(req.user);
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
     return res.redirect(`${frontendUrl}/auth/callback?token=${accessToken}`);
+  }
+
+  // --- SSO (eduitit) ---
+  @Get('sso')
+  @UseGuards(SSOGuard)
+  async ssoCallback(@Request() req) {
+    const { sso_token } = req.query;
+    
+    if (!req.user) {
+      throw new BadRequestException('Invalid SSO token');
+    }
+
+    // SSO 토큰의 사용자 정보를 기반으로 유저 찾기 또는 생성
+    const user = await this.authService.findOrCreateSSOUser(req.user);
+    return this.authService.login(user);
   }
 
   @Get('test-login')

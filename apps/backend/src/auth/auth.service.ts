@@ -146,4 +146,24 @@ export class AuthService {
   async getUserById(userId: number) {
     return this.userService.findById(userId);
   }
+
+  async findOrCreateSSOUser(ssoPayload: any) {
+    // SSO 토큰 페이로드에서 사용자 정보 추출
+    const { username, email, sub, role, name } = ssoPayload;
+
+    // 기존 사용자 찾기
+    let user = await this.userService.findOne(email || username);
+
+    if (!user) {
+      // 새 사용자 생성
+      user = await this.userService.create({
+        email: email || username,
+        name: name || username,
+        role: role || 'APPLICANT', // 기본값
+        password: '', // SSO 사용자는 비밀번호 없음
+      });
+    }
+
+    return user;
+  }
 }
