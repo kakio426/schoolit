@@ -4,9 +4,19 @@ import { useSSO } from '@/hooks/useSSO';
 import { useEffect, useState } from 'react';
 
 /**
- * SSO 콜백 페이지
+ * SSO 콜백 페이지 (schoolit.shop)
  * eduitit에서 sso_token과 함께 리다이렉트된 페이지
- * URL: schoolit.com/auth/sso?sso_token=...
+ * URL: https://schoolit.shop/auth/sso?sso_token=...
+ * 
+ * 처리 흐름:
+ * 1. useSSO 훅이 URL에서 sso_token 추출
+ * 2. 백엔드 /auth/sso 엔드포인트로 토큰 검증 요청
+ * 3. 검증 성공 시 accessToken과 역할 정보 반환
+ * 4. 역할(role)에 따라 자동으로 해당 대시보드로 리다이렉트
+ *    - SCHOOL → /school/dashboard
+ *    - INSTRUCTOR → /instructor/jobs
+ *    - COMPANY → /company/events
+ *    - APPLICANT → /applicant/dashboard
  */
 export default function SSOCallbackPage() {
   const [isLoading, setIsLoading] = useState(true);
@@ -16,11 +26,11 @@ export default function SSOCallbackPage() {
   useSSO();
 
   useEffect(() => {
-    // 로딩 상태 업데이트 (3초 후 에러 표시)
+    // 로딩 상태 업데이트 (5초 후 타임아웃 에러 표시)
     const timer = setTimeout(() => {
       setIsLoading(false);
       setError('인증 처리 중에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
-    }, 3000);
+    }, 5000);
 
     return () => clearTimeout(timer);
   }, []);
@@ -34,10 +44,13 @@ export default function SSOCallbackPage() {
               <div className="w-12 h-12 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
             </div>
             <h1 className="text-2xl font-bold text-gray-800 mb-2">
-              인증 처리 중입니다
+              schoolit 인증 중...
             </h1>
             <p className="text-gray-600">
-              잠시만 기다려주세요...
+              eduitit에서 전달된 토큰을 검증하고 있습니다.
+            </p>
+            <p className="text-sm text-gray-500 mt-4">
+              역할에 맞는 대시보드로 자동 이동합니다.
             </p>
           </>
         ) : (
@@ -49,12 +62,20 @@ export default function SSOCallbackPage() {
             <p className="text-gray-600 mb-6">
               {error}
             </p>
-            <a
-              href="/auth/login"
-              className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
-            >
-              로그인 페이지로 이동
-            </a>
+            <div className="space-x-4">
+              <a
+                href="/auth/login"
+                className="inline-block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+              >
+                로그인 페이지로
+              </a>
+              <a
+                href="/"
+                className="inline-block px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition"
+              >
+                홈으로
+              </a>
+            </div>
           </>
         )}
       </div>

@@ -148,20 +148,35 @@ export class AuthService {
   }
 
   async findOrCreateSSOUser(ssoPayload: any) {
-    // SSO 토큰 페이로드에서 사용자 정보 추출
-    const { username, email, sub, role, name } = ssoPayload;
+    // Eduitit SSO 토큰 페이로드에서 필드 추출
+    // 필수 필드: sub, username, email, name, role
+    const { sub, username, email, name, role } = ssoPayload;
 
-    // 기존 사용자 찾기
-    let user = await this.userService.findOne(email || username);
+    // email 또는 username으로 기존 사용자 조회
+    const searchIdentifier = email || username;
+    if (!searchIdentifier) {
+      throw new Error('Email or username must be provided in SSO payload');
+    }
+
+    let user = await this.userService.findOne(searchIdentifier);
 
     if (!user) {
       // 새 사용자 생성
-      user = await this.userService.create({
+      // email은 필수, name이 없으면 username 사용
+      const createUserDto = {
         email: email || username,
-        name: name || username,
-        role: role || 'APPLICANT', // 기본값
+        name: name || username || `User_${sub}`,
+        role: (role as any) || 'APPLICANT', // SCHOOL, INSTRUCTOR, COMPANY, APPLICANT 등
         password: '', // SSO 사용자는 비밀번호 없음
-      });
+      };
+
+      user = await this.userService.create(createUserDto);
+    } else {
+      // 기존 사용자의 역할이 SSO 토큰의 역할과 다르면 업데이트
+      if (role && user.role !== role) {
+        // Prisma를 사용하여 직접 User 업데이트
+        user = await this.userService.updateUserRole(user.id, role as any);
+      }
     }
 
     return user;

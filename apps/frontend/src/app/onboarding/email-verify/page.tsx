@@ -21,12 +21,13 @@ export default function EmailVerificationPage() {
         e.preventDefault();
 
         // Client-side validation for official domains
-        const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
-        const domain = email.split('@')[1];
-        const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
+        // Regex for official domains (korea.kr, go.kr, sen.go.kr, .hs.kr, .ms.kr, .es.kr, .ac.kr)
+        const officialDomainRegex = /@([a-zA-Z0-9-]+\.)*(korea\.kr|go\.kr|hs\.kr|ms\.kr|es\.kr|ac\.kr|kg\.kr|sen\.go\.kr)$/i;
+
+        const isAllowed = officialDomainRegex.test(email);
 
         if (!isAllowed) {
-            setError('공직자 통합 메일(@korea.kr, @go.kr)만 사용 가능합니다.');
+            setError('공직자/기관/학교 공식 이메일(@korea.kr, @go.kr, @hs.kr 등)만 사용 가능합니다.');
             return;
         }
 

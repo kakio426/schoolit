@@ -126,6 +126,18 @@ export class UserService {
     });
   }
 
+  /**
+   * SSO 로그인 시 사용자의 역할(role)을 업데이트
+   * @param userId 사용자 ID
+   * @param role 새로운 역할 (SCHOOL, INSTRUCTOR, COMPANY, APPLICANT 등)
+   */
+  async updateUserRole(userId: number, role: Role) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { role },
+    });
+  }
+
   // --- [Optimization] DB Aggregation for Stats ---
   async getProfileWithStats(userId: number, viewerId?: number) {
     const user = await this.prisma.user.findUnique({

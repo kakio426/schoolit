@@ -147,6 +147,20 @@ function SignupOnboardingContent() {
                         />
                     </div>
 
+                    {/* Company Name (Business Only) */}
+                    {role === 'BUSINESS' && (
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground ml-1">업체명 (Company Name)</label>
+                            <input
+                                type="text"
+                                value={formData.companyName}
+                                onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+                                className="w-full h-14 px-5 rounded-2xl bg-input-bg border border-input-border text-foreground placeholder:text-foreground-muted/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                                placeholder="사업자등록증 상의 업체명을 입력하세요"
+                            />
+                        </div>
+                    )}
+
                     {/* Email (Readonly) */}
                     <div className="space-y-2">
                         <label className="text-sm font-semibold text-foreground ml-1">이메일</label>

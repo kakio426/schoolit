@@ -24,7 +24,15 @@ import { SSOGuard } from './guards/sso.guard';
       signOptions: { expiresIn: '60m' },
     }),
   ],
-  providers: [AuthService, LocalStrategy, JwtStrategy, KakaoStrategy, NaverStrategy, EmailService, SSOGuard],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    KakaoStrategy,
+    NaverStrategy,
+    EmailService,
+    SSOGuard,
+  ],
   controllers: [AuthController],
   exports: [AuthService, JwtModule, SSOGuard],
 })

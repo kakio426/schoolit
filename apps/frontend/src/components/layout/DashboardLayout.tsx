@@ -13,6 +13,7 @@ import BottomNav from './BottomNav';
 import { useNavItems } from '@/hooks/useNavItems';
 import FloatingRobotButton from '../chat/FloatingRobotButton';
 import IntegratedChatModal from '../chat/IntegratedChatModal';
+import ProfileQuestWidget from '../dashboard/ProfileQuestWidget';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
     const { user, isLoading, logout, refreshProfile } = useAuth();
@@ -88,6 +89,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     );
                 })}
             </nav>
+            <div className="px-4 pb-2">
+                <ProfileQuestWidget />
+            </div>
             <div className="p-4 border-t border-slate-200 dark:border-white/[0.05]">
                 <button
                     onClick={logout}

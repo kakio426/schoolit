@@ -180,21 +180,22 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
                             <div key={job.id}>
                                 {/* Mobile View */}
                                 <div className="md:hidden">
-                                    <Link href={`/dashboard/jobs/${job.id}`}>
+                                    <Link href={job.isAggregated && job.externalSourceUrl ? job.externalSourceUrl : `/dashboard/jobs/${job.id}`} target={job.isAggregated ? "_blank" : "_self"}>
                                         <MobileCard
                                             title={job.title}
-                                            subtitle={job.schoolProfile?.schoolName || '정보 없음'}
+                                            subtitle={job.schoolProfile?.schoolName || (job.isAggregated ? '외부 수집' : '정보 없음')}
                                             description={`${job.regions?.[0] || '전국'} · ${job.subjects?.join(', ') || '전과목'} · 마감일: ${new Date(job.createdAt).toLocaleDateString()}`}
-                                            badge={(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
-                                            badgeColor={(job as any).jobType === 'EVENT_VENDOR' ? 'yellow' : 'blue'}
-                                            onClick={() => { }} // Link wrapper handles click, but prop needed for styling
+                                            badge={job.isAggregated ? '외부공고' : ((job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용')}
+                                            badgeColor={job.isAggregated ? 'gray' : ((job as any).jobType === 'EVENT_VENDOR' ? 'yellow' : 'blue')}
+                                            onClick={() => { }}
                                         />
                                     </Link>
                                 </div>
 
                                 {/* Desktop View */}
                                 <Link
-                                    href={`/dashboard/jobs/${job.id}`}
+                                    href={job.isAggregated && job.externalSourceUrl ? job.externalSourceUrl : `/dashboard/jobs/${job.id}`}
+                                    target={job.isAggregated ? "_blank" : "_self"}
                                     className="hidden md:block group bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-600/50 hover:shadow-md rounded-xl transition-all overflow-hidden"
                                 >
                                     <div className="flex flex-col md:flex-row">
@@ -202,14 +203,16 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
                                         <div className="flex-1 p-5">
                                             {/* Tags Row */}
                                             <div className="flex items-center gap-2 mb-3">
-                                                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${(job as any).jobType === 'EVENT_VENDOR'
-                                                    ? 'bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30'
-                                                    : 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30'
+                                                <span className={`px-2 py-0.5 text-[10px] font-semibold rounded ${job.isAggregated
+                                                    ? 'bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30'
+                                                    : ((job as any).jobType === 'EVENT_VENDOR'
+                                                        ? 'bg-violet-500/20 text-violet-600 dark:text-violet-400 border border-violet-500/30'
+                                                        : 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/30')
                                                     }`}>
-                                                    {(job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용'}
+                                                    {job.isAggregated ? '외부공고' : ((job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용')}
                                                 </span>
                                                 <span className="text-slate-500 text-xs">
-                                                    {job.schoolProfile?.schoolName || '정보 없음'}
+                                                    {job.schoolProfile?.schoolName || (job.isAggregated ? '외부 수집' : '정보 없음')}
                                                 </span>
                                             </div>
 

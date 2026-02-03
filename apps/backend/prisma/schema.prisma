@@ -188,6 +188,13 @@ model JobListing {
   applications      JobApplication[]
   internalChecklist Json?            @map("internal_checklist") // { planningCompleted: boolean, announcementPosted: boolean, etc. }
 
+  // Aggregation fields
+  externalSourceUrl String?  @map("external_source_url")
+  externalId        String?  @map("external_id")
+  isAggregated      Boolean  @default(false) @map("is_aggregated")
+  isDeleted         Boolean  @default(false) @map("is_deleted")
+  fingerprint       String?  @unique
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

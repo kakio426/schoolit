@@ -67,7 +67,7 @@ describe('RagService (Baseline Test)', () => {
     jest.clearAllMocks();
   });
 
-  it('should be defined and configured with gemini-3-flash-preview', () => {
+  it('should be defined and configured with gemini-2.5-flash-lite', () => {
     expect(service).toBeDefined();
   });
 

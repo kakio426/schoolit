@@ -50,7 +50,7 @@ describe('RagService (Client-Side Parsing Flow Verification)', () => {
     prismaService = module.get<PrismaService>(PrismaService) as any;
   });
 
-  it('should accept text content from client and store in vector DB (gemini-3-flash compatible)', async () => {
+  it('should accept text content from client and store in vector DB (gemini-2.5-flash compatible)', async () => {
     const dto = {
       content: 'Extracted text content from modern frontend parser',
       filename: 'modern-test.pdf',

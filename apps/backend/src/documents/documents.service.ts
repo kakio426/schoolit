@@ -45,7 +45,7 @@ export class DocumentsService {
     const apiKey = process.env.GEMINI_API_KEY;
     if (apiKey) {
       this.genAI = new GoogleGenerativeAI(apiKey);
-      this.model = this.genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+      this.model = this.genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     }
   }
 

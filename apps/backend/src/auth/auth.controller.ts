@@ -68,15 +68,31 @@ export class AuthController {
   @Get('sso')
   @UseGuards(SSOGuard)
   async ssoCallback(@Request() req) {
-    const { sso_token } = req.query;
-    
     if (!req.user) {
       throw new BadRequestException('Invalid SSO token');
     }
 
-    // SSO 토큰의 사용자 정보를 기반으로 유저 찾기 또는 생성
+    // SSO 토큰의 사용자 정보(sub, username, email, name, role)를 바탕으로 유저 찾기 또는 생성
     const user = await this.authService.findOrCreateSSOUser(req.user);
-    return this.authService.login(user);
+
+    // 유저 인증 토큰 발급
+    const { accessToken } = await this.authService.login(user);
+
+    // 역할에 따른 리다이렉트 경로 결정
+    const roleRedirectMap: Record<string, string> = {
+      SCHOOL: '/school/dashboard',
+      INSTRUCTOR: '/instructor/jobs',
+      COMPANY: '/company/events',
+      APPLICANT: '/applicant/dashboard',
+      ADMIN: '/admin/dashboard',
+    };
+
+    const schoolitDomain = process.env.SCHOOLIT_DOMAIN || 'schoolit.shop';
+    const redirectPath = roleRedirectMap[user.role] || '/dashboard';
+    const redirectUrl = `https://${schoolitDomain}${redirectPath}?token=${accessToken}`;
+
+    // 프론트엔드로 리다이렉트 (토큰 포함)
+    return { accessToken, redirectUrl, role: user.role };
   }
 
   @Get('test-login')
@@ -111,14 +127,18 @@ export class AuthController {
   async requestEmailVerification(@Request() req, @Body('email') email: string) {
     if (!email) throw new BadRequestException('Email is required');
 
-    // Simple domain check for prototype
-    const allowedDomains = ['korea.kr', 'go.kr', 'sen.go.kr'];
-    const domain = email.split('@')[1];
-    const isAllowed = allowedDomains.some((d) => domain?.endsWith(d));
+    // Regex for official domains (korea.kr, go.kr, sen.go.kr, .hs.kr, .ms.kr, .es.kr, .ac.kr)
+    // Matches: @korea.kr, @*.korea.kr, @go.kr, @*.go.kr
+    // Matches: @*.hs.kr, @*.ms.kr, @*.es.kr, @*.kg.kr (Kyonggi), etc.
+    const officialDomainRegex =
+      /@([a-zA-Z0-9-]+\.)*(korea\.kr|go\.kr|hs\.kr|ms\.kr|es\.kr|ac\.kr|kg\.kr|sen\.go\.kr)$/i;
+
+    // Additional specific allowed domains if needed
+    const isAllowed = officialDomainRegex.test(email);
 
     if (!isAllowed) {
       throw new BadRequestException(
-        '공직자/기관 공식 이메일(@korea.kr, @go.kr 등)만 사용 가능합니다.',
+        '공직자/기관/학교 공식 이메일(@korea.kr, @go.kr, @hs.kr 등)만 사용 가능합니다.',
       );
     }
 

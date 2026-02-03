@@ -42,7 +42,7 @@ export class RagService implements OnModuleInit {
 
       // [중요] 'Pro'는 무료 티어에서 limit: 0 이므로 반드시 'Flash'를 사용해야 합니다.
       this.chatModel = this.genAI.getGenerativeModel({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-2.5-flash-lite',
       });
 
       this.embeddingModel = this.genAI.getGenerativeModel({

@@ -183,6 +183,8 @@ export interface JobListing {
     createdAt: string;
     schoolProfile?: SchoolProfile;
     schoolId?: number;
+    externalSourceUrl?: string;
+    isAggregated?: boolean;
 }
 
 export interface Evaluation {
