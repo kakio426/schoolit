@@ -185,6 +185,7 @@ export interface JobListing {
     schoolId?: number;
     externalSourceUrl?: string;
     isAggregated?: boolean;
+    externalSource?: string;
 }
 
 export interface Evaluation {

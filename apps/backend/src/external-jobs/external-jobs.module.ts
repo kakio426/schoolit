@@ -5,9 +5,11 @@ import { WorknetClient } from './worknet.client';
 import { ScraperService } from './scraper/scraper.service';
 import { AiParserService } from './ai-parser/ai-parser.service';
 import { SyncWorker } from './sync/sync.worker';
+import { ExternalJobsController } from './external-jobs.controller';
 
 @Module({
   imports: [ConfigModule],
+  controllers: [ExternalJobsController],
   providers: [NaraIliterClient, WorknetClient, ScraperService, AiParserService, SyncWorker],
   exports: [NaraIliterClient, WorknetClient, ScraperService, AiParserService, SyncWorker],
 })

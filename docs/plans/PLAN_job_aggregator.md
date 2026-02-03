@@ -225,6 +225,32 @@ apps/backend/src/external-jobs/
 
 ---
 
+### Phase 6: 에듀레크루트 (통합 채용 포털) 연동
+**Goal**: 전국 시도교육청 기간제 교사 공고 통합 수집.
+**Status**: ✅ Complete
+
+#### Tasks
+- [x] **Task 6.1**: `ScraperService.scrapeEdurecruit` 구현 (서울/경기/인천).
+- [x] **Task 6.2**: `SyncWorker.syncEdurecruitJobs` 스케줄러 등록.
+
+### Phase 7: 늘봄허브 (늘봄/돌봄 특화) 연동
+**Goal**: 늘봄학교 강사 공고 전용 수집기 구축.
+**Status**: ✅ Complete
+
+#### Tasks
+- [x] **Task 7.1**: `ScraperService.scrapeNeulbomHub` 구현.
+- [x] **Task 7.2**: `SyncWorker.syncNeulbomJobs` 등록.
+
+### Phase 8: 지역 교육지원청 롱테일 데이터 확장
+**Goal**: 주요 학군(강남, 성남 등) 교육지원청 게시판 추가.
+**Status**: ✅ Complete
+
+#### Tasks
+- [x] **Task 8.1**: 지역별 URL 및 셀렉터 설정 파일 기반화.
+- [x] **Task 8.2**: 다중 소스 병렬 수집 최적화 및 에러 핸들링.
+
+---
+
 ## 📊 Progress Tracking
 
 ### Completion Status

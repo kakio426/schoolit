@@ -3,10 +3,10 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class MatchingService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async searchJobs(filters: { subject?: string; region?: string; keyword?: string }) {
-    const where: any = { active: true };
+    const where: any = { active: true, isDeleted: false };
 
     if (filters.subject) {
       where.subjects = { has: filters.subject };
@@ -110,7 +110,7 @@ export class MatchingService {
   }) {
     // Fetch all active jobs
     const jobs = await this.prisma.jobListing.findMany({
-      where: { active: true },
+      where: { active: true, isDeleted: false },
       include: {
         schoolProfile: {
           select: {

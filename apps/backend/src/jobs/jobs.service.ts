@@ -14,7 +14,7 @@ export class JobsService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
-  ) {}
+  ) { }
 
   // Type for user with profiles (타입 안전성 강화)
   private resolveProfileConnection(user: {
@@ -94,7 +94,7 @@ export class JobsService {
   // [Refactor] 성능 최적화: 리스트 조회 시 필요한 필드만 Select (Payload 최소화)
   async findAll(filters?: { jobType?: string; subjects?: string[]; regions?: string[] }) {
     const where: Prisma.JobListingWhereInput = {
-      active: true,
+      isDeleted: false,
       status: JobStatus.OPEN, // 기본적으로 모집 중인 공고만 노출
       // [Fix] 워크플로우 상태가 'PUBLISHED' 이거나, 과거 데이터(null)인 경우만 노출
       OR: [{ workflowStatus: HiringWorkflowStatus.PUBLISHED }, { workflowStatus: null }],
@@ -117,13 +117,16 @@ export class JobsService {
       select: {
         id: true,
         title: true,
-        description: true, // 목록에서는 짧게 보여줄 예정이라면 프론트에서 truncate
+        description: true,
         jobType: true,
         status: true,
         subjects: true,
         regions: true,
         createdAt: true,
         contractPeriod: true,
+        isAggregated: true,
+        externalSourceUrl: true,
+        externalSource: true,
         // 연관 관계 최적화: 학교명, 로고 등 UI 표시에 필수적인 것만 조회
         schoolProfile: {
           select: {
@@ -167,7 +170,9 @@ export class JobsService {
         workflowStatus: true,
         createdAt: true,
         active: true,
-        jobType: true,
+        isAggregated: true,
+        externalSourceUrl: true,
+        externalSource: true,
         schoolProfile: {
           select: {
             schoolName: true,
@@ -313,6 +318,9 @@ export class JobsService {
         subjects: true,
         regions: true,
         createdAt: true,
+        isAggregated: true,
+        externalSourceUrl: true,
+        externalSource: true,
         schoolProfile: {
           select: {
             schoolName: true,

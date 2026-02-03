@@ -183,7 +183,7 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
                                     <Link href={job.isAggregated && job.externalSourceUrl ? job.externalSourceUrl : `/dashboard/jobs/${job.id}`} target={job.isAggregated ? "_blank" : "_self"}>
                                         <MobileCard
                                             title={job.title}
-                                            subtitle={job.schoolProfile?.schoolName || (job.isAggregated ? '외부 수집' : '정보 없음')}
+                                            subtitle={job.isAggregated ? (job.externalSource || '외부 수집') : (job.schoolProfile?.schoolName || '정보 없음')}
                                             description={`${job.regions?.[0] || '전국'} · ${job.subjects?.join(', ') || '전과목'} · 마감일: ${new Date(job.createdAt).toLocaleDateString()}`}
                                             badge={job.isAggregated ? '외부공고' : ((job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용')}
                                             badgeColor={job.isAggregated ? 'gray' : ((job as any).jobType === 'EVENT_VENDOR' ? 'yellow' : 'blue')}
@@ -212,7 +212,7 @@ export default function JobsListClient({ initialJobs = [] }: JobsListClientProps
                                                     {job.isAggregated ? '외부공고' : ((job as any).jobType === 'EVENT_VENDOR' ? '행사/업체' : '교사 채용')}
                                                 </span>
                                                 <span className="text-slate-500 text-xs">
-                                                    {job.schoolProfile?.schoolName || (job.isAggregated ? '외부 수집' : '정보 없음')}
+                                                    {job.isAggregated ? (job.externalSource || '외부 수집') : (job.schoolProfile?.schoolName || '정보 없음')}
                                                 </span>
                                             </div>
 

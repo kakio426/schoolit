@@ -192,6 +192,7 @@ model JobListing {
   externalSourceUrl String?  @map("external_source_url")
   externalId        String?  @map("external_id")
   isAggregated      Boolean  @default(false) @map("is_aggregated")
+  externalSource    String?  @map("external_source")
   isDeleted         Boolean  @default(false) @map("is_deleted")
   fingerprint       String?  @unique
 

@@ -12,11 +12,15 @@ interface AdminJob {
     active: boolean;
     jobType: 'TEACHER_HIRING' | 'EVENT_VENDOR';
     createdAt: string;
+    isAggregated?: boolean;
+    externalSourceUrl?: string;
+    externalSource?: string;
 }
 
 export function AdminJobsTable() {
     const [jobs, setJobs] = useState<AdminJob[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSyncing, setIsSyncing] = useState(false);
     const [keyword, setKeyword] = useState('');
 
     useEffect(() => {
@@ -38,6 +42,20 @@ export function AdminJobsTable() {
         }
     };
 
+    const handleSync = async () => {
+        setIsSyncing(true);
+        try {
+            await api.post('/external-jobs/sync', {});
+            alert('외부 공고 수집이 완료되었습니다.');
+            fetchJobs();
+        } catch (error) {
+            console.error('Sync failed:', error);
+            alert('수집 실패');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const handleDelete = async (id: number) => {
         if (!confirm('정말로 이 공고를 삭제하시겠습니까? 관리자 권한으로 삭제하면 복구할 수 없습니다.')) return;
         try {
@@ -51,7 +69,8 @@ export function AdminJobsTable() {
     };
 
     const getStatusBadge = (job: AdminJob) => {
-        if (!job.active) return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400">비활성 (삭제됨)</span>;
+        if (job.isAggregated) return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">외부 수집</span>;
+        if (!job.active) return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400">비활성</span>;
 
         if (job.status === 'OPEN') {
             return <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400">모집 중</span>;
@@ -70,25 +89,35 @@ export function AdminJobsTable() {
 
     return (
         <div className="space-y-4">
-            {/* Search Bar */}
-            <div className="flex gap-2">
-                <div className="relative flex-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <input
-                        type="text"
-                        placeholder="공고 제목, 학교명 검색..."
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && fetchJobs()}
-                        className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none"
-                    />
+            {/* Action Bar */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex gap-2 flex-1">
+                    <div className="relative flex-1">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <input
+                            type="text"
+                            placeholder="공고 제목, 학교명 검색..."
+                            value={keyword}
+                            onChange={(e) => setKeyword(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && fetchJobs()}
+                            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none"
+                        />
+                    </div>
+                    <button
+                        onClick={fetchJobs}
+                        disabled={isLoading}
+                        className="px-4 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-70 transition-all shadow-sm"
+                    >
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '검색'}
+                    </button>
                 </div>
+
                 <button
-                    onClick={fetchJobs}
-                    disabled={isLoading}
-                    className="px-4 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-70"
+                    onClick={handleSync}
+                    disabled={isSyncing}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-70"
                 >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '검색'}
+                    {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : '외부 공고 지금 수집'}
                 </button>
             </div>
 
@@ -100,8 +129,8 @@ export function AdminJobsTable() {
                             <tr>
                                 <th className="px-6 py-4">공고 정보</th>
                                 <th className="px-6 py-4">학교/기관</th>
-                                <th className="px-6 py-4">상태</th>
-                                <th className="px-6 py-4">워크플로우</th>
+                                <th className="px-6 py-4 text-center">상태</th>
+                                <th className="px-6 py-4 text-center">워크플로우</th>
                                 <th className="px-6 py-4">등록일</th>
                                 <th className="px-6 py-4 text-right">관리</th>
                             </tr>
@@ -126,28 +155,30 @@ export function AdminJobsTable() {
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">
                                                 <span className="font-semibold text-foreground line-clamp-1" title={job.title}>{job.title}</span>
-                                                <span className="text-xs text-slate-400">ID: {job.id} · {job.jobType === 'EVENT_VENDOR' ? '행사' : '채용'}</span>
+                                                <span className="text-[10px] text-slate-400 mt-1 uppercase tracking-tighter">
+                                                    ID: {job.id} · {job.jobType === 'EVENT_VENDOR' ? '행사' : '채용'}
+                                                </span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                                            {job.schoolProfile?.schoolName || '-'}
+                                            {job.schoolProfile?.schoolName || (job.isAggregated ? <span className="text-[10px] opacity-70">{job.externalSource || '외부 수집'}</span> : '-')}
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 text-center">
                                             {getStatusBadge(job)}
                                         </td>
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 text-center">
                                             {getWorkflowBadge(job.workflowStatus)}
                                         </td>
-                                        <td className="px-6 py-4 text-slate-500">
+                                        <td className="px-6 py-4 text-slate-500 text-xs">
                                             {new Date(job.createdAt).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <Link
-                                                    href={`/dashboard/jobs/${job.id}`}
+                                                    href={job.isAggregated ? (job.externalSourceUrl || '#') : `/dashboard/jobs/${job.id}`}
                                                     target="_blank"
-                                                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
-                                                    title="새 탭에서 보기"
+                                                    className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors border border-transparent"
+                                                    title={job.isAggregated ? '원본 사이트 보기' : '새 탭에서 보기'}
                                                 >
                                                     <ExternalLink className="w-4 h-4" />
                                                 </Link>
