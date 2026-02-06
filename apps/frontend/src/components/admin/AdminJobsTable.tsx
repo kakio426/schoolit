@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
-import { Search, Loader2, Trash2, ExternalLink, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Loader2, Trash2, ExternalLink, CheckCircle2, XCircle, AlertCircle, RefreshCw, Filter } from 'lucide-react';
 import Link from 'next/link';
+
 
 interface AdminJob {
     id: number;
@@ -22,9 +23,14 @@ export function AdminJobsTable() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSyncing, setIsSyncing] = useState(false);
     const [keyword, setKeyword] = useState('');
+    const [lastSyncTime, setLastSyncTime] = useState<string | null>(null);
+    const [viewFilter, setViewFilter] = useState<'ALL' | 'EXTERNAL' | 'INTERNAL'>('ALL');
 
     useEffect(() => {
         fetchJobs();
+        // Load last sync time from local storage if available (mock)
+        const storedSync = localStorage.getItem('last_sync_time');
+        if (storedSync) setLastSyncTime(storedSync);
     }, []);
 
     const fetchJobs = async () => {
@@ -45,8 +51,16 @@ export function AdminJobsTable() {
     const handleSync = async () => {
         setIsSyncing(true);
         try {
-            await api.post('/external-jobs/sync', {});
-            alert('외부 공고 수집이 완료되었습니다.');
+            const res = await api.post<{ message: string, stats?: { totalFound: number, newCreated: number, errors: number } }>('/external-jobs/sync', {});
+            const now = new Date().toLocaleString();
+            setLastSyncTime(now);
+            localStorage.setItem('last_sync_time', now);
+
+            if (res.stats) {
+                alert(`수집 완료: ${res.stats.newCreated}건 추가됨 (발견: ${res.stats.totalFound}, 에러: ${res.stats.errors})`);
+            } else {
+                alert('외부 공고 수집이 완료되었습니다.');
+            }
             fetchJobs();
         } catch (error) {
             console.error('Sync failed:', error);
@@ -87,38 +101,99 @@ export function AdminJobsTable() {
         }
     };
 
+    const filteredJobs = jobs.filter(job => {
+        if (viewFilter === 'EXTERNAL') return job.isAggregated;
+        if (viewFilter === 'INTERNAL') return !job.isAggregated;
+        return true;
+    });
+
+    const externalCount = jobs.filter(j => j.isAggregated).length;
+
     return (
         <div className="space-y-4">
-            {/* Action Bar */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex gap-2 flex-1">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                        <input
-                            type="text"
-                            placeholder="공고 제목, 학교명 검색..."
-                            value={keyword}
-                            onChange={(e) => setKeyword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && fetchJobs()}
-                            className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none"
-                        />
+            {/* Sync Status & Action Bar */}
+            <div className="flex flex-col gap-4">
+                {/* Sync info line */}
+                <div className="flex items-center justify-between bg-blue-50 dark:bg-blue-900/10 p-4 rounded-xl border border-blue-100 dark:border-blue-800/30">
+                    <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-full ${isSyncing ? 'bg-blue-100 text-blue-600 animate-spin' : 'bg-white text-blue-600 shadow-sm'}`}>
+                            <RefreshCw className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                                외부 공고 크롤링
+                            </div>
+                            <div className="text-xs text-slate-500 flex items-center gap-1">
+                                {lastSyncTime ? `마지막 동기화: ${lastSyncTime}` : '동기화 이력 없음'}
+                                {isSyncing && <span className="text-blue-500 font-semibold ml-2">수집 중...</span>}
+                            </div>
+                        </div>
                     </div>
                     <button
-                        onClick={fetchJobs}
-                        disabled={isLoading}
-                        className="px-4 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-70 transition-all shadow-sm"
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-bold text-xs transition-all shadow-md active:scale-95 disabled:opacity-70 flex items-center gap-2"
                     >
-                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '검색'}
+                        {isSyncing ? (
+                            <>
+                                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                                수집 중
+                            </>
+                        ) : (
+                            <>
+                                <RefreshCw className="w-3.5 h-3.5" />
+                                지금 수집
+                            </>
+                        )}
                     </button>
                 </div>
 
-                <button
-                    onClick={handleSync}
-                    disabled={isSyncing}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-sm transition-all shadow-md active:scale-95 disabled:opacity-70"
-                >
-                    {isSyncing ? <Loader2 className="w-4 h-4 animate-spin" /> : '외부 공고 지금 수집'}
-                </button>
+                {/* Filters & Search */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    {/* View Filters */}
+                    <div className="flex p-1 bg-slate-100 dark:bg-slate-800 rounded-lg self-start">
+                        {[
+                            { id: 'ALL', label: '전체' },
+                            { id: 'EXTERNAL', label: `외부 수집 (${externalCount})` },
+                            { id: 'INTERNAL', label: '직접 등록' }
+                        ].map(f => (
+                            <button
+                                key={f.id}
+                                onClick={() => setViewFilter(f.id as any)}
+                                className={`
+                                    px-4 py-1.5 text-xs font-bold rounded-md transition-all
+                                    ${viewFilter === f.id
+                                        ? 'bg-white dark:bg-slate-700 text-foreground shadow-sm'
+                                        : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}
+                                `}
+                            >
+                                {f.label}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Search */}
+                    <div className="flex gap-2 flex-1 md:max-w-md">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <input
+                                type="text"
+                                placeholder="공고 제목, 학교명 검색..."
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && fetchJobs()}
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 focus:ring-2 focus:ring-primary/20 outline-none text-sm"
+                            />
+                        </div>
+                        <button
+                            onClick={fetchJobs}
+                            disabled={isLoading}
+                            className="px-4 py-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 rounded-xl font-medium text-sm hover:opacity-90 disabled:opacity-70 transition-all shadow-sm"
+                        >
+                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : '검색'}
+                        </button>
+                    </div>
+                </div>
             </div>
 
             {/* Table */}
@@ -143,14 +218,14 @@ export function AdminJobsTable() {
                                         로딩 중...
                                     </td>
                                 </tr>
-                            ) : jobs.length === 0 ? (
+                            ) : filteredJobs.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
                                         검색 결과가 없습니다.
                                     </td>
                                 </tr>
                             ) : (
-                                jobs.map((job) => (
+                                filteredJobs.map((job) => (
                                     <tr key={job.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col">

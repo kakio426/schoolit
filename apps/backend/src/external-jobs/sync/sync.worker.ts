@@ -28,11 +28,19 @@ export class SyncWorker {
             { name: 'Seoul OE (Legacy/Backup)', fn: () => this.scraperService.scrapeSeoul(), id: 'sen.go.kr' }
         ];
 
+        const stats = { totalFound: 0, newCreated: 0, errors: 0 };
+
         for (const task of tasks) {
-            await this.syncSource(task.name, task.fn, task.id);
+            const taskStats = await this.syncSource(task.name, task.fn, task.id);
+            if (taskStats) {
+                stats.totalFound += taskStats.found;
+                stats.newCreated += taskStats.created;
+                stats.errors += taskStats.errors;
+            }
         }
 
-        this.logger.log('Full synchronization completed.');
+        this.logger.log(`Full synchronization completed. Stats: ${JSON.stringify(stats)}`);
+        return stats;
     }
 
     async syncSeoulJobs() {
@@ -40,14 +48,16 @@ export class SyncWorker {
     }
 
     async syncSource(sourceName: string, scraperFn: () => Promise<any[]>, sourceIdentifier: string) {
+        const stats = { found: 0, created: 0, errors: 0 };
         try {
             this.logger.log(`[${sourceName}] Starting Sync...`);
             const jobs = await scraperFn();
 
             if (!jobs || jobs.length === 0) {
                 this.logger.warn(`[${sourceName}] No jobs found or scraper returned empty.`);
-                return;
+                return stats;
             }
+            stats.found = jobs.length;
 
             for (const job of jobs) {
                 try {
@@ -95,9 +105,11 @@ export class SyncWorker {
                             }
                         });
                         this.logger.log(`[${sourceName}] Successfully created aggregated job: ${job.title}`);
+                        stats.created++;
                     }
                 } catch (error) {
                     this.logger.error(`[${sourceName}] Error processing job ${job.title}: ${error.message}`);
+                    stats.errors++;
                 }
             }
 
@@ -123,9 +135,11 @@ export class SyncWorker {
                 }
             }
 
-            this.logger.log(`[${sourceName}] Sync Completed.`);
+            this.logger.log(`[${sourceName}] Sync Completed. Created: ${stats.created}, Errors: ${stats.errors}`);
+            return stats;
         } catch (error) {
             this.logger.error(`[${sourceName}] Sync Master Failed: ${error.message}`);
+            return stats;
         }
     }
 

@@ -132,12 +132,12 @@ export const useSSO = () => {
 
       try {
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/sso?sso_token=${encodeURIComponent(ssoToken)}`,
+          `/api/auth/sso?sso_token=${encodeURIComponent(ssoToken)}`,
           { method: 'GET', credentials: 'include' }
         );
 
         const data = await response.json();
-        localStorage.setItem('authToken', data.accessToken);
+        localStorage.setItem('accessToken', data.accessToken);
         
         // 역할에 따라 리다이렉트
         const redirectPaths = {

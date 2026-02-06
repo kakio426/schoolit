@@ -17,10 +17,10 @@ export class ExternalJobsController {
     @Post('sync')
     async triggerSync() {
         this.logger.log('Manual sync triggered by Admin');
-        // We execute sync in background or await? 
-        // Usually for UI feedback, we can await or return "Started"
-        // Let's await for simplicity in this small app
-        await this.syncWorker.syncAllExternalJobs();
-        return { message: 'All external sources synced successfully' };
+        const stats = await this.syncWorker.syncAllExternalJobs();
+        return {
+            message: 'All external sources synced successfully',
+            stats
+        };
     }
 }

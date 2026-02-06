@@ -1,5 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { API_URL } from '@/lib/constants';
 
 /**
  * SSO(Single Sign-On) 토큰을 처리하는 커스텀 훅
@@ -8,6 +10,7 @@ import { useRouter } from 'next/navigation';
  */
 export const useSSO = () => {
   const router = useRouter();
+  const { login } = useAuth();
 
   useEffect(() => {
     const handleSSO = async () => {
@@ -19,11 +22,13 @@ export const useSSO = () => {
         return; // SSO 토큰이 없으면 처리하지 않음
       }
 
+      console.log('[SSO] Token detected, processing...');
+
       try {
         // 백엔드 SSO 엔드포인트 호출 (schoolit.shop 도메인)
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend-production-1598.up.railway.app';
+        // constants에서 정의된 API_URL(/api)을 사용합니다.
         const response = await fetch(
-          `${apiUrl}/auth/sso?sso_token=${encodeURIComponent(ssoToken)}`,
+          `${API_URL}/auth/sso?sso_token=${encodeURIComponent(ssoToken)}`,
           {
             method: 'GET',
             credentials: 'include', // 쿠키 포함
@@ -34,15 +39,19 @@ export const useSSO = () => {
         );
 
         if (!response.ok) {
-          throw new Error(`SSO authentication failed: ${response.statusText}`);
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || `SSO authentication failed: ${response.statusText}`);
         }
 
         const data = await response.json();
-        const { accessToken, redirectUrl, role } = data;
+        const { accessToken, role } = data;
 
-        // JWT 토큰을 로컬 스토리지에 저장
+        // JWT 토큰 처리
         if (accessToken) {
-          localStorage.setItem('authToken', accessToken);
+          console.log('[SSO] Authentication successful, logging in...');
+
+          // AuthContext의 login 함수를 호출하여 상태를 업데이트하고 프로필을 가져옵니다.
+          await login(accessToken);
 
           // 역할(role)에 따른 리다이렉트 처리
           const roleRedirectMap: Record<string, string> = {
@@ -54,8 +63,10 @@ export const useSSO = () => {
           };
 
           const finalRedirectPath = roleRedirectMap[role] || '/dashboard';
-          
-          // 토큰 파라미터를 제거하고 해당 페이지로 이동
+
+          console.log(`[SSO] Redirecting to ${finalRedirectPath}`);
+
+          // 해당 페이지로 이동
           router.push(finalRedirectPath);
         } else {
           throw new Error('No access token received from SSO');
@@ -68,5 +79,5 @@ export const useSSO = () => {
     };
 
     handleSSO();
-  }, [router]);
+  }, [router, login]);
 };
