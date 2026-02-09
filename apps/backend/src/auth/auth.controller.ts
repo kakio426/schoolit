@@ -20,7 +20,7 @@ import { SSOGuard } from './guards/sso.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Post('signup')
   async signup(@Body() createUserDto: CreateUserDto) {
@@ -65,7 +65,7 @@ export class AuthController {
   }
 
   // --- SSO (eduitit) ---
-  @Get('sso')
+  @Post('sso')
   @UseGuards(SSOGuard)
   async ssoCallback(@Request() req) {
     if (!req.user) {

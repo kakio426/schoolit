@@ -28,13 +28,14 @@ export const useSSO = () => {
         // 백엔드 SSO 엔드포인트 호출 (schoolit.shop 도메인)
         // constants에서 정의된 API_URL(/api)을 사용합니다.
         const response = await fetch(
-          `${API_URL}/auth/sso?sso_token=${encodeURIComponent(ssoToken)}`,
+          `${API_URL}/auth/sso`,
           {
-            method: 'GET',
+            method: 'POST',
             credentials: 'include', // 쿠키 포함
             headers: {
               'Content-Type': 'application/json',
             },
+            body: JSON.stringify({ sso_token: ssoToken }),
           }
         );
 

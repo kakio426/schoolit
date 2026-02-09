@@ -7,11 +7,11 @@ export class SSOGuard implements CanActivate {
   constructor(
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = request.query.sso_token;
+    const token = request.body.sso_token || request.query.sso_token; // Support both for transition, prefer body
 
     // SSO 토큰이 없으면 즉시 예외 발생 (필수)
     if (!token) {
